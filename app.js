@@ -9,11 +9,18 @@ function fmt(x) { if (x == null || !isFinite(x)) return '—'; const a = Math.ab
 R.forEach((g, i) => { g.id = i; g.cls = [...new Set(g.d.map(x => (DL[drugKey(x.n)] || {}).cls).filter(c => c && c !== 'support'))]; });
 
 const S = { p: { wt:'', ht:'', age:'', sex:'M', scr:'', scrFloor:true, crclWt:'actual', bsaF:'mosteller', bsaCap:'0', gfrCap:true },
-  q:'', cancer:'', cls:'', reg:null, gPct:100, rows:[], extra:[], tab:'calc' };
+  q:'', mode:'all', cancer:'', cls:'', reg:null, gPct:100, rows:[], extra:[], tab:'calc' };
 
+function baseName(n) { return n.replace(/\s*\(.*?\)/g, '').replace(/\s+(bolus|infusion|loading|maintenance|weekly|push)$/i, '').trim(); }
+function drugHay(g) { return g.d.map(x => x.n + ' ' + (BRAND[drugKey(x.n)] || '')).join(' '); }
+function hl(text, terms) {
+  let h = esc(text); if (!terms.length) return h;
+  terms.forEach(t => { const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'); h = h.replace(re, '<mark>$1</mark>'); });
+  return h;
+}
 function drugNames(g) {
   const out = [];
-  g.d.forEach(x => { const n = x.n.replace(/\s*\(.*?\)/g, '').replace(/\s+(bolus|infusion|loading|maintenance|weekly)$/i, '').trim();
+  g.d.forEach(x => { const n = baseName(x.n);
     if (!out.includes(n)) out.push(n); });
   return out.join(' + ');
 }
@@ -128,14 +135,25 @@ function regList() {
     if (S.cancer && g.c !== S.cancer) return false;
     if (S.cls && !g.cls.includes(S.cls)) return false;
     if (!terms.length) return true;
-    const hay = (g.n + ' ' + (g.kw || '') + ' ' + g.s + ' ' + g.ref + ' ' + CANCERS[g.c] + ' ' + CANCER_KW[g.c] + ' ' + g.d.map(x => x.n).join(' ')).toLowerCase();
+    const reg = g.n + ' ' + (g.kw || ''), drug = drugHay(g), can = CANCERS[g.c] + ' ' + CANCER_KW[g.c] + ' ' + g.s;
+    const hay = (S.mode === 'reg' ? reg : S.mode === 'drug' ? drug : S.mode === 'cancer' ? can : reg + ' ' + drug + ' ' + can + ' ' + g.ref).toLowerCase();
     return terms.every(t => hay.includes(t));
   });
   $('#count').textContent = `${list.length} สูตร`;
-  $('#list').innerHTML = list.length ? list.map(g => `<button class="ri ${S.reg && S.reg.id === g.id ? 'on' : ''}" data-id="${g.id}">
-    <div class="rn">${esc(g.n)}</div><div class="rd">${esc(drugNames(g))}</div><div class="rs">${esc(CANCERS[g.c])} · ${esc(g.s)}</div>
+  const hlTerms = S.mode === 'cancer' ? [] : terms;
+  // drug info card when searching a drug
+  let info = '';
+  if (terms.length && S.mode !== 'reg' && S.mode !== 'cancer') {
+    const keys = [...new Set(R.flatMap(g => g.d.map(x => drugKey(x.n))))].filter(k => terms.every(t => (k + ' ' + (BRAND[k] || '')).toLowerCase().includes(t)));
+    if (keys.length && keys.length <= 3) info = keys.map(k => { const L = DL[k] || {};
+      return `<div class="dinfo"><b>💊 ${esc(k)}</b>${BRAND[k] ? ` <span class="brand">${esc(BRAND[k])}</span>` : ''} ${L.cls ? `<span class="b b-${L.cls}">${CLS_LABEL[L.cls]}</span>` : ''}
+        <div class="dsub">อยู่ใน ${R.filter(g => g.d.some(x => drugKey(x.n) === k)).length} สูตร</div>
+        ${L.note ? `<div>${esc(L.note)}</div>` : ''}${L.life ? `<div>⛔ ${esc(L.life)}</div>` : ''}${L.hep ? `<div>🟤 ตับ: ${esc(L.hep)}</div>` : ''}</div>`; }).join('');
+  }
+  $('#list').innerHTML = info + (list.length ? list.map(g => `<button class="ri ${S.reg && S.reg.id === g.id ? 'on' : ''}" data-id="${g.id}">
+    <div class="rn">${hl(g.n, S.mode === 'drug' ? [] : hlTerms)}</div><div class="rd">${hl(drugNames(g), S.mode === 'reg' ? [] : hlTerms)}</div><div class="rs">${esc(CANCERS[g.c])} · ${esc(g.s)}</div>
     <div class="rt">${g.cls.map(c => `<span class="b b-${c}">${CLS_LABEL[c]}</span>`).join('')}</div></button>`).join('')
-    : '<div class="hint">ไม่พบสูตร — ลองคำค้นอื่น หรือใช้ "สร้างสูตรเอง"</div>';
+    : '<div class="hint">ไม่พบสูตร — ลองคำค้นอื่น เปลี่ยนโหมดค้นหา หรือใช้ "สร้างสูตรเอง"</div>');
 }
 
 function selectReg(g) {
@@ -176,6 +194,7 @@ function renderMain() {
       <details><summary>วิธีคำนวณ & ข้อควรระวัง</summary><div class="how">
         ${c.lines.map(l => `<div class="mono">${esc(l)}</div>`).join('')}
         ${dr.note ? `<div class="nt">📝 ${esc(dr.note)}</div>` : ''}
+        ${BRAND[drugKey(dr.n)] ? `<div class="nt">🏷 ชื่อการค้า: ${esc(BRAND[drugKey(dr.n)])}</div>` : ''}
         ${lib.note ? `<div class="nt">💊 ${esc(lib.note)}</div>` : ''}
         ${lib.hep ? `<div class="nt">🟤 ตับ: ${esc(lib.hep)}</div>` : ''}
         ${lib.life ? `<div class="nt">⛔ ${esc(lib.life)}</div>` : ''}
@@ -223,6 +242,10 @@ function bind() {
     });
   });
   $('#q').addEventListener('input', e => { S.q = e.target.value; regList(); });
+  $('#smode').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b) return; S.mode = b.dataset.m;
+    document.querySelectorAll('#smode [data-m]').forEach(x => x.classList.toggle('on', x === b));
+    const ph = { all:'ค้นหา: สูตร, ยา, ชื่อการค้า, โรค…', reg:'ชื่อสูตร เช่น FOLFOX, R-CHOP, AC', drug:'ชื่อยา/ชื่อการค้า เช่น cisplatin, Herceptin', cancer:'ชื่อโรค เช่น ท่อน้ำดี, NPC, lung' }[S.mode];
+    $('#q').placeholder = ph; if (S.mode === 'drug') $('#q').setAttribute('list', 'drugList'); else $('#q').removeAttribute('list'); $('#q').focus(); regList(); });
   $('#cancers').addEventListener('change', e => { S.cancer = e.target.value; regList(); });
   $('#clsf').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; S.cls = b.dataset.k;
     document.querySelectorAll('#clsf [data-k]').forEach(x => x.classList.toggle('on', x.dataset.k === S.cls)); regList(); });
@@ -261,6 +284,8 @@ function refreshKeepFocus(t) {
 
 function init() {
   $('#cancers').insertAdjacentHTML('beforeend', Object.entries(CANCERS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join(''));
+  const dk = [...new Set(R.flatMap(g => g.d.map(x => drugKey(x.n))))].sort();
+  $('#drugList').innerHTML = dk.map(k => `<option value="${esc(k)}">${esc(BRAND[k] || '')}</option>`).join('') + dk.flatMap(k => (BRAND[k] || '').split(' ').filter(b => b.length > 2).map(b => `<option value="${esc(b)}">${esc(k)}</option>`)).join('');
   document.querySelectorAll('.dbv').forEach(e => e.textContent = DB_VERSION);
   document.querySelectorAll('.dbn').forEach(e => e.textContent = R.length);
   bind(); render(); regList();

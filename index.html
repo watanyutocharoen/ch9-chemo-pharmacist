@@ -48,6 +48,12 @@ details.adv{margin-top:10px;font-size:13px}details.adv summary{cursor:pointer;co
 .warn{background:var(--ambbg);color:#6b4204;border-radius:9px;padding:7px 10px;font-size:13px;margin-top:8px}
 .hint{color:var(--mut);font-size:13.5px;padding:8px 2px}
 .csel{width:100%;margin-top:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fbfcfc}
+.seg2{display:grid;grid-template-columns:repeat(4,1fr);background:#eef2f1;border-radius:10px;padding:3px;margin-bottom:8px}
+.seg2 button{border:0;background:none;padding:7px 4px;border-radius:8px;cursor:pointer;font-size:13.5px;color:var(--mut);font-weight:500}
+.seg2 button.on{background:#fff;color:var(--pri);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
+.dinfo{background:var(--blubg);color:#1b3d6e;border-radius:10px;padding:9px 11px;font-size:13px;display:flex;flex-direction:column;gap:3px}
+.dinfo b{font-size:14.5px;text-transform:capitalize}.brand{font-size:12px;color:var(--mut)}.dsub{font-size:12px;color:var(--mut)}
 #q{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fbfcfc}
 .fl{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .fl button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:12.5px;cursor:pointer}
@@ -107,7 +113,7 @@ footer{text-align:center;font-size:12px;color:var(--mut);padding:10px 20px 30px}
 <body>
 <header>
   <div class="topbar"><div class="hw brand">
-    <img class="logo" src="logo.png?v=20261114104809" alt="โรงพยาบาลจุฬารัตน์ 9 แอร์พอร์ต">
+    <img class="logo" src="logo.png?v=20261114105522" alt="โรงพยาบาลจุฬารัตน์ 9 แอร์พอร์ต">
     <div class="ttl"><h1>เภสัชกรเคมีบำบัด</h1><p>โรงพยาบาลจุฬารัตน์ 9 แอร์พอร์ต</p></div>
   </div></div>
   <div class="navbar"><nav class="hw"><button data-tab="calc" class="on">คำนวณ & ตรวจสอบ</button><button data-tab="ref">วิธีคำนวณ & อ้างอิง</button></nav></div>
@@ -139,7 +145,8 @@ footer{text-align:center;font-size:12px;color:var(--mut);padding:10px 20px 30px}
     </section>
     <section class="card">
       <h3>2. เลือกสูตรยา <span class="b" id="count"></span></h3>
-      <input id="q" type="search" placeholder="ค้นหา: FOLFOX, ท่อน้ำดี, trastuzumab, NPC…">
+      <div class="seg2" id="smode"><button data-m="all" class="on">ทั้งหมด</button><button data-m="reg">ชื่อสูตร</button><button data-m="drug">ชื่อยา</button><button data-m="cancer">โรค</button></div>
+      <input id="q" type="search" placeholder="ค้นหา: สูตร, ยา, ชื่อการค้า, โรค…" autocomplete="off"><datalist id="drugList"></datalist>
       <div class="fl" id="clsf"><button data-k="" class="on">ทั้งหมด</button><button data-k="chemo">Chemo</button><button data-k="targeted">Targeted</button><button data-k="io">Immunotherapy</button><button data-k="hormone">Hormone</button></div>
       <select id="cancers" class="csel"><option value="">— ทุกชนิดมะเร็ง —</option></select>
       <div id="list"></div>
@@ -197,14 +204,14 @@ footer{text-align:center;font-size:12px;color:var(--mut);padding:10px 20px 30px}
       <li>Griggs JJ, et al. Appropriate systemic therapy dosing for obese adult patients with cancer: ASCO guideline update. J Clin Oncol 2021</li>
       <li>Calvert AH, et al. J Clin Oncol 1989;7:1748–56 · FDA communication on carboplatin dosing (2010)</li>
       <li>Kintzel PE, Dorr RT. Anticancer drug renal toxicity and elimination: dosing guidelines for altered renal function. Cancer Treat Rev 1995</li>
-      <li>แนวทางการรักษาโรคมะเร็ง (Protocol) ประกอบการเบิกจ่ายของ สปสช. และสถาบันมะเร็งแห่งชาติ — ใช้เลือกสูตรที่ใช้บ่อยในไทย</li>
+      <li><b>แบบฟอร์ม Protocol การรักษาโรคมะเร็งเพื่อเบิกจ่าย สปสช. (สถาบันมะเร็งแห่งชาติ ฉบับปี 2560 เริ่มใช้ ส.ค. 2561)</b> — สูตรที่มีรหัส เช่น CBrC13, CCrC11, CCxC13, CNaC11a ระบุไว้ในช่องอ้างอิง ค้นหาด้วยรหัสได้</li><li>แนวทางการตรวจวินิจฉัยและรักษาโรคมะเร็ง (CPG) สถาบันมะเร็งแห่งชาติ</li>
     </ul>
     <p><b>เวอร์ชันฐานข้อมูล:</b> <span class="dbv"></span> · <span class="dbn"></span> สูตร · ควรมีเภสัชกร/แพทย์ด้านมะเร็งทบทวนและรับรองก่อนใช้งานจริง และทบทวนซ้ำอย่างน้อยปีละครั้ง</p>
   </section>
 </div>
 <footer>เภสัชกรเคมีบำบัด · กลุ่มงานเภสัชกรรม โรงพยาบาลจุฬารัตน์ 9 แอร์พอร์ต · ฐานข้อมูล <span class="dbv"></span> · <span class="dbn"></span> สูตร</footer>
-<script src="data.js?v=20261114104809"></script>
-<script src="lib.js?v=20261114104809"></script>
-<script src="app.js?v=20261114104809"></script>
+<script src="data.js?v=20261114105522"></script>
+<script src="lib.js?v=20261114105522"></script>
+<script src="app.js?v=20261114105522"></script>
 </body>
 </html>

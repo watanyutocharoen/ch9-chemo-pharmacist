@@ -51,7 +51,11 @@
 - `roundTo:150` ปัดขนาดตามเม็ดยา
 - `note:'...'` หมายเหตุของยาตัวนั้น
 
-รหัสชนิดมะเร็ง (`c:`): `breast` `crc` `gastric` `hcc` `biliary` `pancreas` `lung` `hn` `cervix` `ovary` `endomet` `bladder` `prostate` `kidney` `gct` `lymphoma` `myeloma` `leukemia` `other` (เพิ่มหมวดใหม่ได้ที่ `CANCERS` และ `CANCER_KW` ต้นไฟล์)
+ระดับสูตร: ใส่ `kw:'คำค้น รหัส protocol'` เพื่อให้ค้นเจอด้วยคำอื่น (เช่น `kw:'mayo เมโย ccrc11'`)
+
+ชื่อการค้าสำหรับค้นหา: เพิ่มใน `BRAND` ท้ายไฟล์ `lib.js`
+
+รหัสชนิดมะเร็ง (`c:`): `breast` `crc` `gastric` `hcc` `biliary` `pancreas` `lung` `hn` `cervix` `ovary` `endomet` `bladder` `prostate` `kidney` `gct` `lymphoma` `myeloma` `leukemia` `gtn` `bone` `other` (เพิ่มหมวดใหม่ได้ที่ `CANCERS` และ `CANCER_KW` ต้นไฟล์)
 
 ### ถ้าเป็นยาตัวใหม่ที่ยังไม่มีในระบบ
 เพิ่มบรรทัดใน `lib.js` ในวัตถุ `DL` เช่น

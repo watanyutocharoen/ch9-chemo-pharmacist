@@ -3,7 +3,7 @@
 const KEYMAP = [
   [/protein-bound|nab/i,'nab-paclitaxel'], [/liposomal/i,'pld'], [/emtansine/i,'t-dm1'], [/deruxtecan/i,'t-dxd'],
   [/phesgo/i,'phesgo'], [/trifluridine/i,'trifluridine'], [/arsenic/i,'arsenic'], [/atra|tretinoin/i,'atra'],
-  [/leucovorin|folin/i,'leucovorin'], [/fluorouracil|5-?fu/i,'fluorouracil'], [/high-dose/i,'cytarabine-hd']
+  [/leucovorin|folin/i,'leucovorin'], [/tegafur/i,'tegafur-uracil'], [/actinomycin|dactinomycin/i,'actinomycin'], [/fluorouracil|5-?fu/i,'fluorouracil'], [/high-dose/i,'cytarabine-hd']
 ];
 function drugKey(name) {
   for (const [re, k] of KEYMAP) if (re.test(name)) return k;
@@ -77,7 +77,36 @@ const DL = {
   avelumab: { cls:'io' }, dostarlimab: { cls:'io' },
   tamoxifen: { cls:'hormone' }, letrozole: { cls:'hormone' }, anastrozole: { cls:'hormone' }, exemestane: { cls:'hormone' }, fulvestrant: { cls:'hormone' },
   abiraterone: { cls:'hormone' }, enzalutamide: { cls:'hormone' }, apalutamide: { cls:'hormone' }, darolutamide: { cls:'hormone' },
+  'tegafur-uracil': { cls:'chemo', note:'⚠ DPD deficiency; ขนาดคิดตาม tegafur ต่อวัน แบ่ง 3 มื้อ' },
+  megestrol: { cls:'hormone', note:'ระวัง VTE, น้ำหนักเพิ่ม' },
+  mitomycin: { cls:'chemo', life:'สะสมเกิน ~50 mg/m² เสี่ยง HUS และไขกระดูกกดนาน', note:'Vesicant', maxSingle:20 },
+  fludarabine: { cls:'chemo', renal:c=>c<30?r('stop','CrCl <30: หลีกเลี่ยง (ฉลาก)'):c<70?r('warn','CrCl 30–70: ลด 20% (ฉลาก)',80):null, note:'PJP prophylaxis; ใช้เลือดฉายรังสีเท่านั้น', maxSingle:30 },
+  methylprednisolone: { cls:'support' },
+  melphalan: { cls:'chemo', renal:c=>c<30?r('warn','CrCl <30: พิจารณาลด 50% (oral)',50):null },
+  actinomycin: { cls:'chemo', note:'⚠ Vesicant รุนแรง; หน่วยเป็น mg (บางฉลากเป็น mcg) — ตรวจหน่วย', maxSingle:1.25 },
+  leuprorelin: { cls:'hormone' }, goserelin: { cls:'hormone' }, triptorelin: { cls:'hormone' },
+  flutamide: { cls:'hormone', note:'ติดตาม LFT' }, bicalutamide: { cls:'hormone' },
   prednisolone: { cls:'support' }, dexamethasone: { cls:'support' },
   atra: { cls:'targeted' }, arsenic: { cls:'targeted', note:'ติดตาม QTc, K ≥4, Mg ≥2' },
 };
 const CLS_LABEL = { chemo:'Chemo', targeted:'Targeted', io:'Immunotherapy', hormone:'Hormone', support:'Supportive' };
+
+// ชื่อการค้า (ใช้ค้นหา) — อาจมียาสามัญ/ชื่อการค้าอื่นในประเทศไทยเพิ่มเติม
+const BRAND = {
+  capecitabine:'Xeloda', trastuzumab:'Herceptin Herzuma Kanjinti Ontruzant', 't-dm1':'Kadcyla', 't-dxd':'Enhertu', pertuzumab:'Perjeta', phesgo:'Phesgo',
+  bevacizumab:'Avastin Mvasi', cetuximab:'Erbitux', panitumumab:'Vectibix', rituximab:'MabThera Rituxan Truxima', pembrolizumab:'Keytruda', nivolumab:'Opdivo',
+  atezolizumab:'Tecentriq', durvalumab:'Imfinzi', tremelimumab:'Imjudo', avelumab:'Bavencio', dostarlimab:'Jemperli', docetaxel:'Taxotere', paclitaxel:'Taxol Anzatax',
+  'nab-paclitaxel':'Abraxane', gemcitabine:'Gemzar', pemetrexed:'Alimta', oxaliplatin:'Eloxatin', irinotecan:'Campto', vinorelbine:'Navelbine', eribulin:'Halaven',
+  doxorubicin:'Adriamycin Adriblastina', pld:'Caelyx Lipodox', epirubicin:'Pharmorubicin', cyclophosphamide:'Endoxan', ifosfamide:'Holoxan', mesna:'Uromitexan',
+  bortezomib:'Velcade', lenalidomide:'Revlimid', thalidomide:'Thalidomide', daratumumab:'Darzalex', olaparib:'Lynparza', niraparib:'Zejula', palbociclib:'Ibrance',
+  ribociclib:'Kisqali', abemaciclib:'Verzenios Verzenio', lapatinib:'Tykerb', osimertinib:'Tagrisso', gefitinib:'Iressa', erlotinib:'Tarceva', afatinib:'Giotrif',
+  alectinib:'Alecensa', lorlatinib:'Lorbrena', crizotinib:'Xalkori', sorafenib:'Nexavar', lenvatinib:'Lenvima', regorafenib:'Stivarga', sunitinib:'Sutent',
+  pazopanib:'Votrient', axitinib:'Inlyta', cabozantinib:'Cabometyx', imatinib:'Glivec Gleevec', nilotinib:'Tasigna', dasatinib:'Sprycel', venetoclax:'Venclexta',
+  azacitidine:'Vidaza', decitabine:'Dacogen', trifluridine:'Lonsurf', ramucirumab:'Cyramza', abiraterone:'Zytiga', enzalutamide:'Xtandi', apalutamide:'Erleada',
+  darolutamide:'Nubeqa', fulvestrant:'Faslodex', letrozole:'Femara', anastrozole:'Arimidex', exemestane:'Aromasin', tamoxifen:'Nolvadex', sacituzumab:'Trodelvy',
+  enfortumab:'Padcev', polatuzumab:'Polivy', brentuximab:'Adcetris', temozolomide:'Temodal', arsenic:'Trisenox', atra:'Vesanoid', megestrol:'Megace',
+  'tegafur-uracil':'UFT UFUR', goserelin:'Zoladex', leuprorelin:'Enantone Eligard Lucrin', triptorelin:'Diphereline', fludarabine:'Fludara', melphalan:'Alkeran',
+  actinomycin:'Cosmegen', cisplatin:'CDDP', carboplatin:'Paraplatin', fluorouracil:'5-FU 5FU', leucovorin:'Calcium folinate folinic', bleomycin:'Bleocin',
+  etoposide:'Vepesid VP-16', vincristine:'Oncovin VCR', methotrexate:'MTX', cytarabine:'Ara-C', 'cytarabine-hd':'Ara-C HiDAC', dacarbazine:'DTIC', bendamustine:'Ribomustin Levact Treanda',
+  flutamide:'Eulexin', bicalutamide:'Casodex', mitomycin:'Mitomycin-C', cabazitaxel:'Jevtana', idarubicin:'Zavedos', daunorubicin:'Daunoblastina'
+};
