@@ -105,7 +105,8 @@ function verify(dr, c, P, ordered, pct) {
   }
   if (dr.unit === 'mg/kg' && P.ok) msgs.push(`เท่ากับ ${fmt(ordered / P.wt)} mg/kg`);
   if (dr.unit === 'AUC' && P.okRenal) {
-    msgs.push(`เท่ากับ AUC ≈ ${fmt(ordered / (P.gfr + 25))}`);
+    const impl = ordered / (P.gfr + 25); msgs.push(`เท่ากับ AUC ≈ ${fmt(impl)}`);
+    if (Math.abs(impl - dr.dose) >= 0.4 && impl <= 7.2) msgs.push(`💡 ถ้าแพทย์ตั้งใจใช้ AUC ${Math.round(impl * 2) / 2} ให้เปลี่ยน "AUC เป้าหมาย" ด้านบน แล้วตรวจใหม่`);
     if (ordered > dr.dose * 150 * 1.001) { lvl = 'red'; msgs.push(`⚠ เกินขนาดสูงสุดที่ AUC ${dr.dose} (${dr.dose * 150} mg)`); }
   }
   if (dr.cap && ordered > dr.cap * 1.001) { lvl = 'red'; msgs.push(`⚠ เกิน cap ${dr.cap} mg`); }
@@ -172,9 +173,11 @@ function finHtml(dr, c, per) {
 function vHtml(v) {
   return v ? `<div class="vres v-${v.lvl}"><b>${v.lvl === 'green' ? '✓' : v.lvl === 'red' ? '✕' : '!'} ${esc(v.label)}</b><ul>${v.msgs.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
 }
+// carboplatin: เลือก AUC เป้าหมายได้เอง (เช่น protocol ระบุ AUC 5–6)
+function effDrug(dr, st) { return (dr.unit === 'AUC' && st && st.auc) ? Object.assign({}, dr, { dose: st.auc }) : dr; }
 // อัปเดตเฉพาะผลคำนวณ/ผลตรวจของยาตัวเดียว (ไม่วาดช่องกรอกใหม่ เพื่อไม่ให้เคอร์เซอร์เด้ง)
 function updateDrug(i) {
-  const P = patient(), dr = allDrugs()[i], st = S.rows[i]; if (!dr) return;
+  const P = patient(), st = S.rows[i]; let dr = allDrugs()[i]; if (!dr) return; dr = effDrug(dr, st);
   const c = calc(dr, P, st.pct), v = verify(dr, c, P, num(st.ord), st.pct);
   const per = dr.freq === 'BID' ? ' /มื้อ' : dr.nDays ? ' /วัน' : '';
   const f = document.getElementById('fin' + i), vv = document.getElementById('v' + i), card = document.getElementById('card' + i);
@@ -187,8 +190,9 @@ function renderMain() {
   if (!g) { m.innerHTML = `<div class="empty"><div class="eico">℞</div><h3>เลือกสูตรยาจากรายการ</h3><p>ค้นหาด้วยชื่อสูตร ชื่อยา หรือชื่อโรค (ไทย/อังกฤษ) เช่น “FOLFOX”, “ท่อน้ำดี”, “trastuzumab”</p>
     <button class="btn" id="bCustom">+ สร้างสูตรเอง (ยาที่ไม่มีในฐานข้อมูล)</button></div>`; return; }
   const drugs = allDrugs();
-  const rows = drugs.map((dr, i) => {
+  const rows = drugs.map((dr0, i) => {
     const st = S.rows[i] || (S.rows[i] = { pct:S.gPct, ord:'' });
+    const dr = effDrug(dr0, st);
     const c = calc(dr, P, st.pct), lib = DL[drugKey(dr.n)] || {};
     const unitTxt = dr.fixedText ? '' : dr.unit === 'AUC' ? `AUC ${dr.dose}` : dr.unit === 'tier' ? dr.tierText : `${dr.dose} ${dr.unit.replace('m2','m²')}${dr.nDays ? '/วัน' : ''}`;
     const ren = lib.renal && P.okRenal ? lib.renal(P.crcl) : null;
@@ -201,7 +205,7 @@ function renderMain() {
         ${dr.custom ? `<button class="x" data-del="${i}" title="ลบ">×</button>` : ''}</div>
       <div class="dg">
         <div class="cell"><label>ขนาดมาตรฐาน (100%)</label><div class="big mono">${c.text ? esc(c.text) : c.need ? `<span class="need">${esc(c.need)}</span>` : fmt(c.std) + ' <small>' + c.unitOut + per + '</small>'}</div></div>
-        <div class="cell"><label>% ปรับขนาด</label><input class="pct" type="text" inputmode="decimal" data-pct="${i}" value="${st.pct}" min="0" max="150"></div>
+        <div class="cell">${dr.unit === 'AUC' ? `<label>AUC เป้าหมาย</label><select class="aucsel" data-auc="${i}">${[1.5,2,3,4,4.5,5,5.5,6,7].map(x => `<option value="${x}" ${x == dr.dose ? 'selected' : ''}>AUC ${x}${x == dr0.dose ? ' (ตามสูตร)' : ''}</option>`).join('')}</select>` : ''}<label>% ปรับขนาด</label><input class="pct" type="text" inputmode="decimal" data-pct="${i}" value="${st.pct}" min="0" max="150"></div>
         <div class="cell hl" id="fin${i}">${finHtml(dr, c, per)}</div>
         <div class="cell ord"><label>แพทย์สั่ง (${ordUnit})</label><input type="text" inputmode="decimal" autocomplete="off" data-ord="${i}" value="${esc(st.ord)}" placeholder="ใส่เพื่อตรวจ" ${c.text ? 'disabled' : ''}></div>
       </div>
@@ -236,8 +240,8 @@ function summaryText() {
   const L = [`สรุปการคำนวณ: ${g.n} (${CANCERS[g.c] || 'กำหนดเอง'}) — ${g.cy}`,
     `ผู้ป่วย: นน. ${P.wt ?? '-'} kg, สส. ${P.ht ?? '-'} cm, อายุ ${P.age ?? '-'} ปี, เพศ ${S.p.sex === 'M' ? 'ชาย' : 'หญิง'}, SCr ${P.scr ?? '-'} mg/dL`,
     `BSA ${P.ok ? P.bsa.toFixed(2) : '-'} m² | CrCl ${P.okRenal ? fmt(P.crcl) : '-'} mL/min | GFR(Calvert) ${P.okRenal ? fmt(P.gfr) : '-'}`, ''];
-  allDrugs().forEach((dr, i) => {
-    const st = S.rows[i], c = calc(dr, P, st.pct), v = verify(dr, c, P, num(st.ord), st.pct);
+  allDrugs().forEach((dr0, i) => {
+    const st = S.rows[i], dr = effDrug(dr0, st), c = calc(dr, P, st.pct), v = verify(dr, c, P, num(st.ord), st.pct);
     const per = dr.freq === 'BID' ? '/มื้อ' : dr.nDays ? '/วัน' : '';
     L.push(`• ${dr.n} [${dr.fixedText || (dr.unit === 'AUC' ? 'AUC ' + dr.dose : dr.dose + ' ' + dr.unit)}] ${dr.days}: ควรได้ ${c.text || fmt(c.fin) + ' ' + c.unitOut + per}${st.pct !== 100 ? ` (${st.pct}%)` : ''}`
       + (v ? ` | แพทย์สั่ง ${st.ord} → ${fmt(v.ratio)}% ${v.lvl === 'green' ? 'OK' : 'ตรวจสอบ'}` : ''));
@@ -275,7 +279,7 @@ function bind() {
     if (t.dataset.pct != null) { S.rows[+t.dataset.pct].pct = num(t.value) ?? 0; updateDrug(+t.dataset.pct); }
     if (t.dataset.ord != null) { S.rows[+t.dataset.ord].ord = t.value; updateDrug(+t.dataset.ord); }
   });
-  main.addEventListener('change', e => { if (e.target.dataset.pct != null) { renderMain(); return; } if (e.target.id === 'gPct') { S.gPct = +e.target.value; S.rows.forEach(r => r.pct = S.gPct); renderMain(); } });
+  main.addEventListener('change', e => { if (e.target.dataset.auc != null) { S.rows[+e.target.dataset.auc].auc = +e.target.value; renderMain(); return; } if (e.target.dataset.pct != null) { renderMain(); return; } if (e.target.id === 'gPct') { S.gPct = +e.target.value; S.rows.forEach(r => r.pct = S.gPct); renderMain(); } });
   main.addEventListener('click', e => {
     const t = e.target;
     if (t.dataset.apply != null) { S.rows[+t.dataset.apply].pct = +t.dataset.v; renderMain(); }
