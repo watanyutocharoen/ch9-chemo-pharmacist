@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เภสัชกรเคมีบำบัด โรงพยาบาลจุฬารัตน์ 9 แอร์พอร์ต</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#16211f;--mut:#5d6b68;--line:#dde4e2;--pri:#0d5c57;--pri2:#e3f0ee;--red:#b42318;--redbg:#fdecea;--amb:#a15c07;--ambbg:#fff4e0;--grn:#137a43;--grnbg:#e6f5ec;--blu:#1d4f91;--blubg:#e8eff9;--r:14px}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:'IBM Plex Sans Thai',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+button,input,select{font:inherit;color:inherit}
+header{background:var(--pri);color:#fff;padding:14px 20px 0}
+.hw{max-width:1320px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{background:#fff;border-radius:10px;padding:5px 9px;flex:none;display:flex;align-items:center}.logo img{height:40px;display:block}@media(max-width:640px){.logo img{height:30px}.brand h1{font-size:16px}.brand p{display:none}nav button{padding:8px 10px;font-size:14px}}
+.brand h1{font-size:19px;margin:0;font-weight:600;line-height:1.3}.brand p{margin:0;font-size:13px;opacity:.8}
+nav{display:flex;gap:4px;margin-top:12px}
+nav button{background:none;border:0;color:#cfe5e2;padding:9px 14px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:500}
+nav button.on{background:var(--bg);color:var(--pri)}
+.disc{max-width:1320px;margin:12px auto 0;padding:0 20px}
+.disc div{background:var(--ambbg);border:1px solid #f2d39b;color:#6b4204;border-radius:10px;padding:8px 12px;font-size:13px}
+.wrap{max-width:1320px;margin:0 auto;padding:14px 20px 40px;display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+@media(max-width:980px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card h3{margin:0 0 10px;font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.side{display:flex;flex-direction:column;gap:16px;position:sticky;top:12px}
+@media(max-width:980px){.side{position:static}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:block;font-size:12.5px;color:var(--mut);margin-bottom:3px}
+.f input,.f select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fbfcfc}
+.f input:focus,.f select:focus,#q:focus,.cell input:focus{outline:2px solid #8cc3bd;border-color:var(--pri)}
+.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg label{flex:1;text-align:center;padding:8px 0;cursor:pointer;margin:0;font-size:14px;color:var(--ink)}
+.seg input{display:none}.seg label:has(input:checked){background:var(--pri);color:#fff}
+details.adv{margin-top:10px;font-size:13px}details.adv summary{cursor:pointer;color:var(--pri);font-weight:500}
+.adv .grid2{margin-top:8px}.ck{display:flex;gap:6px;align-items:center;font-size:13px;margin-top:8px}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:12px}
+.chip{background:var(--pri2);border-radius:10px;padding:7px 9px}
+.chip span{display:block;font-size:11.5px;color:var(--mut)}.chip b{font-family:'IBM Plex Mono',monospace;font-size:15px}.chip i{display:block;font-style:normal;font-size:11px;color:var(--mut)}
+.warn{background:var(--ambbg);color:#6b4204;border-radius:9px;padding:7px 10px;font-size:13px;margin-top:8px}
+.hint{color:var(--mut);font-size:13.5px;padding:8px 2px}
+.csel{width:100%;margin-top:10px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fbfcfc}
+#q{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fbfcfc}
+.fl{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fl button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:12.5px;cursor:pointer}
+.fl button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+#list{margin-top:10px;max-height:52vh;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+@media(max-width:980px){#list{max-height:340px}}
+.ri{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;cursor:pointer}
+.ri:hover{border-color:#9cc9c3}.ri.on{border-color:var(--pri);background:var(--pri2)}
+.rn{font-weight:600;font-size:14.5px}.rs{font-size:12.5px;color:var(--mut)}.rt{margin-top:3px;display:flex;gap:4px;flex-wrap:wrap}
+.b{display:inline-block;font-size:11px;font-weight:500;padding:1px 7px;border-radius:999px;background:#eef1f0;color:var(--mut);vertical-align:middle}
+.b-chemo{background:#fde8e4;color:#9b2c1c}.b-targeted{background:#e5edfb;color:#1f4a8a}.b-io{background:#efe6fb;color:#5b2d91}.b-hormone{background:#fdf1dc;color:#8a5a00}.b-support{background:#eef1f0}.b-cap{background:#fde8e4;color:var(--red)}
+#main{min-height:300px}
+.empty{text-align:center;padding:50px 20px;color:var(--mut)}.eico{font-size:44px;color:var(--pri);font-weight:700}.empty h3{color:var(--ink);margin:6px 0}
+.rh{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+.eyebrow{font-size:12.5px;color:var(--pri);font-weight:600}.rh h2{margin:2px 0 6px;font-size:22px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--mut)}
+.gnote{margin-top:8px;background:var(--blubg);color:var(--blu);border-radius:9px;padding:7px 10px;font-size:13px}
+.gp{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)}.gp select{padding:7px;border:1px solid var(--line);border-radius:8px}
+.drugs{display:flex;flex-direction:column;gap:10px}
+.drug{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.drug.v-green{border-left-color:var(--grn)}.drug.v-red{border-left-color:var(--red)}.drug.v-amber{border-left-color:var(--amb)}.drug.v-blue{border-left-color:var(--blu)}
+.dh{display:flex;justify-content:space-between;gap:8px}.dn{font-weight:600;font-size:15.5px}.dm{font-size:13px;color:var(--mut)}
+.x{border:0;background:#f1f1f1;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:18px}
+.dg{display:grid;grid-template-columns:1.2fr .6fr 1.2fr 1fr;gap:10px;margin-top:10px}
+@media(max-width:640px){.dg{grid-template-columns:1fr 1fr}}
+.cell label{display:block;font-size:11.5px;color:var(--mut);margin-bottom:2px}
+.cell input{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:#fbfcfc;font-family:'IBM Plex Mono',monospace}
+.cell.ord input{background:#fffdf5;border-color:#e8d9a8}
+.cell.hl{background:var(--pri2);border-radius:10px;padding:6px 9px}
+.big{font-size:18px;font-weight:600}.big small{font-size:12px;color:var(--mut);font-weight:500}.need{font-size:12.5px;color:var(--amb);font-weight:500;font-family:'IBM Plex Sans Thai'}
+.sub{font-size:12px;color:var(--mut)}
+.vres{margin-top:10px;border-radius:10px;padding:8px 11px;font-size:13.5px}.vres ul{margin:4px 0 0;padding-left:18px}
+.vres.v-green{background:var(--grnbg);color:var(--grn)}.vres.v-red{background:var(--redbg);color:var(--red)}.vres.v-amber{background:var(--ambbg);color:var(--amb)}.vres.v-blue{background:var(--blubg);color:var(--blu)}
+.ren{margin-top:8px;border-radius:9px;padding:7px 10px;font-size:13px}.ren.warn{margin-top:8px}.ren.stop{background:var(--redbg);color:var(--red)}
+.mini{border:1px solid currentColor;background:#fff;color:inherit;border-radius:7px;padding:1px 8px;font-size:12px;cursor:pointer;margin-left:4px}
+details summary{cursor:pointer}
+.drug details{margin-top:8px;font-size:13px}.drug details summary{color:var(--pri);font-weight:500}
+.how{margin-top:6px;background:#f7f9f8;border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;gap:4px}.how .mono{font-size:12.5px}
+.nt{font-size:13px}
+.addbox{margin-top:12px;border:1px dashed #b9c9c6;border-radius:12px;padding:10px 12px}.addbox summary{color:var(--pri);font-weight:500}
+.addf{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:8px;margin-top:10px}
+@media(max-width:640px){.addf{grid-template-columns:1fr 1fr}}
+.addf input,.addf select{padding:8px;border:1px solid var(--line);border-radius:8px;min-width:0}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:500}
+.btn.ghost{background:#fff;color:var(--pri);border:1px solid var(--pri)}
+.actions{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}#copyMsg{font-size:13px;color:var(--grn);flex-basis:100%}
+.cp{width:100%;font-family:'IBM Plex Mono',monospace;font-size:12px}
+#refView{max-width:1000px;margin:0 auto;padding:16px 20px 40px}
+#refView .card{margin-bottom:14px}#refView h2{font-size:18px;margin:0 0 8px;color:var(--pri)}
+#refView table{width:100%;border-collapse:collapse;font-size:13.5px}#refView td,#refView th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+#refView th{background:var(--pri2);font-weight:600}.fx{background:#f7f9f8;border-radius:9px;padding:8px 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;margin:6px 0}
+#refView li{margin:3px 0}
+footer{text-align:center;font-size:12px;color:var(--mut);padding:10px 20px 30px}
+@media print{header nav,.disc,.side,.actions,.addbox,details,.pct{display:none!important}.wrap{display:block;padding:0}body{background:#fff}.drug{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header><div class="hw">
+  <div class="brand"><div class="logo"><img src="logo.png" alt="โรงพยาบาลจุฬารัตน์ 9 แอร์พอร์ต"></div><div><h1>เภสัชกรเคมีบำบัด โรงพยาบาลจุฬารัตน์ 9 แอร์พอร์ต</h1><p>ค้นหาสูตรยาเคมีบำบัด / Targeted therapy · คำนวณขนาดยา · ตรวจสอบคำสั่งแพทย์</p></div></div>
+  <nav><button data-tab="calc" class="on">คำนวณ & ตรวจสอบ</button><button data-tab="ref">วิธีคำนวณ & แหล่งอ้างอิง</button></nav>
+</div></header>
+<div class="disc"><div>⚠ เครื่องมือช่วยตรวจสอบ (double-check) ไม่ใช่คำสั่งการรักษา — ขนาดยาต้องยืนยันกับ protocol ของโรงพยาบาลและแพทย์ผู้สั่งเสมอ · ไม่มีการบันทึกข้อมูลผู้ป่วย</div></div>
+
+<div id="calcView" class="wrap">
+  <aside class="side">
+    <section class="card">
+      <h3>1. ข้อมูลผู้ป่วย</h3>
+      <div class="grid2">
+        <div class="f"><label>น้ำหนัก (kg)</label><input data-p="wt" type="number" inputmode="decimal" placeholder="เช่น 58"></div>
+        <div class="f"><label>ส่วนสูง (cm)</label><input data-p="ht" type="number" inputmode="decimal" placeholder="เช่น 160"></div>
+        <div class="f"><label>อายุ (ปี)</label><input data-p="age" type="number" inputmode="numeric" placeholder="เช่น 55"></div>
+        <div class="f"><label>Serum creatinine (mg/dL)</label><input data-p="scr" type="number" inputmode="decimal" step="0.01" placeholder="เช่น 0.8"></div>
+      </div>
+      <div class="f" style="margin-top:10px"><label>เพศ</label>
+        <div class="seg"><label><input type="radio" name="sex" value="M" data-p="sex" checked>ชาย</label><label><input type="radio" name="sex" value="F" data-p="sex">หญิง</label></div></div>
+      <details class="adv"><summary>ตั้งค่าการคำนวณ (BSA, CrCl, carboplatin)</summary>
+        <div class="grid2">
+          <div class="f"><label>สูตร BSA</label><select data-p="bsaF"><option value="mosteller">Mosteller</option><option value="dubois">DuBois</option></select></div>
+          <div class="f"><label>BSA cap</label><select data-p="bsaCap"><option value="0">ไม่ cap (ASCO)</option><option value="2">2.0 m²</option><option value="2.2">2.2 m²</option></select></div>
+          <div class="f" style="grid-column:1/-1"><label>น้ำหนักที่ใช้คำนวณ CrCl</label><select data-p="crclWt"><option value="actual">น้ำหนักจริง (Actual BW)</option><option value="ideal">Ideal BW (หรือจริงถ้าน้อยกว่า)</option><option value="adjusted">Adjusted BW (ถ้าเกิน IBW)</option></select></div>
+        </div>
+        <label class="ck"><input type="checkbox" data-p="scrFloor" checked> ปัด SCr ต่ำสุดเป็น 0.7 mg/dL (NCCN/GOG)</label>
+        <label class="ck"><input type="checkbox" data-p="gfrCap" checked> จำกัด GFR ≤125 mL/min ใน Calvert (FDA)</label>
+      </details>
+      <div id="pcalc"></div>
+    </section>
+    <section class="card">
+      <h3>2. เลือกสูตรยา <span class="b" id="count"></span></h3>
+      <input id="q" type="search" placeholder="ค้นหา: FOLFOX, ท่อน้ำดี, trastuzumab, NPC…">
+      <div class="fl" id="clsf"><button data-k="" class="on">ทั้งหมด</button><button data-k="chemo">Chemo</button><button data-k="targeted">Targeted</button><button data-k="io">Immunotherapy</button><button data-k="hormone">Hormone</button></div>
+      <select id="cancers" class="csel"><option value="">— ทุกชนิดมะเร็ง —</option></select>
+      <div id="list"></div>
+    </section>
+  </aside>
+  <section class="card" id="main"></section>
+</div>
+
+<div id="refView" hidden>
+  <section class="card"><h2>สูตรคำนวณที่ใช้</h2>
+    <p><b>Body Surface Area (BSA)</b></p>
+    <div class="fx">Mosteller: BSA (m²) = √[ส่วนสูง (cm) × น้ำหนัก (kg) / 3600]</div>
+    <div class="fx">DuBois: BSA = 0.007184 × W^0.425 × H^0.725</div>
+    <p>ASCO (2021) แนะนำใช้น้ำหนักจริงในการคำนวณขนาดยาเคมีบำบัดแม้ผู้ป่วยอ้วน ไม่ควร cap BSA โดยอัตโนมัติ เว้นแต่ protocol กำหนด (เช่น vincristine cap 2 mg)</p>
+    <p><b>Creatinine clearance (Cockcroft–Gault)</b></p>
+    <div class="fx">CrCl (mL/min) = [(140 − อายุ) × น้ำหนัก] / (72 × SCr) × 0.85 (ถ้าเป็นหญิง)</div>
+    <p>Ideal BW (Devine): ชาย 50 kg, หญิง 45.5 kg + 2.3 kg ต่อทุก 1 นิ้วที่เกิน 152.4 cm · Adjusted BW = IBW + 0.4 × (ABW − IBW)</p>
+    <p><b>Carboplatin (Calvert formula)</b></p>
+    <div class="fx">Dose (mg) = AUC เป้าหมาย × (GFR + 25)</div>
+    <p>FDA แนะนำจำกัด GFR ไม่เกิน 125 mL/min ⇒ ขนาดสูงสุด = AUC × 150 mg (AUC 4 = 600, AUC 5 = 750, AUC 6 = 900 mg) · NCCN/GOG ใช้ SCr ขั้นต่ำ 0.7 mg/dL เมื่อค่าที่วัดได้ต่ำกว่านั้น (เพราะ SCr แบบ IDMS ต่ำกว่าวิธีเดิม ทำให้ GFR สูงเกินจริง)</p>
+    <p><b>mg/kg และ flat dose</b> — ยาชีววัตถุ/ภูมิคุ้มกันบำบัดหลายตัวใช้ขนาดคงที่ (เช่น pembrolizumab 200 mg, atezolizumab 1200 mg, durvalumab 1500 mg) ไม่ต้องคิดตาม BSA</p>
+  </section>
+  <section class="card"><h2>เกณฑ์การตรวจสอบคำสั่งแพทย์</h2>
+    <table><tr><th>แพทย์สั่ง เทียบกับขนาดมาตรฐาน</th><th>ผล</th><th>สิ่งที่ควรทำ</th></tr>
+      <tr><td>90–105%</td><td style="color:var(--grn)">✓ ในช่วงมาตรฐาน</td><td>ยอมรับได้ (ความต่าง ≤5–10% มักเกิดจากการปัดตามขนาดขวด/เม็ด ตามแนวทาง ASCO/ONS ส่วนใหญ่)</td></tr>
+      <tr><td>105–110%</td><td style="color:var(--amb)">! สูงกว่าเล็กน้อย</td><td>ตรวจสอบน้ำหนัก/ส่วนสูงที่แพทย์ใช้ และวิธีปัดขนาด</td></tr>
+      <tr><td>&gt;110%</td><td style="color:var(--red)">✕ สูงกว่ามาตรฐาน</td><td>ติดต่อแพทย์ก่อนเตรียมยาทุกครั้ง</td></tr>
+      <tr><td>70–90%</td><td style="color:var(--blu)">! ลดขนาด</td><td>ยืนยันว่าแพทย์ตั้งใจลด dose (toxicity/ไต/ตับ) — ถ้าตั้งใจ ให้ใส่ % ปรับขนาดในช่อง</td></tr>
+      <tr><td>&lt;70%</td><td style="color:var(--amb)">! ต่ำกว่ามาตรฐานมาก</td><td>ตรวจสอบหน่วย ความถี่ และการพิมพ์ผิด</td></tr>
+    </table>
+    <p>นอกจากนี้ระบบจะแจ้งเตือนสีแดงเมื่อ: เกินขนาดสูงสุดต่อครั้งที่พบในสูตรทั่วไป (mg/m²), carboplatin เกิน AUC × 150, vincristine &gt;2 mg หรือเกิน cap ของยา</p>
+  </section>
+  <section class="card"><h2>จุดผิดพลาดที่พบบ่อย (ควรตรวจเป็นพิเศษ)</h2><ul>
+    <li><b>Cisplatin ในมะเร็งท่อน้ำดี</b> = 25 mg/m² D1, D8 (ไม่ใช่ 75)</li>
+    <li><b>Trastuzumab vs T-DM1 vs T-DXd</b> — ชื่อคล้ายกัน ขนาดต่างกัน (6 / 3.6 / 5.4–6.4 mg/kg) ห้ามสลับ</li>
+    <li><b>T-DXd</b> มะเร็งเต้านม 5.4 mg/kg แต่มะเร็งกระเพาะ 6.4 mg/kg</li>
+    <li><b>Paclitaxel vs nab-paclitaxel</b> และ <b>Doxorubicin vs Pegylated liposomal doxorubicin</b> — ห้ามสลับ</li>
+    <li><b>5-FU infusion</b>: ขนาด “ต่อวัน × จำนวนวัน” (เช่น 1000 mg/m²/วัน × 4 วัน) กับ “ขนาดรวมตลอด 46 ชม.” (2400 mg/m²) — สับสนบ่อย</li>
+    <li><b>Capecitabine</b>: ขนาดในสูตรคือ “ต่อมื้อ” วันละ 2 มื้อ ไม่ใช่ต่อวัน</li>
+    <li><b>Carboplatin</b>: สั่งเป็น AUC ไม่ใช่ mg/m² — ถ้าเห็น “carboplatin 5 mg/m²” หรือขนาดเกิน AUC × 150 ให้ทักทันที</li>
+    <li><b>Vincristine</b>: cap 2 mg ในสูตรส่วนใหญ่ (ยกเว้น DA-EPOCH ที่ให้แบบ CI ไม่ cap) และ ห้ามให้ทางไขสันหลัง</li>
+    <li><b>Lenvatinib</b>: HCC 8/12 mg ตามน้ำหนัก, RCC/endometrium 20 mg (ร่วม pembro), thyroid 24 mg</li>
+    <li><b>Ribociclib</b>: metastatic 600 mg แต่ adjuvant (NATALEE) 400 mg</li>
+    <li><b>Bleomycin</b>: หน่วยเป็น units ไม่ใช่ mg; BEP ใช้ 30 units ขนาดคงที่</li>
+    <li><b>Leucovorin vs Levoleucovorin</b>: L-form ใช้ครึ่งหนึ่ง (400 ↔ 200 mg/m²)</li>
+    <li><b>Eribulin</b>: 1.4 mg/m² (eribulin mesylate) = 1.23 mg/m² (eribulin base) — ตรวจหน่วยบนฉลากที่ใช้ในไทย</li>
+    <li>ขนาดยาทุกรอบควรคำนวณใหม่เมื่อ <b>น้ำหนักเปลี่ยน ≥10%</b> (ตามแนวทางส่วนใหญ่) และคำนวณ carboplatin ใหม่เมื่อ SCr เปลี่ยน</li>
+  </ul></section>
+  <section class="card"><h2>แหล่งข้อมูล</h2>
+    <p>ขนาดยาในฐานข้อมูลรวบรวมจากขนาดที่ใช้ในงานวิจัยหลักของแต่ละสูตร (ระบุชื่อ trial ในแต่ละสูตร) และแนวทางที่ใช้กันแพร่หลาย:</p>
+    <ul>
+      <li>NCCN Chemotherapy Order Templates & NCCN Guidelines (nccn.org)</li>
+      <li>BC Cancer Chemotherapy Protocols (bccancer.bc.ca) · eviQ Cancer Treatments Online (eviq.org.au) · Ontario Health (Cancer Care Ontario) Drug Formulary</li>
+      <li>US FDA prescribing information (label) ของยาแต่ละตัว — ใช้สำหรับคำแนะนำการปรับขนาดตามไต/ตับ</li>
+      <li>Griggs JJ, et al. Appropriate systemic therapy dosing for obese adult patients with cancer: ASCO guideline update. J Clin Oncol 2021</li>
+      <li>Calvert AH, et al. J Clin Oncol 1989;7:1748–56 · FDA communication on carboplatin dosing (2010)</li>
+      <li>Kintzel PE, Dorr RT. Anticancer drug renal toxicity and elimination: dosing guidelines for altered renal function. Cancer Treat Rev 1995</li>
+      <li>แนวทางการรักษาโรคมะเร็ง (Protocol) ประกอบการเบิกจ่ายของ สปสช. และสถาบันมะเร็งแห่งชาติ — ใช้เลือกสูตรที่ใช้บ่อยในไทย</li>
+    </ul>
+    <p><b>เวอร์ชันฐานข้อมูล:</b> <span class="dbv"></span> · <span class="dbn"></span> สูตร · ควรมีเภสัชกร/แพทย์ด้านมะเร็งทบทวนและรับรองก่อนใช้งานจริง และทบทวนซ้ำอย่างน้อยปีละครั้ง</p>
+  </section>
+</div>
+<footer>เภสัชกรเคมีบำบัด · กลุ่มงานเภสัชกรรม โรงพยาบาลจุฬารัตน์ 9 แอร์พอร์ต · ฐานข้อมูล <span class="dbv"></span> · <span class="dbn"></span> สูตร</footer>
+<script src="data.js"></script>
+<script src="lib.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
