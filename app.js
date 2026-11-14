@@ -165,6 +165,23 @@ function selectReg(g) {
 
 function allDrugs() { return S.reg ? S.reg.d.concat(S.extra) : []; }
 
+function finHtml(dr, c, per) {
+  return `<label>ขนาดที่ควรได้</label><div class="big mono">${c.fin != null ? fmt(c.fin) + ' <small>' + c.unitOut + per + '</small>' : '—'}${c.capped ? ' <span class="b b-cap">cap</span>' : ''}</div>
+    ${c.rounded != null ? `<div class="sub">ปัดตามเม็ด ≈ ${fmt(c.rounded)} mg</div>` : ''}${dr.nDays && c.fin != null ? `<div class="sub">รวม ${fmt(c.fin * dr.nDays)} ${c.unitOut}/รอบ</div>` : ''}`;
+}
+function vHtml(v) {
+  return v ? `<div class="vres v-${v.lvl}"><b>${v.lvl === 'green' ? '✓' : v.lvl === 'red' ? '✕' : '!'} ${esc(v.label)}</b><ul>${v.msgs.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+}
+// อัปเดตเฉพาะผลคำนวณ/ผลตรวจของยาตัวเดียว (ไม่วาดช่องกรอกใหม่ เพื่อไม่ให้เคอร์เซอร์เด้ง)
+function updateDrug(i) {
+  const P = patient(), dr = allDrugs()[i], st = S.rows[i]; if (!dr) return;
+  const c = calc(dr, P, st.pct), v = verify(dr, c, P, num(st.ord), st.pct);
+  const per = dr.freq === 'BID' ? ' /มื้อ' : dr.nDays ? ' /วัน' : '';
+  const f = document.getElementById('fin' + i), vv = document.getElementById('v' + i), card = document.getElementById('card' + i);
+  if (f) f.innerHTML = finHtml(dr, c, per); if (vv) vv.innerHTML = vHtml(v);
+  if (card) card.className = 'drug' + (v ? ' v-' + v.lvl : '');
+}
+
 function renderMain() {
   const P = patient(), g = S.reg, m = $('#main');
   if (!g) { m.innerHTML = `<div class="empty"><div class="eico">℞</div><h3>เลือกสูตรยาจากรายการ</h3><p>ค้นหาด้วยชื่อสูตร ชื่อยา หรือชื่อโรค (ไทย/อังกฤษ) เช่น “FOLFOX”, “ท่อน้ำดี”, “trastuzumab”</p>
@@ -178,18 +195,17 @@ function renderMain() {
     const v = verify(dr, c, P, num(st.ord), st.pct);
     const per = dr.freq === 'BID' ? ' /มื้อ' : dr.nDays ? ' /วัน' : '';
     const ordUnit = (c.unitOut || 'mg') + per;
-    return `<div class="drug ${v ? 'v-' + v.lvl : ''}">
+    return `<div class="drug ${v ? 'v-' + v.lvl : ''}" id="card${i}">
       <div class="dh"><div><div class="dn">${esc(dr.n)} ${lib.cls ? `<span class="b b-${lib.cls}">${CLS_LABEL[lib.cls]}</span>` : ''}${dr.custom ? ' <span class="b">เพิ่มเอง</span>' : ''}</div>
         <div class="dm">${esc(unitTxt)} · ${esc(dr.days)} · ${esc(dr.route)}${dr.cap ? ` · cap ${dr.cap} mg` : ''}</div></div>
         ${dr.custom ? `<button class="x" data-del="${i}" title="ลบ">×</button>` : ''}</div>
       <div class="dg">
         <div class="cell"><label>ขนาดมาตรฐาน (100%)</label><div class="big mono">${c.text ? esc(c.text) : c.need ? `<span class="need">${esc(c.need)}</span>` : fmt(c.std) + ' <small>' + c.unitOut + per + '</small>'}</div></div>
-        <div class="cell"><label>% ปรับขนาด</label><input class="pct" type="number" inputmode="decimal" data-pct="${i}" value="${st.pct}" min="0" max="150"></div>
-        <div class="cell hl"><label>ขนาดที่ควรได้</label><div class="big mono">${c.fin != null ? fmt(c.fin) + ' <small>' + c.unitOut + per + '</small>' : '—'}${c.capped ? ' <span class="b b-cap">cap</span>' : ''}</div>
-          ${c.rounded != null ? `<div class="sub">ปัดตามเม็ด ≈ ${fmt(c.rounded)} mg</div>` : ''}${dr.nDays && c.fin != null ? `<div class="sub">รวม ${fmt(c.fin * dr.nDays)} ${c.unitOut}/รอบ</div>` : ''}</div>
-        <div class="cell ord"><label>แพทย์สั่ง (${ordUnit})</label><input type="number" inputmode="decimal" data-ord="${i}" value="${esc(st.ord)}" placeholder="ใส่เพื่อตรวจ" ${c.text ? 'disabled' : ''}></div>
+        <div class="cell"><label>% ปรับขนาด</label><input class="pct" type="text" inputmode="decimal" data-pct="${i}" value="${st.pct}" min="0" max="150"></div>
+        <div class="cell hl" id="fin${i}">${finHtml(dr, c, per)}</div>
+        <div class="cell ord"><label>แพทย์สั่ง (${ordUnit})</label><input type="text" inputmode="decimal" autocomplete="off" data-ord="${i}" value="${esc(st.ord)}" placeholder="ใส่เพื่อตรวจ" ${c.text ? 'disabled' : ''}></div>
       </div>
-      ${v ? `<div class="vres v-${v.lvl}"><b>${v.lvl === 'green' ? '✓' : v.lvl === 'red' ? '✕' : '!'} ${esc(v.label)}</b><ul>${v.msgs.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+      <div id="v${i}">${vHtml(v)}</div>
       ${ren ? `<div class="ren ${ren.lvl}"><b>ไต (CrCl ${fmt(P.crcl)}):</b> ${esc(ren.text)} ${ren.pct != null && ren.pct > 0 ? `<button class="mini" data-apply="${i}" data-v="${ren.pct}">ใช้ ${ren.pct}%</button>` : ''}</div>` : ''}
       <details><summary>วิธีคำนวณ & ข้อควรระวัง</summary><div class="how">
         ${c.lines.map(l => `<div class="mono">${esc(l)}</div>`).join('')}
@@ -256,10 +272,10 @@ function bind() {
   const main = $('#main');
   main.addEventListener('input', e => {
     const t = e.target;
-    if (t.dataset.pct != null) { S.rows[+t.dataset.pct].pct = num(t.value) ?? 0; refreshKeepFocus(t); }
-    if (t.dataset.ord != null) { S.rows[+t.dataset.ord].ord = t.value; refreshKeepFocus(t); }
+    if (t.dataset.pct != null) { S.rows[+t.dataset.pct].pct = num(t.value) ?? 0; updateDrug(+t.dataset.pct); }
+    if (t.dataset.ord != null) { S.rows[+t.dataset.ord].ord = t.value; updateDrug(+t.dataset.ord); }
   });
-  main.addEventListener('change', e => { if (e.target.id === 'gPct') { S.gPct = +e.target.value; S.rows.forEach(r => r.pct = S.gPct); renderMain(); } });
+  main.addEventListener('change', e => { if (e.target.dataset.pct != null) { renderMain(); return; } if (e.target.id === 'gPct') { S.gPct = +e.target.value; S.rows.forEach(r => r.pct = S.gPct); renderMain(); } });
   main.addEventListener('click', e => {
     const t = e.target;
     if (t.dataset.apply != null) { S.rows[+t.dataset.apply].pct = +t.dataset.v; renderMain(); }
