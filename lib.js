@@ -82,6 +82,7 @@ const DL = {
   mitomycin: { cls:'chemo', life:'สะสมเกิน ~50 mg/m² เสี่ยง HUS และไขกระดูกกดนาน', note:'Vesicant', maxSingle:20 },
   fludarabine: { cls:'chemo', renal:c=>c<30?r('stop','CrCl <30: หลีกเลี่ยง (ฉลาก)'):c<70?r('warn','CrCl 30–70: ลด 20% (ฉลาก)',80):null, note:'PJP prophylaxis; ใช้เลือดฉายรังสีเท่านั้น', maxSingle:30 },
   methylprednisolone: { cls:'support' },
+  topotecan: { cls:'chemo', renal:c=>c<20?r('stop','CrCl <20: ไม่มีข้อมูลเพียงพอ/หลีกเลี่ยง'):c<40?r('warn','CrCl 20–39: ลดขนาดลง 50% (ฉลาก: 1.5 → 0.75 mg/m²)',50):null, maxSingle:4 },
   melphalan: { cls:'chemo', renal:c=>c<30?r('warn','CrCl <30: พิจารณาลด 50% (oral)',50):null },
   actinomycin: { cls:'chemo', note:'⚠ Vesicant รุนแรง; หน่วยเป็น mg (บางฉลากเป็น mcg) — ตรวจหน่วย', maxSingle:1.25 },
   leuprorelin: { cls:'hormone' }, goserelin: { cls:'hormone' }, triptorelin: { cls:'hormone' },
@@ -108,5 +109,5 @@ const BRAND = {
   'tegafur-uracil':'UFT UFUR', goserelin:'Zoladex', leuprorelin:'Enantone Eligard Lucrin', triptorelin:'Diphereline', fludarabine:'Fludara', melphalan:'Alkeran',
   actinomycin:'Cosmegen', cisplatin:'CDDP', carboplatin:'Paraplatin', fluorouracil:'5-FU 5FU', leucovorin:'Calcium folinate folinic', bleomycin:'Bleocin',
   etoposide:'Vepesid VP-16', vincristine:'Oncovin VCR', methotrexate:'MTX', cytarabine:'Ara-C', 'cytarabine-hd':'Ara-C HiDAC', dacarbazine:'DTIC', bendamustine:'Ribomustin Levact Treanda',
-  flutamide:'Eulexin', bicalutamide:'Casodex', mitomycin:'Mitomycin-C', cabazitaxel:'Jevtana', idarubicin:'Zavedos', daunorubicin:'Daunoblastina'
+  flutamide:'Eulexin', bicalutamide:'Casodex', mitomycin:'Mitomycin-C', cabazitaxel:'Jevtana', topotecan:'Hycamtin', idarubicin:'Zavedos', daunorubicin:'Daunoblastina'
 };

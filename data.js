@@ -1,6 +1,6 @@
 // ===== ฐานข้อมูลสูตรยา =====
 // แก้ไข/เพิ่มสูตรได้ที่ไฟล์นี้ไฟล์เดียว (ดูวิธีใน README.md) แล้วอัปเดต DB_VERSION ทุกครั้ง
-const DB_VERSION = 'v1.2 (14 พ.ย. 2569)';
+const DB_VERSION = 'v1.3 (14 พ.ย. 2569)';
 // unit: mg/m2 | mg/kg | mg | AUC | units/m2 | units | tier
 // opts: cap (mg สูงสุดต่อครั้ง), freq:'BID', nDays (CI ต่อวัน × วัน), roundTo, tiers, note
 function d(n, dose, unit, days, route, o) { return Object.assign({ n, dose, unit, days, route }, o || {}); }
@@ -223,6 +223,13 @@ const R = [
   d('Fluorouracil bolus',400,'mg/m2','D1','IV push'), d('Fluorouracil infusion',2400,'mg/m2','D1–2 (CI 46 ชม.)','IV CI')]},
 { c:'biliary', n:'GEMOX', kw:'gemox gemcitabine oxaliplatin', s:'Advanced', cy:'q14 วัน', ref:'André (GERCOR); NCCN', d:[
   d('Gemcitabine',1000,'mg/m2','D1','IV (10 mg/m2/min)'), d('Oxaliplatin',100,'mg/m2','D2','IV 2 ชม.')]},
+{ c:'biliary', n:'5-FU/LV + RT (biliary postop CRT)', kw:'cholangio crt 5fu leucovorin', s:'Adjuvant CRT (margin+/node+)', cy:'C1–2 ระหว่างฉายแสง แล้ว 5-FU/LV q28 วัน', ref:'คู่มือแนวทางการรักษาโรคมะเร็งในผู้ใหญ่ สปสช. 2561 (บทมะเร็งตับและท่อน้ำดี Protocol 1)', d:[
+  d('Fluorouracil bolus',400,'mg/m2','D1–4 และ D29–32 ของ RT','IV',{nDays:4}), d('Leucovorin (calcium folinate)',20,'mg/m2','D1–4 และ D29–32 ของ RT','IV',{nDays:4})],
+  note:'หลังครบ RT ต่อด้วย 5-FU 375–425 + LV 20 mg/m2/วัน D1–5 q28 วัน (ดูสูตร Mayo)'},
+{ c:'biliary', n:'Cisplatin + 5-FU (biliary)', kw:'cholangio cf', s:'Advanced/Metastatic', cy:'q28 วัน × 6', ref:'คู่มือแนวทางการรักษาโรคมะเร็งในผู้ใหญ่ สปสช. 2561 (Protocol 2)', d:[
+  d('Cisplatin',75,'mg/m2','D1','IV',{note:'protocol 75–100 mg/m2'}), d('Fluorouracil infusion',1000,'mg/m2','D1–4 (CI)','IV CI',{nDays:4})], note:'แทน cisplatin ด้วย carboplatin AUC 5 (max 750 mg) ได้'},
+{ c:'biliary', n:'Gemcitabine + Cisplatin 75 (q21, D1)', kw:'cholangio gemcis', s:'Advanced/Metastatic', cy:'q21 วัน × 6', ref:'คู่มือแนวทางการรักษาโรคมะเร็งในผู้ใหญ่ สปสช. 2561 (Protocol 2 ข้อ 4)', d:[
+  d('Gemcitabine',1000,'mg/m2','D1, D8','IV',{note:'1,000–1,250 mg/m2'}), d('Cisplatin',75,'mg/m2','D1','IV')], note:'⚠ ต่างจาก ABC-02 (cisplatin 25 mg/m2 D1, D8) — ตรวจให้ตรงกับสูตรที่แพทย์ระบุ'},
 { c:'biliary', n:'Gemcitabine single agent', s:'Advanced', cy:'q28 วัน', ref:'NCCN', d:[d('Gemcitabine',1000,'mg/m2','D1, D8, D15','IV 30 นาที')]},
 
 // ---------------- PANCREAS ----------------
@@ -316,6 +323,14 @@ const R = [
   d('Pembrolizumab (ระหว่าง CRT)',200,'mg','q21 วัน × 5','IV'), d('Cisplatin',40,'mg/m2','ทุกสัปดาห์ × 5–6','IV'), d('Pembrolizumab (maintenance)',400,'mg','q42 วัน × 15','IV')]},
 { c:'cervix', n:'Paclitaxel + Cis/Carbo ± Bevacizumab ± Pembrolizumab', s:'Persistent/Recurrent/Metastatic', cy:'q21 วัน', ref:'GOG 240; KEYNOTE-826', d:[
   d('Paclitaxel',175,'mg/m2','D1','IV 3 ชม.'), d('Cisplatin',50,'mg/m2','D1','IV',{note:'หรือ carboplatin AUC 5'}), d('Bevacizumab',15,'mg/kg','D1','IV',{note:'ถ้าให้ร่วม'}), d('Pembrolizumab',200,'mg','D1','IV',{note:'PD-L1 CPS ≥1'})]},
+{ c:'cervix', n:'Etoposide + Carboplatin (neuroendocrine)', kw:'small cell neuroendocrine cervix ep', s:'Neuroendocrine/small cell cervix', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[
+  d('Etoposide',100,'mg/m2','D1–3','IV 4 ชม.'), d('Carboplatin',5,'AUC','D1','IV',{note:'AUC 5–6'})]},
+{ c:'cervix', n:'Etoposide + Cisplatin (neuroendocrine)', kw:'small cell neuroendocrine cervix ep', s:'Neuroendocrine/small cell cervix', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[
+  d('Etoposide',100,'mg/m2','D1–3','IV 4 ชม.'), d('Cisplatin',75,'mg/m2','D1','IV',{note:'TGCS 60–80 mg/m2'})]},
+{ c:'cervix', n:'Gemcitabine + Cisplatin (cervix)', kw:'gemcis', s:'Metastatic/Recurrent', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[
+  d('Gemcitabine',1000,'mg/m2','D1, D8','IV 30 นาที'), d('Cisplatin',50,'mg/m2','D1','IV')], note:'ยืนยันวันให้ gemcitabine กับ protocol สถาบัน'},
+{ c:'cervix', n:'Topotecan + Cisplatin', kw:'gog 179', s:'Metastatic/Recurrent', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568); GOG 179', d:[
+  d('Topotecan',0.75,'mg/m2','D1–3','IV 30–60 นาที',{nDays:3}), d('Cisplatin',50,'mg/m2','D1','IV')]},
 { c:'cervix', n:'Carboplatin + Paclitaxel (cervix)', s:'Metastatic', cy:'q21 วัน', ref:'JCOG 0505', d:[d('Paclitaxel',175,'mg/m2','D1','IV'), d('Carboplatin',5,'AUC','D1','IV')]},
 
 // ---------------- OVARY ----------------
@@ -334,6 +349,19 @@ const R = [
 { c:'ovary', n:'Gemcitabine single agent (ovary)', kw:'covc23', s:'2nd line', cy:'q21 วัน (D1,8) หรือ q28 (D1,8,15)', ref:'สปสช./สถาบันมะเร็งแห่งชาติ protocol (COvC23A/B)', d:[d('Gemcitabine',1000,'mg/m2','D1, D8','IV',{note:'protocol ไทย 800–1,250 mg/m2'})]},
 { c:'ovary', n:'Oral Etoposide', kw:'covc24', s:'2nd line', cy:'q28 วัน × 6', ref:'สปสช./สถาบันมะเร็งแห่งชาติ protocol (COvC24)', d:[d('Etoposide (oral)',50,'mg/m2','D1–21','PO OD',{roundTo:50,note:'ขนาดต่อวัน'})]},
 { c:'ovary', n:'Cisplatin + Gemcitabine (ovary)', kw:'covc27', s:'2nd line', cy:'q21 วัน × 6', ref:'สปสช./สถาบันมะเร็งแห่งชาติ protocol (COvC27)', d:[d('Gemcitabine',1000,'mg/m2','D1, D8','IV',{note:'800–1,250 mg/m2'}), d('Cisplatin',75,'mg/m2','D1','IV',{note:'75–100 mg/m2 หรือใช้ carboplatin แทน'})]},
+{ c:'ovary', n:'Docetaxel + Carboplatin', kw:'scotroc', s:'1st line (แพ้/neuropathy จาก paclitaxel)', cy:'q21 วัน × 6', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568); SCOTROC', d:[d('Docetaxel',75,'mg/m2','D1','IV 1 ชม.'), d('Carboplatin',5,'AUC','D1','IV')]},
+{ c:'ovary', n:'Gemcitabine + Carboplatin + Bevacizumab', kw:'oceans', s:'Platinum-sensitive recurrent', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568); OCEANS', d:[
+  d('Gemcitabine',1000,'mg/m2','D1, D8','IV'), d('Carboplatin',4,'AUC','D1','IV'), d('Bevacizumab',15,'mg/kg','D1','IV')]},
+{ c:'ovary', n:'Paclitaxel weekly + Bevacizumab', kw:'aurelia', s:'Platinum-resistant', cy:'q28 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568); AURELIA', d:[
+  d('Paclitaxel',80,'mg/m2','D1, D8, D15, D22','IV 1 ชม.'), d('Bevacizumab',10,'mg/kg','D1, D15','IV',{note:'หรือ 15 mg/kg q21 วัน'})]},
+{ c:'ovary', n:'PLD + Bevacizumab', kw:'aurelia liposomal', s:'Platinum-resistant', cy:'q28 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568); AURELIA', d:[
+  d('Pegylated liposomal doxorubicin',40,'mg/m2','D1','IV 1–2 ชม.'), d('Bevacizumab',10,'mg/kg','D1, D15','IV',{note:'หรือ 15 mg/kg q21 วัน'})]},
+{ c:'ovary', n:'PLD + Carboplatin + Bevacizumab', kw:'liposomal', s:'Platinum-sensitive recurrent', cy:'q28 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568); AGO-OVAR 2.21', d:[
+  d('Pegylated liposomal doxorubicin',30,'mg/m2','D1','IV'), d('Carboplatin',5,'AUC','D1','IV'), d('Bevacizumab',10,'mg/kg','D1, D15','IV',{note:'หรือ 15 mg/kg q21 วัน'})]},
+{ c:'ovary', n:'Topotecan weekly', kw:'topotecan', s:'Platinum-resistant', cy:'q28 วัน (D1, 8, 15)', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[d('Topotecan',4,'mg/m2','D1, D8, D15','IV 30–60 นาที')]},
+{ c:'ovary', n:'Topotecan 5-day', kw:'topotecan', s:'Platinum-resistant', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[d('Topotecan',1.25,'mg/m2','D1–5','IV 30 นาที',{nDays:5,note:'TGCS 1.25 หรือ 1.5 mg/m2'})]},
+{ c:'ovary', n:'Topotecan + Bevacizumab', kw:'topotecan aurelia', s:'Platinum-resistant', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[
+  d('Topotecan',1.25,'mg/m2','D1–5','IV',{nDays:5,note:'1.25 หรือ 1.5 mg/m2'}), d('Bevacizumab',15,'mg/kg','D1','IV',{note:'TGCS 10 หรือ 15 mg/kg'})]},
 { c:'ovary', n:'Olaparib maintenance', s:'BRCA/HRD maintenance', cy:'ทุกวัน', ref:'SOLO-1; PAOLA-1', d:[d('Olaparib (tablet)',300,'mg','ทุกวัน','PO BID')]},
 { c:'ovary', n:'Niraparib maintenance', s:'Maintenance', cy:'ทุกวัน', ref:'PRIMA (individualized)', d:[
   d('Niraparib',0,'tier','ทุกวัน','PO OD',{tiers:[{lt:77,dose:200},{dose:300}],tierText:'<77 kg หรือ plt <150,000 = 200 mg; ≥77 kg และ plt ≥150,000 = 300 mg'})]},
@@ -351,6 +379,14 @@ const R = [
   d('Cisplatin',20,'mg/m2','D1–5','IV',{nDays:5}), d('Ifosfamide',1500,'mg/m2','D1–4','IV',{nDays:4}), d('Mesna',1000,'mg/m2','D1–4','IV',{nDays:4})]},
 { c:'endomet', n:'Doxorubicin + Ifosfamide (uterine sarcoma)', kw:'curc31', s:'Uterine sarcoma', cy:'q21 วัน × 6', ref:'สปสช./สถาบันมะเร็งแห่งชาติ protocol (CUrC31)', d:[
   d('Doxorubicin',50,'mg/m2','D1','IV'), d('Ifosfamide',1200,'mg/m2','D1–5','IV',{nDays:5}), d('Mesna',800,'mg/m2','D1–5','IV',{nDays:5})]},
+{ c:'endomet', n:'Ifosfamide single agent (TGCS)', kw:'ifosfamide carcinosarcoma', s:'Carcinosarcoma/Recurrent', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[
+  d('Ifosfamide',2000,'mg/m2','D1–3','IV 4 ชม.',{nDays:3}), d('Mesna',400,'mg/m2','D1–3 ที่ 0, 4, 8 ชม. (20% ของ ifosfamide ต่อครั้ง)','IV',{note:'ขนาดต่อครั้ง × 3 ครั้ง/วัน × 3 วัน'})]},
+{ c:'endomet', n:'Cisplatin + Ifosfamide (TGCS)', kw:'carcinosarcoma ifosfamide cisplatin', s:'Carcinosarcoma', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[
+  d('Cisplatin',20,'mg/m2','D1–4','IV',{nDays:4}), d('Ifosfamide',1500,'mg/m2','D1–4','IV 4 ชม.',{nDays:4}), d('Mesna',300,'mg/m2','D1–4 ที่ 0, 4, 8 ชม. (20% ของ ifosfamide ต่อครั้ง)','IV',{note:'ขนาดต่อครั้ง × 3 ครั้ง/วัน × 4 วัน'})],
+  note:'protocol สปสช. ใช้ cisplatin D1–5 — ตรวจให้ตรงกับฉบับที่ใช้'},
+{ c:'endomet', n:'Paclitaxel + Ifosfamide', kw:'gog 161 carcinosarcoma', s:'Carcinosarcoma', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568); GOG 161', d:[
+  d('Paclitaxel',135,'mg/m2','D1','IV 3 ชม.'), d('Ifosfamide',1600,'mg/m2','D1–3','IV 4 ชม.',{nDays:3}), d('Mesna',320,'mg/m2','D1–3 ที่ 0, 4, 8 ชม. (20% ของ ifosfamide ต่อครั้ง)','IV',{note:'ขนาดต่อครั้ง × 3 ครั้ง/วัน × 3 วัน'})], note:'ควรให้ G-CSF'},
+{ c:'endomet', n:'Paclitaxel weekly (endometrium)', kw:'paclitaxel', s:'Recurrent', cy:'ทุกสัปดาห์', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[d('Paclitaxel',80,'mg/m2','ทุกสัปดาห์','IV 1 ชม.')]},
 { c:'endomet', n:'Lenvatinib + Pembrolizumab', s:'Recurrent (pMMR)', cy:'q21 วัน', ref:'KEYNOTE-775', d:[d('Lenvatinib',20,'mg','ทุกวัน','PO OD'), d('Pembrolizumab',200,'mg','D1','IV')]},
 
 // ---------------- BLADDER ----------------
@@ -359,6 +395,10 @@ const R = [
 { c:'bladder', n:'dd MVAC', s:'Neoadjuvant / Metastatic', cy:'q14 วัน + G-CSF', ref:'EORTC 30924; VESPER', d:[
   d('Methotrexate',30,'mg/m2','D1','IV'), d('Vinblastine',3,'mg/m2','D2','IV'), d('Doxorubicin',30,'mg/m2','D2','IV'), d('Cisplatin',70,'mg/m2','D2','IV')]},
 { c:'bladder', n:'Gemcitabine + Carboplatin (cis-ineligible)', s:'Metastatic', cy:'q21 วัน', ref:'EORTC 30986', d:[d('Gemcitabine',1000,'mg/m2','D1, D8','IV'), d('Carboplatin',4.5,'AUC','D1','IV')]},
+{ c:'bladder', n:'CMV', kw:'cmv methotrexate vinblastine cisplatin', s:'Adjuvant / Metastatic', cy:'q21 วัน × 4–6', ref:'คู่มือแนวทางการรักษาโรคมะเร็งในผู้ใหญ่ สปสช. 2561 (บทกระเพาะปัสสาวะ); Harker', d:[
+  d('Methotrexate',30,'mg/m2','D1, D8','IV'), d('Vinblastine',4,'mg/m2','D1, D8','IV'), d('Cisplatin',100,'mg/m2','D2','IV',{note:'protocol 70–100 mg/m2'})], note:'ไตบกพร่อง (CrCl <60) หรืออายุ >70: ใช้ carboplatin AUC 5 (max 750 mg) แทน cisplatin'},
+{ c:'bladder', n:'Gemcitabine + Carboplatin (protocol สปสช.)', kw:'gc carbo', s:'Adjuvant / Metastatic (แทน cisplatin)', cy:'q21 วัน × 4–6', ref:'คู่มือแนวทางการรักษาโรคมะเร็งในผู้ใหญ่ สปสช. 2561', d:[
+  d('Gemcitabine',1000,'mg/m2','D1, D8','IV'), d('Carboplatin',5,'AUC','D1','IV',{cap:750,note:'Maximum ≤750 mg'})]},
 { c:'bladder', n:'Enfortumab vedotin + Pembrolizumab', s:'Metastatic 1st line', cy:'q21 วัน', ref:'EV-302', d:[
   d('Enfortumab vedotin',1.25,'mg/kg','D1, D8','IV',{cap:125,note:'สูงสุด 125 mg (น้ำหนัก ≥100 kg)'}), d('Pembrolizumab',200,'mg','D1','IV')]},
 { c:'bladder', n:'Avelumab maintenance', s:'Maintenance หลัง platinum', cy:'q14 วัน', ref:'JAVELIN Bladder 100', d:[d('Avelumab',800,'mg','D1','IV')]},
@@ -476,6 +516,14 @@ const R = [
   d('Etoposide',100,'mg/m2','D1, D2','IV'), d('Methotrexate (push)',100,'mg/m2','D1','IV push'), d('Methotrexate (infusion)',200,'mg/m2','D1 (12 ชม.)','IV'),
   d('Actinomycin D (dactinomycin)',0.5,'mg','D1, D2','IV push',{note:'ขนาดคงที่ 0.5 mg'}), d('Leucovorin (calcium folinate)',15,'mg','q12 ชม. × 4 ครั้ง เริ่ม 24 ชม. หลัง MTX','PO/IM'),
   d('Cyclophosphamide',600,'mg/m2','D8','IV'), d('Vincristine',1,'mg/m2','D8','IV push',{cap:2})]},
+
+{ c:'gtn', n:'Actinomycin D 5-day', kw:'dactinomycin gtn', s:'Low-risk GTN', cy:'q14 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[d('Actinomycin D (dactinomycin)',0.5,'mg','D1–5','IV 30 นาที',{nDays:5,note:'ขนาดคงที่ 0.5 mg/วัน'})]},
+{ c:'gtn', n:'EMA-EP', kw:'ema ep gtn high risk', s:'High-risk/resistant GTN', cy:'q14 วัน (EMA D1, EP D8)', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[
+  d('Etoposide (EMA, D1)',100,'mg/m2','D1','IV'), d('Methotrexate (push)',100,'mg/m2','D1','IV push'), d('Methotrexate (infusion)',200,'mg/m2','D1 (12 ชม.)','IV'),
+  d('Actinomycin D (dactinomycin)',0.5,'mg','D1','IV push'), d('Leucovorin (calcium folinate)',15,'mg','q12 ชม. × 4 ครั้ง (เริ่ม 24 ชม. หลัง MTX)','PO'),
+  d('Etoposide (EP, D8)',100,'mg/m2','D8','IV 4 ชม.'), d('Cisplatin',75,'mg/m2','D8','IV 3 ชม.')]},
+{ c:'gtn', n:'Low-dose Etoposide + Cisplatin (induction)', kw:'ep low dose gtn induction', s:'High tumor burden GTN (ก่อน EMA-CO)', cy:'ทุกสัปดาห์ × 1–3', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568)', d:[
+  d('Etoposide',100,'mg/m2','D1–2','IV 4 ชม.',{nDays:2}), d('Cisplatin',20,'mg/m2','D1–2','IV 3 ชม.',{nDays:2})]},
 
 // ---------------- BONE ----------------
 { c:'bone', n:'AP (Doxorubicin + Cisplatin)', kw:'cosc11 cosc21 osteosarcoma', s:'Osteosarcoma neoadjuvant/adjuvant', cy:'q21 วัน (รวมไม่เกิน 6 รอบ)', ref:'สปสช./สถาบันมะเร็งแห่งชาติ protocol (COsC11/21); EOI', d:[
