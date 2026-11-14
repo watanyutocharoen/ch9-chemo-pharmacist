@@ -11,6 +11,13 @@ R.forEach((g, i) => { g.id = i; g.cls = [...new Set(g.d.map(x => (DL[drugKey(x.n
 const S = { p: { wt:'', ht:'', age:'', sex:'M', scr:'', scrFloor:true, crclWt:'actual', bsaF:'mosteller', bsaCap:'0', gfrCap:true },
   q:'', cancer:'', cls:'', reg:null, gPct:100, rows:[], extra:[], tab:'calc' };
 
+function drugNames(g) {
+  const out = [];
+  g.d.forEach(x => { const n = x.n.replace(/\s*\(.*?\)/g, '').replace(/\s+(bolus|infusion|loading|maintenance|weekly)$/i, '').trim();
+    if (!out.includes(n)) out.push(n); });
+  return out.join(' + ');
+}
+
 // ---------- patient ----------
 function patient() {
   const p = S.p, wt = num(p.wt), ht = num(p.ht), age = num(p.age), scr = num(p.scr);
@@ -126,7 +133,7 @@ function regList() {
   });
   $('#count').textContent = `${list.length} สูตร`;
   $('#list').innerHTML = list.length ? list.map(g => `<button class="ri ${S.reg && S.reg.id === g.id ? 'on' : ''}" data-id="${g.id}">
-    <div class="rn">${esc(g.n)}</div><div class="rs">${esc(CANCERS[g.c])} · ${esc(g.s)}</div>
+    <div class="rn">${esc(g.n)}</div><div class="rd">${esc(drugNames(g))}</div><div class="rs">${esc(CANCERS[g.c])} · ${esc(g.s)}</div>
     <div class="rt">${g.cls.map(c => `<span class="b b-${c}">${CLS_LABEL[c]}</span>`).join('')}</div></button>`).join('')
     : '<div class="hint">ไม่พบสูตร — ลองคำค้นอื่น หรือใช้ "สร้างสูตรเอง"</div>';
 }
