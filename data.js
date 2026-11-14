@@ -1,6 +1,6 @@
 // ===== ฐานข้อมูลสูตรยา =====
 // แก้ไข/เพิ่มสูตรได้ที่ไฟล์นี้ไฟล์เดียว (ดูวิธีใน README.md) แล้วอัปเดต DB_VERSION ทุกครั้ง
-const DB_VERSION = 'v1.3 (14 พ.ย. 2569)';
+const DB_VERSION = 'v1.4 (14 พ.ย. 2569)';
 // unit: mg/m2 | mg/kg | mg | AUC | units/m2 | units | tier
 // opts: cap (mg สูงสุดต่อครั้ง), freq:'BID', nDays (CI ต่อวัน × วัน), roundTo, tiers, note
 function d(n, dose, unit, days, route, o) { return Object.assign({ n, dose, unit, days, route }, o || {}); }
@@ -455,7 +455,7 @@ const R = [
 { c:'lymphoma', n:'ICE (ไม่มี R)', kw:'clpc17', s:'Relapsed lymphoma (salvage)', cy:'q21 วัน', ref:'สปสช./สถาบันมะเร็งแห่งชาติ protocol (CLpC17)', d:[
   d('Etoposide',100,'mg/m2','D1–3','IV'), d('Carboplatin',5,'AUC','D2','IV',{cap:800}), d('Ifosfamide',5000,'mg/m2','D2 (CI 24 ชม.)','IV CI'), d('Mesna',5000,'mg/m2','D2 (CI 24 ชม.)','IV CI')]},
 { c:'lymphoma', n:'GDP (ไม่มี R)', kw:'clpc18', s:'Relapsed lymphoma (salvage)', cy:'q21 วัน', ref:'สปสช./สถาบันมะเร็งแห่งชาติ protocol (CLpC18); LY.12', d:[
-  d('Gemcitabine',1000,'mg/m2','D1, D8','IV'), d('Dexamethasone',40,'mg','D1–4','PO'), d('Cisplatin',75,'mg/m2','D1','IV')], note:'แบบฟอร์ม protocol ไทยบางฉบับระบุ CDDP 45 mg/m2 และ dexamethasone 10 mg q6h D1–5 — ยืนยันกับแพทย์ว่าใช้ฉบับใด'},
+  d('Gemcitabine',1000,'mg/m2','D1, D8','IV'), d('Dexamethasone',40,'mg','D1–4','PO'), d('Cisplatin',75,'mg/m2','D1','IV')], note:'คู่มือ สปสช. Hemato: dexamethasone 10 mg q6h D1–4 (=40 mg/วัน), cisplatin 75 mg/m2 (แบบฟอร์ม NCI บางฉบับระบุ 45 mg/m2 — ยืนยันกับแพทย์)'},
 { c:'lymphoma', n:'GemOx ± Rituximab', kw:'gemox r-gemox', s:'Relapsed DLBCL (ไม่เหมาะกับ transplant)', cy:'q14 วัน', ref:'Mounier', d:[
   d('Rituximab',375,'mg/m2','D1','IV',{note:'ถ้าให้ร่วม'}), d('Gemcitabine',1000,'mg/m2','D2','IV'), d('Oxaliplatin',100,'mg/m2','D2','IV')]},
 { c:'lymphoma', n:'BR (Bendamustine + Rituximab)', s:'Indolent / MCL', cy:'q28 วัน × 6', ref:'StiL NHL1; BRIGHT', d:[
@@ -504,7 +504,7 @@ const R = [
 { c:'leukemia', n:'Azacitidine single agent', s:'MDS / AML', cy:'q28 วัน', ref:'AZA-001', d:[d('Azacitidine',75,'mg/m2','D1–7','SC')]},
 { c:'leukemia', n:'Decitabine', s:'MDS / AML', cy:'q28 วัน', ref:'Label (5-day)', d:[d('Decitabine',20,'mg/m2','D1–5','IV 1 ชม.')]},
 { c:'leukemia', n:'ATRA + Arsenic trioxide', s:'APL low/intermediate risk', cy:'Induction จนกว่า CR', ref:'APL0406 (Lo-Coco)', d:[
-  d('Tretinoin (ATRA)',45,'mg/m2','ทุกวัน (แบ่ง 2 มื้อ)','PO',{note:'ต่อวัน แบ่ง BID'}), d('Arsenic trioxide',0.15,'mg/kg','ทุกวัน','IV')], note:'ติดตาม QTc, K, Mg; เฝ้าระวัง differentiation syndrome'},
+  d('Tretinoin (ATRA)',45,'mg/m2','ทุกวัน (แบ่ง 2 มื้อ)','PO',{roundTo:10,note:'ขนาดต่อวัน แบ่ง BID (แคปซูล 10 mg)'}), d('Arsenic trioxide',0.15,'mg/kg','ทุกวัน','IV')], note:'ติดตาม QTc, K, Mg; เฝ้าระวัง differentiation syndrome'},
 { c:'leukemia', n:'CML TKIs', s:'CML chronic phase', cy:'ทุกวัน', ref:'Label', d:[d('Imatinib',400,'mg','ทุกวัน','PO OD'), d('Nilotinib',300,'mg','ทุกวัน','PO BID'), d('Dasatinib',100,'mg','ทุกวัน','PO OD')], note:'ใช้ตัวใดตัวหนึ่ง'},
 
 // ---------------- GTN ----------------
@@ -530,6 +530,84 @@ const R = [
   d('Doxorubicin',75,'mg/m2','D1 (หรือแบ่ง D1–3)','IV',{note:'protocol ไทย 60–75 mg/m2'}), d('Cisplatin',100,'mg/m2','D1','IV',{note:'protocol ไทย 75–100 mg/m2'})], note:'MAP (high-dose MTX) ทำเฉพาะสถาบันที่ตรวจระดับ MTX ได้'},
 { c:'bone', n:'IE (Ifosfamide + Etoposide)', kw:'cosc22 osteosarcoma ewing', s:'Osteosarcoma (necrosis <90%) / Ewing', cy:'q21 วัน × 6', ref:'สปสช./สถาบันมะเร็งแห่งชาติ protocol (COsC22)', d:[
   d('Etoposide',100,'mg/m2','D1–5','IV',{nDays:5,note:'80–100 mg/m2/วัน'}), d('Ifosfamide',1500,'mg/m2','D1–5','IV',{nDays:5,note:'1.2–1.5 g/m2/วัน'}), d('Mesna',1500,'mg/m2','D1–5 (ตาม protocol)','IV',{nDays:5})]},
+
+// ---------------- LEUKEMIA (สปสช. Hemato) ----------------
+{ c:'leukemia', n:'Hyper-CVAD course A (1,3,5,7)', kw:'all hypercvad hyper-cvad', s:'Adult ALL', cy:'สลับกับ course B ทุก 21–28 วัน (รวม 8 courses)', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (บท ALL); Kantarjian', d:[
+  d('Cyclophosphamide',300,'mg/m2','q12 ชม. D1–3 (6 ครั้ง)','IV 3 ชม.',{note:'ขนาดต่อครั้ง'}), d('Mesna',600,'mg/m2','D1–3 (CI 24 ชม./วัน)','IV CI',{nDays:3}),
+  d('Vincristine',2,'mg','D4, D11','IV push',{note:'ขนาดคงที่ 2 mg'}), d('Doxorubicin',50,'mg/m2','D4','IV'), d('Dexamethasone',40,'mg','D1–4, D11–14','PO/IV'),
+  d('Methotrexate (IT)',12,'mg','D2','Intrathecal'), d('Cytarabine (IT)',100,'mg','D6','Intrathecal')], note:'G-CSF support; ⚠ vincristine ห้ามให้ทางไขสันหลัง'},
+{ c:'leukemia', n:'Hyper-CVAD course B (2,4,6,8): HD-MTX + Ara-C', kw:'all hypercvad high dose methotrexate cytarabine', s:'Adult ALL', cy:'สลับกับ course A', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (บท ALL)', d:[
+  d('Methotrexate (loading)',200,'mg/m2','D1 (2 ชม.)','IV'), d('Methotrexate (infusion)',800,'mg/m2','D1 (22 ชม.)','IV'),
+  d('Leucovorin (calcium folinate)',50,'mg','เริ่มหลัง MTX แล้ว 15 mg q6 ชม. × 16 ครั้ง','IV',{note:'ปรับตามระดับ MTX'}), d('Cytarabine (high-dose)',3000,'mg/m2','q12 ชม. D2–3 (4 ครั้ง)','IV 2 ชม.',{note:'อายุ >60: 1,000 mg/m2'}),
+  d('Methylprednisolone',50,'mg','BID D1–3','IV'), d('Methotrexate (IT)',12,'mg','D2','Intrathecal'), d('Cytarabine (IT)',100,'mg','D6','Intrathecal')], note:'ต้องตรวจระดับ MTX, alkalinize ปัสสาวะ, หลีกเลี่ยง PPI/NSAIDs/TMP-SMX'},
+{ c:'leukemia', n:'ALL maintenance (POMP)', kw:'all maintenance 6mp mercaptopurine', s:'Adult ALL', cy:'ทุก 4 สัปดาห์ × 2 ปี', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Vincristine',1.4,'mg/m2','D1 ทุก 4 สัปดาห์','IV',{cap:2}), d('Prednisolone',40,'mg/m2','D1–5 ทุก 4 สัปดาห์','PO',{nDays:5,note:'⚠ ต้นฉบับคู่มือ สปสช. พิมพ์ prednisolone เป็น mg/kg/d — ขนาดที่ถูกต้องคือ mg/m2/d'}),
+  d('Mercaptopurine (6-MP)',50,'mg/m2','ทุกวัน','PO OD',{roundTo:25}), d('Methotrexate (oral)',20,'mg/m2','ทุกสัปดาห์','PO',{roundTo:2.5})]},
+{ c:'leukemia', n:'GMALL induction phase I', kw:'all gmall', s:'Adult ALL (Ph−)', cy:'D1–28', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (GMALL)', d:[
+  d('Prednisolone',60,'mg/m2','D1–28','PO',{nDays:28,note:'⚠ ต้นฉบับคู่มือ สปสช. พิมพ์ prednisolone เป็น mg/kg/d — ขนาดที่ถูกต้องคือ mg/m2/d'}), d('Vincristine',1.4,'mg/m2','D1, 8, 15, 22','IV',{cap:2}),
+  d('Doxorubicin',25,'mg/m2','D1, 8, 15, 22','IV',{note:'GMALL ต้นฉบับใช้ daunorubicin'}), d('L-asparaginase',5000,'units/m2','D15–28','IV')], note:'ผู้ป่วย tumor burden สูง: pretreatment VCR 2 mg D1 + prednisolone 60 mg/m2 D1–7'},
+{ c:'leukemia', n:'GMALL induction phase II', kw:'all gmall', s:'Adult ALL (Ph−)', cy:'D29–57', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (GMALL)', d:[
+  d('Cyclophosphamide',1000,'mg/m2','D29, 43, 57','IV'), d('Cytarabine',75,'mg/m2','D31–34, 38–41, 45–48, 52–55','IV/SC'),
+  d('Mercaptopurine (6-MP)',60,'mg/m2','D29–57','PO OD',{roundTo:25}), d('Methotrexate (IT)',10,'mg','D31, 38, 45, 52','Intrathecal',{note:'protocol GMALL ต้นฉบับ 15 mg'})]},
+{ c:'leukemia', n:'Adapted TPOG phase I induction', kw:'all tpog', s:'Adult ALL', cy:'D1–28', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (Adapted TPOG)', d:[
+  d('Prednisolone',60,'mg/m2','D1–28','PO',{nDays:28,note:'⚠ ต้นฉบับคู่มือ สปสช. พิมพ์ prednisolone เป็น mg/kg/d — ขนาดที่ถูกต้องคือ mg/m2/d'}), d('Vincristine',1.4,'mg/m2','D1, 8, 15, 22','IV',{cap:2}), d('Doxorubicin',25,'mg/m2','D1, 8, 15, 22','IV'),
+  d('L-asparaginase',10000,'units/m2','D4, 6, 8, 10, 12, 14','IM'), d('Methotrexate (IT)',12,'mg','D1, 8, 22','Intrathecal')], note:'phase ถัดไป (augmented consolidation / interim maintenance / delayed intensification) ดูในคู่มือ สปสช.'},
+{ c:'leukemia', n:'Low-dose Cytarabine (LDAC)', kw:'aml ldac elderly', s:'AML ผู้สูงอายุ/unfit', cy:'q28 วัน', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (บท AML)', d:[d('Cytarabine',20,'mg','BID × 10 วัน','SC',{note:'ขนาดคงที่ 20 mg ต่อครั้ง'})]},
+{ c:'leukemia', n:'MEC (salvage AML)', kw:'aml relapsed mitoxantrone etoposide', s:'Relapsed AML', cy:'q28 วัน × 2', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (บท AML)', d:[
+  d('Mitoxantrone',8,'mg/m2','D1–5','IV',{nDays:5}), d('Etoposide',100,'mg/m2','D1–5','IV',{nDays:5}), d('Cytarabine (high-dose)',1000,'mg/m2','D1–5','IV',{nDays:5})]},
+{ c:'leukemia', n:'APL induction AIDA (LPA2005)', kw:'apl atra idarubicin pethema lpa', s:'APL ทุกกลุ่มเสี่ยง', cy:'จนได้ CR (ATRA ไม่เกิน 90 วัน)', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (บท APL); PETHEMA LPA2005', d:[
+  d('Tretinoin (ATRA)',45,'mg/m2','D1 จนได้ CR (สูงสุด 90 วัน)','PO แบ่ง BID',{roundTo:10,note:'ขนาดต่อวัน (แคปซูล 10 mg)'}), d('Idarubicin',12,'mg/m2','D2, 4, 6, 8','IV')], note:'เฝ้าระวัง differentiation syndrome, coagulopathy'},
+{ c:'leukemia', n:'APL consolidation – high risk (LPA2005)', kw:'apl consolidation', s:'APL high risk, อายุ <65', cy:'3 courses ทุกเดือน', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; LPA2005', d:[
+  d('Tretinoin (ATRA)',45,'mg/m2','D1–15 ทุก course','PO แบ่ง BID',{roundTo:10,note:'ขนาดต่อวัน (แคปซูล 10 mg)'}), d('Idarubicin (course 1)',5,'mg/m2','C1: D1–4','IV'), d('Cytarabine (course 1)',1000,'mg/m2','C1: D1–4 (CI)','IV CI',{nDays:4}),
+  d('Mitoxantrone (course 2)',10,'mg/m2','C2: D1–5','IV',{nDays:5}), d('Idarubicin (course 3)',12,'mg/m2','C3: D1','IV'), d('Cytarabine (course 3)',150,'mg/m2','C3: q8 ชม. D1–4','SC',{note:'ต่อครั้ง (ต้นฉบับพิมพ์ g/m2 — ที่ถูกคือ mg/m2)'})]},
+{ c:'leukemia', n:'APL consolidation – low/intermediate risk (LPA2005)', kw:'apl consolidation', s:'APL low/intermediate risk หรืออายุ >65', cy:'3 courses ทุกเดือน', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; LPA2005', d:[
+  d('Tretinoin (ATRA)',45,'mg/m2','D1–15 ทุก course','PO แบ่ง BID',{roundTo:10,note:'ขนาดต่อวัน (แคปซูล 10 mg)'}), d('Idarubicin (course 1)',5,'mg/m2','C1: D1–4','IV',{note:'intermediate risk 7 mg/m2'}),
+  d('Mitoxantrone (course 2)',10,'mg/m2','C2: D1–3','IV',{nDays:3}), d('Idarubicin (course 3)',12,'mg/m2','C3: D1 (intermediate: D1–2)','IV')]},
+{ c:'leukemia', n:'APL maintenance (LPA2005)', kw:'apl maintenance', s:'APL', cy:'2 ปี', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; LPA2005', d:[
+  d('Tretinoin (ATRA)',45,'mg/m2','D1–15 ทุก 3 เดือน','PO แบ่ง BID',{roundTo:10,note:'ขนาดต่อวัน (แคปซูล 10 mg)'}), d('Mercaptopurine (6-MP)',50,'mg/m2','ทุกวัน','PO OD',{roundTo:25,note:'คู่มือ สปสช. ระบุ 90 mg/m2 — LPA2005 ต้นฉบับ 50 mg/m2 ยืนยันกับแพทย์'}),
+  d('Methotrexate (oral)',15,'mg/m2','ทุกสัปดาห์','PO',{roundTo:2.5})]},
+
+// ---------------- LYMPHOMA (สปสช. Hemato) ----------------
+{ c:'lymphoma', n:'R-CEOP', kw:'ceop cardiac', s:'DLBCL (ไม่เหมาะกับ anthracycline)', cy:'q21 วัน × 6–8', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Rituximab',375,'mg/m2','D1','IV'), d('Cyclophosphamide',750,'mg/m2','D1','IV'), d('Etoposide (D1)',50,'mg/m2','D1','IV'), d('Etoposide (D2–3)',100,'mg/m2','D2–3','PO/IV',{nDays:2}),
+  d('Vincristine',1.4,'mg/m2','D1','IV',{cap:2}), d('Prednisolone',100,'mg','D1–5','PO')]},
+{ c:'lymphoma', n:'R-Chlorambucil', kw:'chlorambucil cll', s:'CLL / Indolent (ผู้สูงอายุ)', cy:'q28 วัน × 6', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Rituximab (C1)',375,'mg/m2','C1 D1','IV'), d('Rituximab (C2–6)',500,'mg/m2','D1','IV'), d('Chlorambucil',0.5,'mg/kg','D1, D15','PO',{note:'หรือ 0.14 mg/kg/วัน D1–7'})]},
+{ c:'lymphoma', n:'Obinutuzumab + Chlorambucil', kw:'gclb cll11 gazyva', s:'CLL', cy:'q28 วัน × 6', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; CLL11', d:[
+  d('Obinutuzumab',1000,'mg','C1: D1 (100 mg) + D2 (900 mg), D8, D15; C2–6: D1','IV'), d('Chlorambucil',0.5,'mg/kg','D1, D15','PO')]},
+{ c:'lymphoma', n:'Ibrutinib', kw:'btk cll mcl', s:'CLL / MCL', cy:'ทุกวัน', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; label', d:[d('Ibrutinib',420,'mg','ทุกวัน','PO OD',{note:'MCL ใช้ 560 mg'})]},
+{ c:'lymphoma', n:'Rituximab weekly × 4', kw:'rituximab single', s:'Indolent NHL', cy:'ทุกสัปดาห์ × 4', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[d('Rituximab',375,'mg/m2','D1, 8, 15, 22','IV')]},
+{ c:'lymphoma', n:'SMILE', kw:'nk/t nkt nasal', s:'Extranodal NK/T-cell lymphoma', cy:'q28 วัน × 2–6', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; Yamaguchi JCO 2011', d:[
+  d('Methotrexate (high-dose)',2000,'mg/m2','D1 (6 ชม.)','IV'), d('Leucovorin (calcium folinate)',15,'mg','q6 ชม. × 4 ครั้ง เริ่ม 24 ชม. หลัง MTX','IV',{note:'สปสช.: 200 mg/m2 ที่ 24 ชม. แล้ว 15 mg/m2 q6h จน MTX <0.05 µM'}),
+  d('Ifosfamide',1500,'mg/m2','D2–4','IV',{nDays:3}), d('Mesna',300,'mg/m2','ที่ 0, 4, 8 ชม. D2–4','IV',{note:'ต่อครั้ง'}), d('Etoposide',100,'mg/m2','D2–4','IV',{nDays:3}),
+  d('Dexamethasone',40,'mg','D2–4','IV/PO'), d('L-asparaginase',6000,'units/m2','D8, 10, 12, 14, 16, 18, 20','IV',{note:'คู่มือ สปสช. ระบุ D2, 4, 6, 8'})], note:'G-CSF ตั้งแต่ D6'},
+{ c:'lymphoma', n:'L-asparaginase-CHOP (NK/T)', kw:'nk/t asparaginase chop', s:'NK/T-cell lymphoma', cy:'q21 วัน × 6', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Cyclophosphamide',750,'mg/m2','D1','IV'), d('Doxorubicin',50,'mg/m2','D1','IV'), d('Vincristine',1.4,'mg/m2','D1','IV',{cap:2}),
+  d('Dexamethasone',10,'mg','D1–8','IV'), d('L-asparaginase',6000,'units/m2','D2–8','IM',{nDays:7})]},
+{ c:'lymphoma', n:'Escalated BEACOPDac (protocol สปสช.)', kw:'beacopp beacodd hodgkin escalated', s:'Hodgkin advanced', cy:'q21 วัน × 4–6', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช. (ใช้ dacarbazine แทน procarbazine)', d:[
+  d('Bleomycin',10,'units/m2','D8','IV'), d('Etoposide',200,'mg/m2','D1–3','IV',{nDays:3}), d('Doxorubicin',35,'mg/m2','D1','IV'), d('Cyclophosphamide',1250,'mg/m2','D1','IV'),
+  d('Mesna',1000,'mg/m2','ก่อนและหลัง cyclophosphamide 4 ชม.','IV'), d('Vincristine',1.4,'mg/m2','D8','IV',{cap:2}), d('Dacarbazine',250,'mg/m2','D2–3','IV',{nDays:2}), d('Dexamethasone',40,'mg','D1–4','PO')],
+  note:'G-CSF จำเป็น'},
+{ c:'lymphoma', n:'High-dose Methotrexate (CNS prophylaxis)', kw:'hd-mtx cns', s:'DLBCL high CNS risk', cy:'q21 วัน × 2', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Methotrexate (high-dose)',3500,'mg/m2','D1','IV 2–4 ชม.'), d('Leucovorin (calcium folinate)',50,'mg','q6 ชม. เริ่ม 24 ชม. หลังเริ่ม MTX จนระดับ MTX ต่ำพอ','IV')], note:'ตรวจระดับ MTX, hydration + alkalinization'},
+{ c:'lymphoma', n:'High-dose Methotrexate (PCNSL)', kw:'pcnsl cns lymphoma', s:'Primary CNS lymphoma', cy:'q14 วัน', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Methotrexate (high-dose)',3500,'mg/m2','D1','IV',{cap:8000,note:'protocol 3–8 g/m2 (สูงสุด 8,000 mg)'}), d('Leucovorin (calcium folinate)',50,'mg','q6 ชม. เริ่ม 24 ชม. หลังเริ่ม MTX','IV')]},
+{ c:'lymphoma', n:'IT chemotherapy (CNS prophylaxis)', kw:'intrathecal it mtx', s:'CNS prophylaxis', cy:'q21 วัน × 4', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[d('Methotrexate (IT)',12,'mg','D1','Intrathecal'), d('Cytarabine (IT)',50,'mg','D1','Intrathecal')], note:'⚠ ยา IT ต้องแยกเตรียม/ติดฉลากชัด ห้ามมี vinca alkaloid ในบริเวณเดียวกัน'},
+
+// ---------------- MYELOMA (สปสช. Hemato) ----------------
+{ c:'myeloma', n:'BCD (Bortezomib + Cyclophosphamide + Dex) q21', kw:'cybord vcd', s:'Myeloma', cy:'q21 วัน × 4–6', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Bortezomib',1.3,'mg/m2','D1, 4, 8, 11','IV/SC'), d('Cyclophosphamide (oral)',500,'mg/m2','D1, 8, 15','PO',{roundTo:50}), d('Dexamethasone',40,'mg','D1–4, D9–12','PO')]},
+{ c:'myeloma', n:'Bortezomib + Dexamethasone (Vd)', kw:'bd vd', s:'Myeloma', cy:'q21 วัน × 4–8', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[d('Bortezomib',1.3,'mg/m2','D1, 4, 8, 11','IV/SC'), d('Dexamethasone',40,'mg','D1–4, D9–12','PO')]},
+{ c:'myeloma', n:'Lenalidomide + Dexamethasone (Rd)', kw:'rd', s:'Myeloma', cy:'q28 วัน', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; FIRST', d:[d('Lenalidomide',25,'mg','D1–21','PO OD'), d('Dexamethasone',40,'mg','D1, 8, 15, 22','PO')]},
+{ c:'myeloma', n:'CTD (Cyclophosphamide + Thalidomide + Dex)', kw:'ctd', s:'Myeloma', cy:'q21 วัน × 4–6', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Cyclophosphamide (oral)',300,'mg/m2','D1, 8, 15','PO',{roundTo:50}), d('Thalidomide',100,'mg','D1–21','PO HS'), d('Dexamethasone',40,'mg','D1–4, D9–12','PO')], note:'VTE prophylaxis'},
+{ c:'myeloma', n:'MPT (Melphalan + Prednisolone + Thalidomide)', kw:'mpt', s:'Non-transplant', cy:'q28 วัน × 12', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; Palumbo', d:[
+  d('Melphalan',4,'mg/m2','D1–7','PO',{nDays:7,roundTo:2}), d('Prednisolone',40,'mg/m2','D1–7','PO',{nDays:7,note:'⚠ ต้นฉบับคู่มือ สปสช. พิมพ์ prednisolone เป็น mg/kg/d — ขนาดที่ถูกต้องคือ mg/m2/d'}), d('Thalidomide',100,'mg','D1–28','PO HS')]},
+{ c:'myeloma', n:'VTD (Bortezomib + Thalidomide + Dex)', kw:'vtd', s:'Transplant-candidate induction', cy:'q21 วัน', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Bortezomib',1.3,'mg/m2','D1, 4, 8, 11','IV/SC'), d('Thalidomide',200,'mg','D1–21','PO HS',{note:'หลายแนวทางเริ่ม 100 mg'}), d('Dexamethasone',40,'mg','D1–4 (± D9–12)','PO')]},
+{ c:'myeloma', n:'Bortezomib + PLD', kw:'doxil liposomal', s:'Relapsed myeloma', cy:'q21 วัน × 8', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.; DOXIL-MMY-3001', d:[d('Bortezomib',1.3,'mg/m2','D1, 4, 8, 11','IV/SC'), d('Pegylated liposomal doxorubicin',30,'mg/m2','D4','IV')]},
+{ c:'myeloma', n:'VRd-lite (protocol สปสช.)', kw:'rvd lite', s:'ผู้สูงอายุ/frail', cy:'q28 วัน × 8', ref:'คู่มือ Protocol Adult Hematology CA เล่ม 2 สปสช.', d:[
+  d('Bortezomib',1,'mg/m2','D1, 4, 8, 11','IV/SC'), d('Lenalidomide',15,'mg','D1–14','PO OD'), d('Dexamethasone',20,'mg','D1–2, 4–5, 8–9, 11–12','PO')]},
 
 // ---------------- OTHER ----------------
 { c:'other', n:'Doxorubicin single agent', s:'Soft tissue sarcoma', cy:'q21 วัน × 6', ref:'EORTC 62012', d:[d('Doxorubicin',75,'mg/m2','D1','IV')]},
