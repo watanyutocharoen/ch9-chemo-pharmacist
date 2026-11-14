@@ -1,6 +1,6 @@
 // ===== ฐานข้อมูลสูตรยา =====
 // แก้ไข/เพิ่มสูตรได้ที่ไฟล์นี้ไฟล์เดียว (ดูวิธีใน README.md) แล้วอัปเดต DB_VERSION ทุกครั้ง
-const DB_VERSION = 'v1.0 (14 พ.ย. 2569)';
+const DB_VERSION = 'v1.1 (14 พ.ย. 2569)';
 // unit: mg/m2 | mg/kg | mg | AUC | units/m2 | units | tier
 // opts: cap (mg สูงสุดต่อครั้ง), freq:'BID', nDays (CI ต่อวัน × วัน), roundTo, tiers, note
 function d(n, dose, unit, days, route, o) { return Object.assign({ n, dose, unit, days, route }, o || {}); }
@@ -110,6 +110,15 @@ const R = [
   d('Fluorouracil bolus',400,'mg/m2','D1','IV push'), d('Fluorouracil infusion',2400,'mg/m2','D1–2 (CI 46 ชม.)','IV CI',{note:'ขนาดรวมตลอด 46 ชม.'})]},
 { c:'crc', n:'CAPOX (XELOX)', s:'Adjuvant / Metastatic', cy:'q21 วัน (adjuvant × 4–8)', ref:'NO16966; XELOXA; IDEA', d:[
   d('Oxaliplatin',130,'mg/m2','D1','IV 2 ชม.'), d('Capecitabine',1000,'mg/m2','D1–14','PO',{freq:'BID',roundTo:150})]},
+{ c:'crc', n:'5-FU/LV Mayo Clinic', kw:'mayo meyo เมโย 5fu lv fufa', s:'Adjuvant / Metastatic (colon, gastric)', cy:'q28 วัน × 6', ref:'Poon JCO 1989 (Mayo/NCCTG); INT-0089', d:[
+  d('Leucovorin (calcium folinate)',20,'mg/m2','D1–5 (ก่อน 5-FU)','IV push',{nDays:5}), d('Fluorouracil bolus',425,'mg/m2','D1–5','IV push',{nDays:5})],
+  note:'ขนาดเป็น "ต่อวัน" × 5 วัน · เสี่ยง mucositis/neutropenia สูงกว่าแบบ infusion — ปัจจุบันมักใช้ sLV5FU2 แทน'},
+{ c:'crc', n:'5-FU/LV Roswell Park (weekly)', kw:'roswell 5fu lv weekly', s:'Adjuvant colon', cy:'ทุกสัปดาห์ × 6 ใน 8 สัปดาห์ (1 รอบ) × 4 รอบ', ref:'NSABP C-03/C-04', d:[
+  d('Leucovorin (calcium folinate)',500,'mg/m2','D1, 8, 15, 22, 29, 36','IV 2 ชม.'), d('Fluorouracil bolus',500,'mg/m2','D1, 8, 15, 22, 29, 36 (1 ชม. หลังเริ่ม LV)','IV push')],
+  note:'ระวัง diarrhea รุนแรง'},
+{ c:'crc', n:'sLV5FU2 (simplified de Gramont)', kw:'de gramont lv5fu2 5fu lv', s:'Adjuvant / Metastatic (ผู้ป่วยไม่เหมาะกับ oxaliplatin)', cy:'q14 วัน', ref:'Tournigand; NCCN', d:[
+  d('Leucovorin (calcium folinate)',400,'mg/m2','D1','IV 2 ชม.',{note:'levoleucovorin 200 mg/m2'}), d('Fluorouracil bolus',400,'mg/m2','D1','IV push'),
+  d('Fluorouracil infusion',2400,'mg/m2','D1–2 (CI 46 ชม.)','IV CI',{note:'ขนาดรวมตลอด 46 ชม.'})]},
 { c:'crc', n:'Capecitabine (adjuvant)', s:'Adjuvant colon', cy:'q21 วัน × 8', ref:'X-ACT', d:[d('Capecitabine',1250,'mg/m2','D1–14','PO',{freq:'BID',roundTo:150})]},
 { c:'crc', n:'Capecitabine + RT (rectal)', s:'Neoadjuvant CRT', cy:'ทุกวันที่ฉายแสง (5 วัน/สัปดาห์)', ref:'NCCN; NSABP R-04', d:[d('Capecitabine',825,'mg/m2','วันที่ฉายแสง','PO',{freq:'BID',roundTo:150})]},
 { c:'crc', n:'mFOLFOX6 + Bevacizumab', s:'Metastatic', cy:'q14 วัน', ref:'NCCN', d:[

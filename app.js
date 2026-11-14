@@ -128,7 +128,7 @@ function regList() {
     if (S.cancer && g.c !== S.cancer) return false;
     if (S.cls && !g.cls.includes(S.cls)) return false;
     if (!terms.length) return true;
-    const hay = (g.n + ' ' + g.s + ' ' + g.ref + ' ' + CANCERS[g.c] + ' ' + CANCER_KW[g.c] + ' ' + g.d.map(x => x.n).join(' ')).toLowerCase();
+    const hay = (g.n + ' ' + (g.kw || '') + ' ' + g.s + ' ' + g.ref + ' ' + CANCERS[g.c] + ' ' + CANCER_KW[g.c] + ' ' + g.d.map(x => x.n).join(' ')).toLowerCase();
     return terms.every(t => hay.includes(t));
   });
   $('#count').textContent = `${list.length} สูตร`;
