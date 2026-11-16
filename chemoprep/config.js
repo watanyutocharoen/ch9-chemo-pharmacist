@@ -1,2 +1,2 @@
-// URL ของ Apps Script Web app (ลงท้าย /exec) — ใส่แล้วทุกเครื่องใช้ได้ทันที
-window.CHEMOPREP_API = '';
+// URL ของ Apps Script Web app (ลงท้าย /exec)
+window.CHEMOPREP_API = 'https://script.google.com/macros/s/AKfycbxmDdfS7odQgAVTnlSSgUOQkNrKY0mm0QkoRjTcryohgQcrW8nevMMjhfhuKG4d9i0eIw/exec';
