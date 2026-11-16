@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>บันทึกการผสมเคมีบำบัด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--pri:#1f6f8b;--pri2:#e7f2f6;--ink:#1d2a33;--mut:#66788a;--line:#d9e2e8;--bg:#f5f8fa;--red:#c0392b;--redbg:#fdecea;--amb:#b9770e;--ambbg:#fef5e7;--grn:#1e8449;--grnbg:#e9f7ef;--blu:#2e6da4;--blubg:#eaf2fb}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Sarabun',system-ui,sans-serif;font-size:15px;color:var(--ink);background:var(--bg)}
+button,input,select,textarea{font:inherit}
+[hidden]{display:none!important}
+header{background:#fff;border-bottom:1px solid var(--line);padding:8px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+header img{height:38px}
+header h1{font-size:18px;margin:0;font-weight:700;color:var(--pri)}
+header .sub{font-size:12px;color:var(--mut)}
+nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+nav button{border:0;background:none;padding:8px 14px;border-radius:8px;cursor:pointer;color:var(--mut);font-weight:600}
+nav button.on{background:var(--pri2);color:var(--pri)}
+.uchip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:3px 4px 3px 12px;font-size:13px;color:var(--mut)}
+.uchip b{color:var(--ink)}
+main{padding:14px 16px;max-width:1500px;margin:0 auto}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--mut)}
+.fld input,.fld select,.fld textarea{color:var(--ink);font-size:15px}
+.fld .hint{font-size:12px;color:var(--mut)}
+input,select,textarea{border:1px solid #c5d1d9;border-radius:8px;padding:6px 8px;background:#fff;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid #9cc9da;border-color:var(--pri)}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--pri);vertical-align:middle}
+.btn{border:1px solid var(--pri);background:var(--pri);color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn.ghost{background:#fff;color:var(--pri)}
+.btn.red{background:#fff;color:var(--red);border-color:#e3b2ad}
+.btn.solidred{background:var(--red);border-color:var(--red);color:#fff}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn.xs{padding:2px 8px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:default}
+.pill{display:inline-block;font-size:11px;padding:1px 7px;border-radius:20px;background:#eef2f5;color:var(--mut);font-weight:600;white-space:nowrap}
+.pill.red{background:var(--redbg);color:var(--red)}.pill.amb{background:var(--ambbg);color:var(--amb)}.pill.grn{background:var(--grnbg);color:var(--grn)}.pill.blu{background:var(--blubg);color:var(--blu)}
+.pill.pao{background:#efe6f7;color:#6c3483}.pill.princ{background:#fdebd0;color:#a04000}.pill.rjrh{background:#e8f6e8;color:#1e7a3c}.pill.knt{background:#fff3cd;color:#8a6d00}
+h2{font-size:17px;margin:0 0 10px;color:var(--pri)}
+h3{font-size:14px;margin:14px 0 8px;color:var(--ink)}
+.sec{border-top:1px dashed var(--line);margin-top:14px;padding-top:12px}
+.pcard{display:flex;gap:16px;flex-wrap:wrap;align-items:center;background:#f7fafb;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.pcard .big{font-size:18px;font-weight:700}
+.allergy{background:var(--redbg);color:var(--red);border:1px solid #f1b8b2;border-radius:8px;padding:6px 10px;font-weight:700}
+.sr{position:relative}
+.sr .drop{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:340px;overflow:auto;z-index:30}
+.sr .drop div{padding:7px 10px;cursor:pointer;border-bottom:1px solid #f0f3f5}
+.sr .drop div:hover{background:var(--pri2)}
+.sr .drop small{color:var(--mut)}
+table.bt{width:100%;border-collapse:collapse;font-size:14px}
+table.bt th{font-size:12px;color:var(--mut);font-weight:600;text-align:left;padding:5px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.bt td{padding:4px;border-bottom:1px solid #edf1f4;vertical-align:top}
+table.bt input,table.bt select{width:100%;padding:5px 6px;font-size:14px}
+table.bt .calc{font-size:12px;color:var(--mut);line-height:1.45;white-space:nowrap}
+table.bt .calc b{color:var(--ink)}
+.bno{font-size:18px;font-weight:700;color:var(--pri);text-align:center;padding-top:6px}
+.tv-over{background:#fff8e1;border-color:#e0b84a}
+.chk{border-radius:10px;padding:9px 12px;margin:6px 0;border:1px solid}
+.chk.red{background:var(--redbg);border-color:#f1b8b2}.chk.amber{background:var(--ambbg);border-color:#f5d48f}.chk.green{background:var(--grnbg);border-color:#a9dfbf}.chk.blue{background:var(--blubg);border-color:#aac8e8}.chk.gray{background:#f4f6f8;border-color:var(--line)}
+.chk .t{font-weight:700}
+.chk ul{margin:4px 0 0 18px;padding:0;font-size:13px}
+.kv{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.kv b{color:var(--ink);font-size:15px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1d2a33;color:#fff;padding:10px 18px;border-radius:10px;z-index:200;opacity:0;transition:.25s;pointer-events:none;max-width:90vw}
+.toast.on{opacity:1}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.55);display:none;align-items:center;justify-content:center;z-index:150;font-weight:700;color:var(--pri)}
+.busy.on{display:flex}
+.muted{color:var(--mut);font-size:13px}
+.empty{color:var(--mut);text-align:center;padding:30px 10px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat .n{font-size:26px;font-weight:700;color:var(--pri)}
+table.rp{width:100%;border-collapse:collapse;font-size:13px}
+table.rp th,table.rp td{border-bottom:1px solid #edf1f4;padding:5px 6px;text-align:left;vertical-align:top}
+table.rp th{background:#f4f8fa;position:sticky;top:0;z-index:1;white-space:nowrap}
+table.rp tr.dt td{background:#fff;font-weight:700;color:var(--pri);border-top:2px solid var(--line)}
+table.rp tr.p-CH9 td{background:#dbeef4}table.rp tr.p-PAO td{background:#ebdef0}table.rp tr.p-RJRH td{background:#e2f0d9}table.rp tr.p-PRINC td{background:#fbe5d6}table.rp tr.p-KNT td{background:#fff2cc}table.rp tr.p-OTHER td{background:#dbeef4}
+table.rp tr.pt td{font-weight:600}
+table.rp tr.cx td{color:#999;text-decoration:line-through}
+.scroll{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+dialog{border:0;border-radius:14px;padding:18px;max-width:680px;width:95%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(20,30,40,.35)}
+.right{margin-left:auto}
+.formhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.formhead .tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--pri2);color:var(--pri)}
+.formhead .tag.edit{background:#fff3cd;color:#8a6d00}
+.cases{width:100%;border-collapse:collapse;font-size:14px}
+.cases th{font-size:12px;color:var(--mut);text-align:left;padding:6px;border-bottom:1px solid var(--line);white-space:nowrap;background:#f7fafb}
+.cases td{padding:7px 6px;border-bottom:1px solid #edf1f4;vertical-align:top}
+.cases tr.editing td{background:#fff8e1}
+.cases tr.cancelled td{color:#9aa5ae}
+.cases tr.cancelled .nm{text-decoration:line-through}
+.cases .acts{display:flex;gap:4px;flex-wrap:wrap}
+.cases .vn{font-weight:700;color:var(--pri);font-size:16px}
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.subnav button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;cursor:pointer;font-weight:600;color:var(--mut)}
+.subnav button.on{background:var(--pri);border-color:var(--pri);color:#fff}
+.form2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form2 .full{grid-column:1/-1}
+@media(max-width:640px){.form2{grid-template-columns:1fr}}
+.codehelp{background:#f4f8fa;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--ink)}
+.codehelp table{border-collapse:collapse;width:100%}.codehelp td{padding:2px 6px;border-bottom:1px solid #e9eef2}
+.photos{display:flex;gap:8px;flex-wrap:wrap}
+.photos figure{margin:0;position:relative}
+.photos img{width:150px;height:150px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:zoom-in}
+.photos figure button{position:absolute;top:4px;right:4px}
+/* ---- regimen picker (แบบแอปเภสัชกรเคมีบำบัด) ---- */
+.dosegrid{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:14px;align-items:start}
+@media(max-width:900px){.dosegrid{grid-template-columns:1fr}}
+.picker{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+.picker h4{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:6px}
+.seg2{display:grid;grid-template-columns:repeat(4,1fr);background:#eef2f1;border-radius:10px;padding:3px;margin-bottom:8px}
+.seg2 button{border:0;background:none;padding:6px 4px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--mut);font-weight:500}
+.seg2 button.on{background:#fff;color:var(--pri);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.picker input[type=search]{width:100%;padding:8px 10px}
+.fl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fl button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 10px;font-size:12.5px;cursor:pointer}
+.fl button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.csel{width:100%;margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fbfcfc}
+#regList{margin-top:8px;max-height:360px;overflow:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+.ri{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer;font:inherit}
+.ri:hover{border-color:#9cc9da}.ri.on{border-color:var(--pri);background:var(--pri2)}
+.rn{font-weight:600;font-size:14px}.rd{font-size:12.5px;color:var(--pri);font-weight:500;margin:1px 0 2px;line-height:1.4}.rs{font-size:12px;color:var(--mut)}.rt{margin-top:3px;display:flex;gap:4px;flex-wrap:wrap}
+.b{display:inline-block;font-size:11px;font-weight:500;padding:1px 7px;border-radius:999px;background:#eef1f0;color:var(--mut);vertical-align:middle}
+.b-chemo{background:#fde8e4;color:#9b2c1c}.b-targeted{background:#e5edfb;color:#1f4a8a}.b-io{background:#efe6fb;color:#5b2d91}.b-hormone{background:#fdf1dc;color:#8a5a00}
+mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
+.dinfo{background:var(--blubg);color:#1b3d6e;border-radius:10px;padding:8px 10px;font-size:13px}
+.regcard{border:1px solid var(--pri);background:var(--pri2);border-radius:12px;padding:10px 12px}
+.regcard .t{font-weight:700;font-size:16px;color:var(--pri)}
+.regcard table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}.regcard td{padding:3px 4px;border-top:1px solid #cfe3ea}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:10px}
+.chip{background:var(--pri2);border-radius:10px;padding:6px 9px}.chip span{display:block;font-size:11.5px;color:var(--mut)}.chip b{font-size:16px}
+.req{color:var(--red)}
+.incbox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff8e1;border:1px solid #f3d27a;border-radius:10px;padding:8px 12px;margin-bottom:10px}
+.incbox.on{background:#fdecea;border-color:#f1b8b2}
+.reasonbox{border:2px solid var(--red);border-radius:12px;padding:12px;background:#fff;margin-top:8px}
+.reasonbox label{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:15px}
+.reasonbox input[type=radio]{width:18px;height:18px;accent-color:var(--red)}
+.dstat{display:inline-block;font-weight:700;border-radius:20px;padding:3px 12px;font-size:13px}
+.dstat.pass{background:var(--grnbg);color:var(--grn)}.dstat.fail{background:var(--redbg);color:var(--red)}.dstat.incomplete{background:#fff3cd;color:#8a6d00}.dstat.missing{background:#eef2f5;color:var(--mut)}
+.pwwrap{position:relative;display:flex}.pwwrap input{flex:1;padding-right:44px!important}
+.pwwrap button{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;cursor:pointer;font-size:18px;padding:4px 6px;color:var(--mut)}
+/* ---- date / time fields ---- */
+.dwrap{position:relative;display:inline-flex;align-items:center}
+.dfield{width:140px;padding-right:34px!important;letter-spacing:.02em}
+.dwrap .dbtn{position:absolute;right:3px;border:0;background:none;cursor:pointer;font-size:15px;padding:4px}
+.tfield{width:80px;text-align:center;letter-spacing:.04em}
+.dpop{position:fixed;z-index:400;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:8px;width:260px;font-size:14px}
+.dph{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.dph b{color:var(--pri)}
+.dph button,.dpf button{border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;padding:2px 10px;font:inherit}
+.dpg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.dpg i{font-style:normal;font-size:12px;color:var(--mut);padding:2px 0}
+.dpg button{border:0;background:none;border-radius:8px;padding:6px 0;cursor:pointer;font:inherit}
+.dpg button:hover{background:var(--pri2)}.dpg button.tdy{outline:1px solid var(--pri)}.dpg button.sel{background:var(--pri);color:#fff}
+.dpf{display:flex;justify-content:space-between;margin-top:6px}
+/* ---- case form sections ---- */
+.fhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;border-bottom:2px solid var(--pri2)}
+.fsec{border:1px solid var(--line);border-radius:12px;margin-top:14px;background:#fff}
+.fsh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:#f4f8fa;border-bottom:1px solid var(--line);border-radius:12px 12px 0 0;font-weight:700;font-size:15px}
+.fsh .n{width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.fsh .muted{font-weight:400}
+.fsb{padding:14px}
+.factions{position:sticky;bottom:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(4px);border-top:1px solid var(--line);margin:14px -14px -14px;padding:12px 14px;border-radius:0 0 12px 12px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.addcase{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.addcase .btn{font-size:17px;padding:11px 22px}
+.dosetop{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.dosetop .chips{flex:1;min-width:280px;margin-top:0}
+.dosegrid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;align-items:start}
+@media(max-width:900px){.dosegrid2{grid-template-columns:1fr}}
+.regpanel{position:sticky;top:70px}
+/* ---- eye drop ---- */
+.eline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f7fafb;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.eline .w{font-weight:700;color:var(--pri)}
+.eline select{min-width:150px}.eline input[type=number]{width:64px;text-align:center}
+.eacts{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.elbl2{width:var(--lw);height:var(--lh);padding:.35em .55em;overflow:hidden;page-break-after:always;break-after:page;font-family:'Sarabun',sans-serif;font-size:var(--fs);color:#000;display:flex;flex-direction:column;background:#fff;gap:.18em}
+.elbl2:last-child{page-break-after:auto;break-after:auto}
+.elbl2 .eh{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #000;padding-bottom:.12em;font-size:.82em}
+.elbl2 .eh b{font-size:1.1em;letter-spacing:.04em}
+.elbl2 .ep{display:flex;justify-content:space-between;font-size:1.08em;font-weight:700}
+.elbl2 .en{border:1.5px solid #000;border-radius:.35em;text-align:center;font-size:1.32em;font-weight:700;padding:.08em .3em}
+.elbl2 .ed{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;font-size:1.04em;font-weight:600;line-height:1.25}
+.elbl2 .es{text-align:center}.elbl2 .es span{border:1px solid #000;border-radius:1em;padding:0 .6em;font-size:.9em;font-weight:700}
+.elbl2 .ef{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #000;padding-top:.12em;font-size:.86em}
+.elbl2 .ef div:last-child{text-align:right}.elbl2 .ef b{font-size:1.05em}
+.mlbl2{width:var(--lw);height:var(--lh);padding:.35em .55em;overflow:hidden;page-break-after:always;break-after:page;font-family:'Sarabun',sans-serif;font-size:calc(var(--fs) * .92);color:#000;display:flex;flex-direction:column;background:#fff;gap:.2em}
+.mlbl2:last-child{page-break-after:auto;break-after:auto}
+.mlbl2 .mh{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #000;padding-bottom:.12em}
+.mlbl2 .mh b{font-size:1.15em}.mlbl2 .mh span{border:1px solid #000;border-radius:.3em;padding:0 .4em;font-size:.82em;font-weight:700}
+.mlbl2 .mb{flex:1;overflow:hidden;font-size:1.1em;line-height:1.32}
+.mlbl2 .mf{display:flex;justify-content:space-between;border-top:1px solid #000;padding-top:.12em;font-size:.9em}
+.rot .elbl2,.rot .mlbl2{page-break-after:auto;break-after:auto}
+/* ---- responsive (มือถือ/แท็บเล็ต) ---- */
+@media(max-width:760px){
+  body{font-size:15px}
+  header{padding:6px 10px;gap:8px;position:static}
+  header img{height:30px}
+  header h1{font-size:16px} header .sub{display:none}
+  nav{order:3;width:100%;margin-left:0;overflow-x:auto;flex-wrap:nowrap}
+  nav button{padding:7px 10px;flex:none}
+  .uchip{margin-left:auto;padding-left:8px} .uchip span{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  main{padding:10px 8px}
+  .card{padding:10px;border-radius:10px}
+  .row{gap:8px}
+  .row > .fld{flex:1 1 calc(50% - 8px);min-width:0}
+  .row > .fld select,.row > .fld input{width:100%}
+  .dwrap,.dfield{width:100%}
+  .fsb{padding:10px} .fsh{padding:8px 10px}
+  .factions{margin:10px -10px -10px;padding:10px}
+  .factions .btn{flex:1}
+  .pcard{gap:8px} .pcard .right{display:none}
+  .dosetop .fld{flex:1 1 30%} .dosetop input{width:100%!important}
+  .regpanel{position:static}
+  .grid3{grid-template-columns:1fr}
+  /* ตารางรายการที่เตรียมแล้ว → การ์ด */
+  .cases thead{display:none}
+  .cases,.cases tbody,.cases tr,.cases td{display:block;width:100%}
+  .cases tr{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:8px 10px;background:#fff}
+  .cases tr.editing{border-color:#e0b84a}
+  .cases td{border:0;padding:3px 0;display:flex;gap:10px;align-items:flex-start}
+  .cases td[data-label]::before{content:attr(data-label);flex:0 0 96px;font-size:12px;color:var(--mut);padding-top:2px}
+  .cases td.vn{font-size:18px} .cases td.c-items{flex-wrap:wrap}
+  .cases td.c-acts{padding-top:8px;border-top:1px dashed var(--line);margin-top:4px}
+  .cases td.c-acts .acts{width:100%} .cases td.c-acts .btn{flex:1}
+  /* ตารางขวดยา → การ์ด */
+  table.bt .bt-head{display:none}
+  table.bt,table.bt tbody,table.bt tr{display:block;width:100%}
+  table.bt tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;position:relative}
+  table.bt td{display:block;border:0;padding:0}
+  table.bt td[data-label]::before{content:attr(data-label);display:block;font-size:11.5px;color:var(--mut);margin-bottom:2px}
+  table.bt td.b-drug,table.bt td.b-wide{grid-column:1/-1}
+  table.bt td.b-del{position:absolute;top:8px;right:8px}
+  table.bt .bno{text-align:left;padding-top:0}
+  table.bt .calc{white-space:normal}
+  .layout{gap:10px} .vlist{max-height:none}
+  .eline select{min-width:0;flex:1 1 100%} .eline .w{flex:none}
+  dialog{padding:14px;width:96%} .form2{grid-template-columns:1fr}
+  .lblwrap{overflow-x:auto;flex-wrap:nowrap}
+  .scroll{max-height:none}
+  .subnav{overflow-x:auto;flex-wrap:nowrap} .subnav button{flex:none}
+  .addcase .btn{width:100%}
+  .dpop{left:8px!important;right:8px;width:auto}
+}
+/* login */
+#login{position:fixed;inset:0;background:linear-gradient(160deg,#e7f2f6,#f5f8fa);display:flex;align-items:center;justify-content:center;z-index:120}
+#login .box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;width:min(380px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.08)}
+#login img{height:54px;display:block;margin:0 auto 8px}
+#login h1{text-align:center;color:var(--pri);font-size:19px;margin:0 0 4px}
+#login .fld{margin-top:12px}
+#login input{font-size:17px;padding:9px 10px}
+#login .err{color:var(--red);font-size:14px;min-height:20px;margin-top:8px;text-align:center}
+.idlewarn{position:fixed;top:0;left:0;right:0;background:#fff3cd;color:#7a5b00;text-align:center;padding:8px;font-weight:700;z-index:110}
+/* labels */
+#printArea{display:none}
+@media print{
+  body{background:#fff}
+  header,main,.toast,.busy,dialog,#login,.idlewarn,.demo-banner{display:none!important}
+  #printArea{display:block}
+}
+.lbl{width:var(--lw);height:var(--lh);padding:.22em .4em;overflow:hidden;page-break-after:always;break-after:page;font-family:'Sarabun',sans-serif;font-size:var(--fs);line-height:1.18;color:#000;display:flex;flex-direction:column;justify-content:space-between;background:#fff}
+.lbl:last-child,.hlbl:last-child,.elbl:last-child,.mlbl:last-child{page-break-after:auto;break-after:auto}
+.lbl .r{display:flex;align-items:center;gap:.7em;white-space:nowrap}
+.lbl .nm{font-size:1.25em;font-weight:700;justify-content:space-between;padding-right:2em}
+.lbl .bx{border:1px solid #000;padding:0 .4em;display:inline-block}
+.lbl .drug{font-size:1.18em;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis}
+.lbl u{text-decoration:underline;font-weight:700}
+.lbl .num{font-size:1.12em;font-weight:700;min-width:3.2em;text-align:center}
+.lbl .g{color:#333;font-size:.88em}
+.lbl .sp{margin-left:auto}
+.hlbl{width:var(--lw);height:var(--lh);padding:.5em .8em;overflow:hidden;page-break-after:always;break-after:page;font-family:'Sarabun',sans-serif;font-size:var(--fs);color:#000;display:flex;flex-direction:column;justify-content:space-around;background:#fff}
+.hlbl .nm{display:flex;justify-content:space-between;font-size:1.3em;font-weight:700;padding-right:1.5em}
+.hlbl .nm u{text-decoration:underline}
+.hlbl .dob{display:flex;gap:2.5em;font-size:1em}
+.hlbl .dt{font-size:2em;font-weight:700;letter-spacing:.02em}
+.hlbl .wd{font-size:2.3em;font-weight:700;text-align:center;line-height:1}
+.elbl{width:var(--lw);height:var(--lh);padding:.3em .5em;overflow:hidden;page-break-after:always;break-after:page;font-family:'Sarabun',sans-serif;font-size:var(--fs);line-height:1.25;color:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:.12em;background:#fff}
+.elbl .en{font-size:1.15em;font-weight:700}.elbl .ed{font-size:1.3em;font-weight:700}.elbl .ex{font-size:.98em;font-weight:600;line-height:1.2}
+.mlbl{width:var(--lw);height:var(--lh);padding:.3em .5em;overflow:hidden;page-break-after:always;break-after:page;font-family:'Sarabun',sans-serif;font-size:calc(var(--fs) * .92);line-height:1.22;color:#000;display:flex;flex-direction:column;gap:.15em;background:#fff}
+.mlbl .mt{font-weight:700;font-size:1.12em;border-bottom:1px solid #000;padding-bottom:.1em}
+.mlbl .mb{flex:1;overflow:hidden;font-size:1.12em;line-height:1.3}
+.mlbl .mf{display:flex;justify-content:space-between;border-top:1px solid #000;padding-top:.1em;font-size:.95em}
+.rot{width:var(--lh);height:var(--lw);overflow:hidden;page-break-after:always;break-after:page}
+.rot:last-child{page-break-after:auto;break-after:auto}
+.rot > div{transform:rotate(90deg) translateY(calc(-1 * var(--lh)));transform-origin:top left;page-break-after:auto!important;break-after:auto!important}
+.lblwrap{display:flex;gap:10px;flex-wrap:wrap}
+.lblwrap > div,.lblwrap label > div{border:1px dashed #9aa}
+.rp-print{font-family:'Sarabun',sans-serif;font-size:10pt;color:#000}
+.rp-print table{width:100%;border-collapse:collapse}.rp-print td,.rp-print th{border:1px solid #bbb;padding:2px 5px;text-align:left}
+.rp-print h1{font-size:14pt;margin:0 0 6px}
+.eform{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.eform button{text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 10px;cursor:pointer;font:inherit}
+.eform button.on{border-color:var(--pri);background:var(--pri2);box-shadow:0 0 0 1px var(--pri) inset}
+.eform small{color:var(--mut)}
+.dline{display:grid;grid-template-columns:130px 80px 110px 1fr 36px;gap:6px;align-items:center;margin-bottom:6px}
+@media(max-width:700px){.dline{grid-template-columns:1fr 1fr}}
+.note-key{background:#fff8e1;border:1px solid #f3d27a;color:#7a5b00;border-radius:8px;padding:6px 10px;font-weight:600}
+.layout{display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:start}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}}
+.vlist{max-height:calc(100vh - 200px);overflow:auto;padding:6px}
+.vitem{padding:9px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;display:grid;grid-template-columns:30px 1fr auto;gap:6px;align-items:center}
+.vitem:hover{background:#f0f6f9}.vitem.on{background:var(--pri2);border-color:#b6d6e2}
+.vitem .vn{font-weight:700;color:var(--pri);font-size:17px;text-align:center}.vitem .nm{font-weight:600}.vitem .meta{font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <form class="box" id="loginForm" autocomplete="on">
+    <img src="../logo.png" alt="logo">
+    <h1>บันทึกการผสมเคมีบำบัด</h1>
+    <div class="muted" style="text-align:center">ห้องผสมยาเคมีบำบัด · ฝ่ายเภสัชกรรม</div>
+    <div class="fld">รหัสพนักงาน<input id="lgCode" autocomplete="username" placeholder="เช่น 57020197" inputmode="text" style="text-transform:uppercase"></div>
+    <div class="fld">รหัสผ่าน<input id="lgPw" type="password" autocomplete="current-password"></div>
+    <div class="err" id="lgErr"></div>
+    <button class="btn" id="lgBtn" type="submit" style="width:100%;margin-top:6px;padding:10px">เข้าสู่ระบบ</button>
+    <div id="svLink" class="muted" style="display:none;text-align:center;margin-top:10px;font-size:13px"><a href="#" id="svBtn">⚙️ ตั้งค่าเซิร์ฟเวอร์</a></div>
+    <div class="muted" style="text-align:center;margin-top:10px">ใช้งานครั้งแรก รหัสผ่านตั้งต้นคือ 12345678</div>
+  </form>
+</div>
+
+<header hidden id="appHeader">
+  <img src="../logo.png" alt="logo">
+  <div><h1>บันทึกการผสมเคมีบำบัด</h1><div class="sub">ห้องผสมยาเคมีบำบัด · ฝ่ายเภสัชกรรม</div></div>
+  <nav>
+    <button data-tab="day" class="on">บันทึกเคมี</button>
+    <button data-tab="eye">ยาหยอดตา</button>
+    <button data-tab="report">รายงาน</button>
+    <button data-tab="settings">ตั้งค่า</button>
+  </nav>
+  <div class="uchip"><span>👤 <b id="uName"></b></span>
+    <button class="btn ghost xs" id="btnChgPw">เปลี่ยนรหัสผ่าน</button>
+    <button class="btn red xs" id="btnLogout">ออก</button></div>
+</header>
+
+<main hidden id="appMain">
+  <!-- ================= DAY ================= -->
+  <section id="tab-day">
+    <div class="card" id="caseForm"></div>
+    <div class="card" style="margin-top:14px">
+      <div class="row" style="align-items:center;margin-bottom:10px">
+        <h2 style="margin:0">รายการที่เตรียมแล้ว</h2>
+        <span class="right"></span>
+        <div class="fld">แสดงตาม<select id="lsMode"><option value="prep" selected>วันที่เตรียมเคส</option><option value="mix">วันที่ผสม</option></select></div>
+        <div class="fld">วันที่<span class="dwrap"><input type="text" class="dfield" id="lsDate" placeholder="วว/ดด/ปปปป" maxlength="10" inputmode="numeric" autocomplete="off"><button type="button" class="dbtn" tabindex="-1">📅</button></span></div>
+        <button class="btn ghost sm" id="btnRefresh">รีเฟรช</button>
+        <button class="btn ghost sm" id="btnPrintAll">พิมพ์ฉลากทั้งหมด</button>
+      </div>
+      <div class="muted" id="lsSum" style="margin-bottom:6px"></div>
+      <div style="overflow-x:auto"><table class="cases" id="caseList"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= EYE DROP ================= -->
+  <section id="tab-eye" hidden>
+    <div class="layout">
+      <div class="card" style="padding:10px">
+        <div class="row" style="margin-bottom:8px">
+          <div class="fld" style="flex:1">วันที่<span class="dwrap"><input type="text" class="dfield" id="eyeDate" placeholder="วว/ดด/ปปปป" maxlength="10" inputmode="numeric" autocomplete="off"><button type="button" class="dbtn" tabindex="-1">📅</button></span></div>
+          <button class="btn" id="btnEyeNew">+ ผสมยาหยอดตา</button>
+        </div>
+        <div class="muted" id="eyeSum" style="padding:0 4px 6px"></div>
+        <div class="vlist" id="eyeList"></div>
+      </div>
+      <div class="card" id="eyeEditor"><div class="empty">เลือกรายการทางซ้าย หรือกด “+ ผสมยาหยอดตา”</div></div>
+    </div>
+  </section>
+
+  <!-- ================= REPORT ================= -->
+  <section id="tab-report" hidden>
+    <div class="card">
+      <div class="row">
+        <div class="fld">เดือน<select id="rMonth"></select></div>
+        <div class="fld">วันที่ผสม ตั้งแต่<span class="dwrap"><input type="text" class="dfield" id="rFrom" placeholder="วว/ดด/ปปปป" maxlength="10" inputmode="numeric" autocomplete="off"><button type="button" class="dbtn" tabindex="-1">📅</button></span></div>
+        <div class="fld">ถึง<span class="dwrap"><input type="text" class="dfield" id="rTo" placeholder="วว/ดด/ปปปป" maxlength="10" inputmode="numeric" autocomplete="off"><button type="button" class="dbtn" tabindex="-1">📅</button></span></div>
+        <button class="btn" id="btnReport">ดูรายงาน</button>
+        <span class="right"></span>
+        <button class="btn ghost" id="btnRpPrint" disabled>พิมพ์</button>
+        <button class="btn ghost" id="btnRpSheet" disabled>ส่งออก Google Sheet / Excel</button>
+        <button class="btn ghost" id="btnCsv" disabled>CSV</button>
+      </div>
+      <div class="muted" style="margin-top:6px">รายงานยึดตาม <b>วันที่และเวลาผสม</b> · มีวันเวลาเตรียมเคสกำกับทุกเคส · เคสที่ติ๊กยกเลิกแยกไว้ท้ายรายงาน ไม่นับรวม</div>
+    </div>
+    <div id="reportOut" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section id="tab-settings" hidden>
+    <div class="card">
+      <div class="subnav" id="setNav">
+        <button data-s="Products" class="on">ยา</button>
+        <button data-s="Diluents">สารน้ำ</button>
+        <button data-s="Staff">เภสัชกร / ผู้ช่วย</button>
+        <button data-s="Wards">แผนก / วอร์ด / รพ.</button>
+        <button data-s="Storage">รหัสการเก็บ</button>
+        <button data-s="EyeFormulas">สูตรยาหยอดตา</button>
+        <button data-s="EyeOptions">ตัวเลือกวิธีใช้ยาหยอดตา</button>
+        <button data-s="System">ค่าระบบ</button>
+        <button data-s="Logs">ประวัติการใช้งาน</button>
+      </div>
+      <div id="setBody"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlg"></dialog>
+<dialog id="dlg2"></dialog>
+<div id="printArea"></div>
+<div class="toast" id="toast"></div>
+<div class="busy" id="busy">กำลังโหลด…</div>
+<input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="fileAtt" accept="image/*" multiple hidden>
+
+<script src="../data.js"></script>
+<script src="../lib.js"></script>
+<script src="config.js"></script>
+<script>
+// =====================================================================
+//  Backend bridge + session
+// =====================================================================
+let TOKEN = null, USER = null;
+const PUBLIC_FN = { apiLogin: 1 };
+function api(fn, ...args) {
+  busy(true); idleReset();
+  const a = PUBLIC_FN[fn] ? args : [TOKEN, ...args];
+  return new Promise((res, rej) => {
+    const ok = v => { busy(false); res(v); };
+    const fail = e => { busy(false); const m = (e && e.message) || String(e);
+      if (/SESSION_EXPIRED/.test(m)) { forceLogin('หมดเวลาการใช้งาน กรุณาเข้าสู่ระบบใหม่'); rej(e); return; }
+      toast('ผิดพลาด: ' + m); rej(e); };
+    if (window.MOCK_API) { Promise.resolve().then(() => MOCK_API[fn](...a)).then(ok, fail); return; }
+    if (IS_GAS) { google.script.run.withSuccessHandler(ok).withFailureHandler(fail)[fn](...a); return; }
+    httpCall(fn, a).then(ok, fail);
+  });
+}
+// ---- โหมดหน้าเว็บบน GitHub Pages: เรียก Apps Script ผ่าน URL (doPost) ----
+const IS_GAS = !!(window.google && google.script && google.script.run);
+function apiUrl() { let u = window.CHEMOPREP_API || ''; try { u = localStorage.getItem('chemoprep_api') || u; } catch (e) {} return u; }
+async function httpCall(fn, args) {
+  const url = apiUrl(); if (!url) throw new Error('ยังไม่ได้ตั้งค่า URL ของเซิร์ฟเวอร์ (Apps Script)');
+  let r;
+  try { r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }), redirect: 'follow' }); }
+  catch (e) { throw new Error('ติดต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ต หรือ URL ของ Apps Script'); }
+  const t = await r.text(); let j;
+  try { j = JSON.parse(t); } catch (e) { throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง (ตรวจว่า Deploy เป็น Web app สิทธิ์ "Anyone")'); }
+  if (!j.ok) throw new Error(j.error); return j.data;
+}
+/** เรียก server แบบเงียบ ๆ (ไม่แสดงกำลังโหลด/ข้อผิดพลาด) */
+function rawCall(fn, ...args) { try { if (window.MOCK_API) { Promise.resolve().then(() => MOCK_API[fn](...args)).catch(() => {}); return; } if (IS_GAS) { google.script.run.withSuccessHandler(() => {}).withFailureHandler(() => {})[fn](...args); return; } httpCall(fn, args).catch(() => {}); } catch (e) {} }
+function serverSetup() {
+  const d = $('#dlg'), cur = apiUrl();
+  d.innerHTML = `<h2>ตั้งค่าเซิร์ฟเวอร์</h2><div class="muted">วาง URL ของ Apps Script Web app (ลงท้ายด้วย /exec) — ตั้งครั้งเดียวต่อเครื่อง</div>
+    <div class="fld" style="margin-top:10px">Web app URL<input id="svU" value="${esc(cur)}" placeholder="https://script.google.com/macros/s/.../exec"></div>
+    <div id="svMsg" class="muted" style="min-height:1.4em;margin-top:6px"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn ghost" id="svNo">ปิด</button><button class="btn ghost" id="svTest">ทดสอบ</button><button class="btn" id="svOk">บันทึก</button></div>`;
+  d.showModal();
+  const val = () => $('#svU').value.trim();
+  $('#svNo').onclick = () => d.close();
+  $('#svTest').onclick = async () => { $('#svMsg').textContent = 'กำลังทดสอบ…';
+    try { const r = await fetch(val() + (val().includes('?') ? '&' : '?') + 'api=ping'); const j = await r.json(); $('#svMsg').textContent = j.ok ? '✅ เชื่อมต่อได้ · เวลาเซิร์ฟเวอร์ ' + j.time : '❌ ' + (j.error || 'ไม่ผ่าน'); }
+    catch (e) { $('#svMsg').textContent = '❌ เชื่อมต่อไม่ได้ ตรวจ URL และสิทธิ์ Deploy (Anyone)'; } };
+  $('#svOk').onclick = () => { if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(val())) { $('#svMsg').textContent = 'URL ต้องขึ้นต้นด้วย https://script.google.com/'; return; }
+    try { localStorage.setItem('chemoprep_api', val()); } catch (e) {} d.close(); toast('บันทึก URL แล้ว'); };
+}
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const num = v => { const x = parseFloat(String(v ?? '').replace(',', '.')); return isFinite(x) ? x : null; };
+const pad2 = n => String(n).padStart(2, '0');
+function fmt(x, d) { if (x == null || !isFinite(x)) return '—'; const a = Math.abs(x);
+  const v = d != null ? +x.toFixed(d) : a >= 100 ? Math.round(x) : a >= 10 ? Math.round(x * 10) / 10 : Math.round(x * 100) / 100;
+  return v.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+let busyN = 0;
+function busy(on) { busyN = Math.max(0, busyN + (on ? 1 : -1)); $('#busy').classList.toggle('on', busyN > 0); }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 3000); }
+function nowHM() { const d = new Date(); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+function todayISO() { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+
+/** กล่องยืนยันของระบบเอง (ใช้แทน confirm ของเบราว์เซอร์) */
+function ask(msg, okText = 'ยืนยัน', opts = {}) {
+  return new Promise(res => {
+    const d = $('#dlg2');
+    d.innerHTML = `<h2>${esc(opts.title || 'ยืนยัน')}</h2><div style="white-space:pre-line">${esc(msg)}</div>
+      ${opts.input ? `<div class="fld" style="margin-top:10px">${esc(opts.input)}<input id="askIn" value="${esc(opts.value || '')}"></div>` : ''}
+      <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn ghost" id="askNo">ยกเลิก</button><button class="btn ${opts.danger ? 'solidred' : ''}" id="askYes">${esc(okText)}</button></div>`;
+    const done = v => { d.close(); res(v); };
+    $('#askNo').onclick = () => done(false);
+    $('#askYes').onclick = () => done(opts.input ? { value: $('#askIn').value.trim() } : true);
+    d.oncancel = () => done(false);
+    d.showModal(); setTimeout(() => ($('#askIn') || $('#askYes')).focus(), 30);
+  });
+}
+
+/** ปุ่มแสดง/ซ่อนรหัสผ่าน ให้ทุกช่อง password */
+function pwToggles(root) {
+  (root || document).querySelectorAll('input[type=password]').forEach(inp => {
+    if (inp.parentElement.classList.contains('pwwrap')) return;
+    const w = document.createElement('div'); w.className = 'pwwrap';
+    inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = '👁'; b.title = 'แสดงรหัสผ่าน'; b.tabIndex = -1;
+    b.onclick = () => { const show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; b.textContent = show ? '🙈' : '👁'; b.title = show ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'; inp.focus(); };
+    w.appendChild(b);
+  });
+}
+
+// ---------- login / logout / idle ----------
+const IDLE_MS = 15 * 60 * 1000, WARN_MS = 14 * 60 * 1000;
+let idleT = null, warnT = null, pingT = null;
+function idleReset() {
+  if (!TOKEN) return;
+  clearTimeout(idleT); clearTimeout(warnT);
+  const w = $('.idlewarn'); if (w) w.remove();
+  warnT = setTimeout(() => { const b = document.createElement('div'); b.className = 'idlewarn'; b.textContent = 'ไม่มีการใช้งาน ระบบจะออกจากระบบอัตโนมัติใน 1 นาที (ขยับเมาส์หรือกดปุ่มใดก็ได้เพื่อใช้งานต่อ)'; document.body.appendChild(b); }, WARN_MS);
+  idleT = setTimeout(() => { const t = TOKEN; forceLogin('ออกจากระบบอัตโนมัติ เพราะไม่ได้ใช้งาน 15 นาที'); rawCall('apiAutoLogout', t); }, IDLE_MS);
+}
+['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(ev => document.addEventListener(ev, () => {
+  if (!TOKEN) return; const n = Date.now(); if (n - (idleReset.last || 0) < 3000) return; idleReset.last = n; idleReset();
+  // ต่ออายุ session ฝั่ง server ไม่เกินทุก 5 นาทีเมื่อมีการใช้งาน
+  if (n - (pingT || 0) > 5 * 60 * 1000) { pingT = n; rawCall('apiPing', TOKEN); }
+}, { passive: true }));
+function forceLogin(msg) {
+  TOKEN = null; USER = null; clearTimeout(idleT); clearTimeout(warnT);
+  const w = $('.idlewarn'); if (w) w.remove();
+  $$('dialog').forEach(d => { if (d.open) d.close(); });
+  $('#appHeader').hidden = true; $('#appMain').hidden = true; $('#login').hidden = false;
+  $('#lgErr').textContent = msg || ''; $('#lgPw').value = ''; $('#lgPw').type = 'password'; pwToggles($('#login')); setTimeout(() => $('#lgCode').focus(), 50);
+}
+async function doLogin(e) {
+  e.preventDefault();
+  const code = $('#lgCode').value.trim(), pw = $('#lgPw').value;
+  if (!code || !pw) { $('#lgErr').textContent = 'กรอกรหัสพนักงานและรหัสผ่าน'; return; }
+  try {
+    const r = await api('apiLogin', code, pw);
+    TOKEN = r.token; USER = r.user;
+    $('#login').hidden = true; $('#appHeader').hidden = false; $('#appMain').hidden = false;
+    $('#uName').textContent = USER.name + (USER.admin ? ' (admin)' : '');
+    idleReset();
+    await startApp();
+    if (r.mustChange) changePassword(true);
+  } catch (er) { $('#lgErr').textContent = (er && er.message) || 'เข้าสู่ระบบไม่สำเร็จ'; }
+}
+function changePassword(first) {
+  const d = $('#dlg');
+  d.innerHTML = `<h2>เปลี่ยนรหัสผ่าน</h2>${first ? '<div class="chk amber" style="margin-top:0">ยังใช้รหัสผ่านตั้งต้นอยู่ กรุณาเปลี่ยนเป็นรหัสของตัวเอง</div>' : ''}
+    <div class="fld">รหัสผ่านเดิม<input type="password" id="pw0" value="${first ? '12345678' : ''}"></div>
+    <div class="fld" style="margin-top:8px">รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)<input type="password" id="pw1"></div>
+    <div class="fld" style="margin-top:8px">ยืนยันรหัสผ่านใหม่<input type="password" id="pw2"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="pwNo">${first ? 'ไว้ภายหลัง' : 'ยกเลิก'}</button><button class="btn" id="pwOk">บันทึกรหัสผ่าน</button></div>`;
+  pwToggles(d);
+  d.showModal(); setTimeout(() => $(first ? '#pw1' : '#pw0').focus(), 30);
+  $('#pwNo').onclick = () => d.close();
+  $('#pwOk').onclick = async () => {
+    const a = $('#pw0').value, b = $('#pw1').value, c = $('#pw2').value;
+    if (b !== c) return toast('รหัสผ่านใหม่ไม่ตรงกัน');
+    if (b.length < 6) return toast('รหัสผ่านใหม่ต้องยาวอย่างน้อย 6 ตัว');
+    await api('apiChangePassword', a, b); d.close(); toast('เปลี่ยนรหัสผ่านแล้ว');
+  };
+}
+
+// =====================================================================
+//  Master data + helpers
+// =====================================================================
+const M = {};
+const idx = (arr, k) => Object.fromEntries(arr.map(x => [String(x[k]), x]));
+function buildIdx() { M.prodIdx = idx(M.products, 'productcde'); M.dilIdx = idx(M.diluents, 'pcode'); M.staffIdx = idx(M.staff, 'code'); M.wardIdx = idx(M.wards, 'code'); }
+const beYear = y => M.settings.labelYear === 'CE' ? y : y + 543;
+function thDate(iso, withTime) { if (!iso) return ''; const [d, t] = String(iso).split(' '); const [y, m, dd] = d.split('-'); return `${dd}/${m}/${beYear(+y)}` + (withTime && t ? ' ' + t : ''); }
+function dmy(iso) { if (!iso) return ''; const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); return `${d}/${m}/${beYear(y)}`; }
+function dmyPad(iso) { if (!iso) return ''; const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); return `${pad2(d)}/${pad2(m)}/${beYear(y)}`; }
+function ageOf(dob, at) { if (!dob) return null; const b = new Date(dob), a = new Date(at || todayISO());
+  let y = a.getFullYear() - b.getFullYear(); if (a < new Date(a.getFullYear(), b.getMonth(), b.getDate())) y--; return y >= 0 && y < 130 ? y : null; }
+function addDays(iso, days) {
+  const [d, t = '00:00'] = iso.split(' '); const [y, m, dd] = d.split('-').map(Number); const [hh, mi] = t.split(':').map(Number);
+  const dt = new Date(y, m - 1, dd, hh, mi); dt.setTime(dt.getTime() + days * 86400000);
+  return `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+}
+const staffName = c => (M.staffIdx[c] || {}).name || c || '';
+const wardOf = c => M.wardIdx[c] || { code: c, name: c, partner: 'CH9' };
+const partnerOf = c => wardOf(c).partner || 'CH9';
+function partnerPill(ward) { const p = partnerOf(ward); return p === 'CH9' ? '' : `<span class="pill ${p.toLowerCase()}">${esc(p)}</span>`; }
+function lookup(type) { return M.lookups.filter(x => x.type === type); }
+const storageText = code => (lookup('storage').find(x => String(x.code).trim() === String(code || '').trim()) || {}).text || '';
+function staffOpts(role, sel) {
+  const list = M.staff.filter(s => s.role === role && (+s.active || s.code === sel));
+  const o = s => `<option value="${esc(s.code)}" ${s.code === sel ? 'selected' : ''}>${esc(s.name)}</option>`;
+  if (role !== 'pharmacist') return `<option value=""></option>` + list.map(o).join('');
+  const mx = list.filter(s => +s.mixer), ot = list.filter(s => !+s.mixer);
+  return `<option value=""></option>` + (mx.length ? `<optgroup label="ผู้ผสมประจำ">${mx.map(o).join('')}</optgroup><optgroup label="เภสัชกรอื่น">${ot.map(o).join('')}</optgroup>` : list.map(o).join(''));
+}
+function wardOpts(sel) { return `<option value=""></option>` + M.wards.map(w => `<option value="${esc(w.code)}" ${w.code === sel ? 'selected' : ''}>${esc(w.name)}${w.partner && w.partner !== 'CH9' ? ' (' + w.partner + ')' : ''}</option>`).join(''); }
+const chemoProducts = () => M.products.filter(p => +p.chemo && !+p.off);
+function prodLabel(code) { const p = M.prodIdx[code]; return p ? `${p.productname}${p.generic ? ' · ' + p.generic : ''} [${p.productcde}]` : (code || ''); }
+function dilLabel(code) { const d = M.dilIdx[code]; return d ? `${d.generic || d.name} [${d.pcode}]` : (code || ''); }
+const dilName = code => { const d = M.dilIdx[code]; return d ? (d.generic || d.name) : (code || ''); };
+const codeIn = s => { const m = String(s).match(/\[([^\]]+)\]\s*$/); return m ? m[1] : String(s).trim(); };
+
+// =====================================================================
+//  Calculation engine (จากแอปเภสัชกรเคมีบำบัด + สูตรเดิมของ Access)
+// =====================================================================
+R.forEach((g, i) => { g.id = i; g.key = g.c + '|' + g.n; });
+function regOf(v) { if (!v || v === '') return null; if (/^\d+$/.test(String(v))) return R[+v] || null; return R.find(g => g.key === v) || null; }
+function patientCalc(v, pat) {
+  const wt = num(v.wt), ht = num(v.ht), scr = num(v.scr), age = ageOf(pat && pat.dob, v.date), sex = (pat && pat.sex) || '';
+  const o = { wt, ht, scr, age, sex, ok: false, okRenal: false, warn: [] };
+  if (wt > 0 && ht > 0) {
+    o.ok = true; o.bsa = Math.sqrt(ht * wt / 3600); o.bmi = wt / Math.pow(ht / 100, 2);
+    if (wt < 25 || wt > 250) o.warn.push('น้ำหนักผิดปกติ ตรวจหน่วย (kg)');
+    if (ht < 100 || ht > 220) o.warn.push('ส่วนสูงผิดปกติ ตรวจหน่วย (cm)');
+  }
+  if (o.ok && age != null && scr > 0 && sex) {
+    o.okRenal = true; o.scrUsed = Math.max(scr, 0.7);
+    o.crcl = ((140 - age) * wt) / (72 * o.scrUsed) * (sex === 'F' ? 0.85 : 1); o.gfr = Math.min(o.crcl, 125);
+    if (scr > 15) o.warn.push('SCr สูงมาก ตรวจหน่วย mg/dL');
+  }
+  return o;
+}
+function calcStd(dr, P) {
+  if (dr.fixedText) return null;
+  let full = null;
+  switch (dr.unit) {
+    case 'mg/m2': case 'units/m2': if (!P.ok) return { need: 'น้ำหนัก/ส่วนสูง' }; full = dr.dose * P.bsa; break;
+    case 'mg/kg': if (!P.ok) return { need: 'น้ำหนัก' }; full = dr.dose * P.wt; break;
+    case 'mg': case 'units': full = dr.dose; break;
+    case 'AUC': if (!P.okRenal) return { need: 'อายุ/เพศ/SCr' }; full = dr.dose * (P.gfr + 25); break;
+    case 'tier': { if (!P.ok) return { need: 'น้ำหนัก' }; const t = dr.tiers.find(t => t.lt == null || P.wt < t.lt); full = t.dose; break; }
+    default: return null;
+  }
+  return { std: dr.cap ? Math.min(full, dr.cap) : full, raw: full };
+}
+const stdText = dr => `${dr.dose} ${dr.unit === 'AUC' ? 'AUC' : dr.unit.replace('2', '²')}`;
+const BRAND_KEY = (() => { const m = []; Object.entries(BRAND).forEach(([k, v]) => v.split(/\s+/).forEach(b => { if (b.length >= 4) m.push([b.toLowerCase(), k]); })); return m; })();
+function prodKey(p) {
+  if (!p) return '';
+  const g = String(p.generic || p.productname || ''), name = (g + ' ' + (p.productname || '')).toLowerCase();
+  const k = drugKey(g); if (DL[k]) return k;
+  for (const [re, kk] of KEYMAP) if (re.test(name)) return kk;
+  for (const key of Object.keys(DL)) if (key.length >= 5 && name.includes(key)) return key;
+  for (const [b, kk] of BRAND_KEY) if (name.includes(b)) return kk;
+  return k;
+}
+function bottleCalc(b, v) {
+  const p = M.prodIdx[b.productcde], d = M.dilIdx[b.diluent], o = { p, d };
+  const mg = num(b.mg);
+  if (p && mg != null && num(p.mgPerMl)) { o.mlDrug = mg / num(p.mgPerMl); if (num(p.mlPerVial)) o.vials = o.mlDrug / num(p.mlPerVial); }
+  o.mlBot = d ? num(d.mlPerBot) : null;
+  o.tvolAuto = (o.mlDrug || 0) + (o.mlBot || 0) || null;
+  o.over = num(b.tvol) > 0;
+  o.tvol = o.over ? num(b.tvol) : o.tvolAuto;
+  if (o.tvol && mg) o.conc = mg / o.tvol;
+  const rate = num(b.rate);
+  if (rate && o.tvol) {
+    if (b.rateUnit === 'hr') o.mlhr = o.tvol / rate;
+    else if (b.rateUnit === 'mins') o.mlhr = o.tvol * 60 / rate;
+    else if (b.rateUnit === 'ml/hr') { o.mlhr = rate; o.hours = o.tvol / rate; }
+  }
+  if (p && num(p.stDilute) != null && v.mixTime) o.exp = addDays(v.mixTime, num(p.stDilute));
+  return o;
+}
+/** รันเลขขวด: ยา+ขนาด+สารน้ำ+ปริมาตรรวม เหมือนกันในเคสเดียวกัน → 1, 2, 3 … */
+function autoNumber(bottles, v) {
+  const seen = {}, tot = {};
+  const key = b => { const k = bottleCalc(b, v || {}); return [b.productcde, num(b.mg), b.diluent, k.tvol ? k.tvol.toFixed(1) : ''].join('|'); };
+  bottles.forEach(b => { if (b.productcde) tot[key(b)] = (tot[key(b)] || 0) + 1; });
+  bottles.forEach(b => { if (!b.productcde) { b.bottleNo = ''; return; } const k = key(b); seen[k] = (seen[k] || 0) + 1; b.bottleNo = seen[k]; b._of = tot[k]; });
+  return bottles;
+}
+function doseCheck(v, bottles, pat) {
+  const P = patientCalc(v, pat), out = { P, items: [], general: [] };
+  P.warn.forEach(w => out.general.push({ lvl: 'amber', t: w }));
+  if (pat && +pat.allergyFlag) out.general.push({ lvl: 'red', t: 'ผู้ป่วยแพ้ยา: ' + (pat.allergy || '(ไม่ระบุ)') });
+  const reg = regOf(v.regimen), groups = {};
+  bottles.forEach(b => { const p = M.prodIdx[b.productcde]; if (!p) return; const k = prodKey(p);
+    (groups[k] = groups[k] || { key: k, name: p.generic || p.productname, mg: 0, n: 0, unit: (p.unit || 'mg').toLowerCase() });
+    groups[k].mg += num(b.mg) || 0; groups[k].n++; });
+  const regComps = {};
+  if (reg) reg.d.forEach(dr => { if (/^po|oral/i.test(dr.route || '')) return; const k = drugKey(dr.n); (regComps[k] = regComps[k] || []).push(dr); });
+  Object.values(groups).forEach(g => {
+    const it = { name: g.name, n: g.n, lvl: 'gray', title: '', msgs: [] }, lib = DL[g.key] || {}, comps = regComps[g.key];
+    if (reg && !comps) { it.lvl = 'amber'; it.title = 'ยานี้ไม่อยู่ในสูตร ' + reg.n; }
+    if (comps) {
+      const stds = comps.map(dr => ({ dr, c: calcStd(dr, P) })), need = stds.find(s => s.c && s.c.need);
+      if (need) it.title = 'กรอก ' + need.c.need + ' เพื่อตรวจขนาดยา';
+      else {
+        const valid = stds.filter(s => s.c && s.c.std != null), tot = valid.reduce((a, s) => a + s.c.std, 0);
+        if (tot > 0) {
+          const ratio = g.mg / tot * 100;
+          let lvl = ratio > 110 ? 'red' : ratio > 105 ? 'amber' : ratio >= 90 ? 'green' : ratio >= 70 ? 'blue' : 'amber';
+          it.title = { red: 'สูงกว่ามาตรฐาน ตรวจสอบกับแพทย์', amber: ratio > 100 ? 'สูงกว่ามาตรฐานเล็กน้อย' : 'ต่ำกว่ามาตรฐานมาก ตรวจสอบ', green: 'อยู่ในช่วงมาตรฐาน', blue: 'ลดขนาด ตรวจว่าแพทย์ตั้งใจลด dose' }[lvl];
+          it.msgs.push(`สั่ง ${fmt(g.mg)} ${g.unit} = ${fmt(ratio)}% ของมาตรฐาน ${fmt(tot)} ${g.unit}`);
+          valid.forEach(s => it.msgs.push(`${s.dr.n}: ${stdText(s.dr)} ${s.dr.days ? '(' + s.dr.days + ')' : ''} → ${fmt(s.c.std)}${s.dr.cap && s.c.raw > s.dr.cap ? ' [cap ' + s.dr.cap + ']' : ''}`));
+          if (comps.length > 1) it.msgs.push('สูตรนี้มียาตัวนี้หลายส่วน (เช่น bolus + infusion) เทียบจากผลรวมทุกขวดในเคสนี้');
+          if (comps.some(dr => dr.nDays || /CI|ต่อเนื่อง/i.test(dr.route + dr.days)) && ratio < 90) it.msgs.push('ยาหยดต่อเนื่องหลายวัน ถ้าแบ่งผสมหลายวัน ให้รวมขนาดของทุกวันก่อนเทียบ');
+          const auc = comps.find(dr => dr.unit === 'AUC');
+          if (auc && P.okRenal) { it.msgs.push(`เท่ากับ AUC ≈ ${fmt(g.mg / (P.gfr + 25))} (CrCl ${fmt(P.crcl)}${P.crcl > 125 ? ', cap 125' : ''})`); if (g.mg > auc.dose * 150 * 1.001) { lvl = 'red'; it.msgs.push(`⚠ เกินขนาดสูงสุดที่ AUC ${auc.dose} (${auc.dose * 150} mg)`); } }
+          const cap = comps.find(dr => dr.cap); if (cap && g.mg > cap.cap * 1.001) { lvl = 'red'; it.msgs.push(`⚠ เกิน cap ${cap.cap} mg`); }
+          it.lvl = lvl;
+        }
+      }
+    }
+    if (P.ok && lib.maxSingle && g.unit === 'mg') { const perM2 = g.mg / P.bsa; it.msgs.push(`เท่ากับ ${fmt(perM2)} mg/m²`);
+      if (perM2 > lib.maxSingle * 1.05 && !(comps || []).some(dr => dr.nDays)) { it.lvl = 'red'; it.title = it.title || 'เกินขนาดสูงสุดต่อครั้ง'; it.msgs.push(`⚠ เกินขนาดสูงสุดต่อครั้งที่พบในสูตรทั่วไป (${lib.maxSingle} mg/m²)`); } }
+    if (g.key === 'vincristine' && g.mg > 2) { it.lvl = 'red'; it.title = 'Vincristine > 2 mg'; it.msgs.push('⚠ Vincristine เกิน 2 mg ต่อครั้ง'); }
+    if (P.okRenal && typeof lib.renal === 'function') { const r = lib.renal(P.crcl); if (r) { it.msgs.push(`ไต: ${r.text}`); if (r.lvl === 'stop') it.lvl = 'red'; else if (it.lvl === 'green' || it.lvl === 'gray') it.lvl = 'amber'; } }
+    if (lib.hep) it.msgs.push('ตับ: ' + lib.hep);
+    if (lib.life) it.msgs.push('สะสม: ' + lib.life);
+    if (lib.note) it.msgs.push(lib.note);
+    if (!it.title) it.title = reg ? '' : 'ยังไม่ได้เลือกสูตร (ตรวจได้เฉพาะขั้นพื้นฐาน)';
+    out.items.push(it);
+  });
+  if (reg) Object.entries(regComps).forEach(([k, comps]) => { if (!groups[k]) out.general.push({ lvl: 'gray', t: `ยังไม่มีขวด ${comps.map(c => c.n).join(', ')} (${comps.map(c => c.days).join(', ')}) ถ้าให้วันอื่นไม่ต้องสนใจ` }); });
+  const rank = { red: 4, amber: 3, blue: 2, green: 1, gray: 0 };
+  out.worst = out.items.concat(out.general).reduce((w, x) => rank[x.lvl] > rank[w] ? x.lvl : w, 'gray');
+  return out;
+}
+
+// =====================================================================
+//  Labels
+// =====================================================================
+function labelDims() { const s = M.settings; const w = num(s.labelWidthMm) || 86, h = num(s.labelHeightMm) || 50; return { w, h, fs: Math.min(h / 50, w / 86) * 8.6, rot: +s.labelRotate === 1 }; }
+function labelVars() { const L = labelDims(); return `--lw:${L.w}mm;--lh:${L.h}mm;--fs:${L.fs.toFixed(2)}pt`; }
+const ptName = p => esc(((p.title || '') + ' ' + (p.name || '')).trim());
+/** สติกเกอร์หัว (ติดหน้ากล่อง) */
+function headLabelHtml(v, pat) {
+  const p = pat || {};
+  return `<div class="hlbl">
+    <div class="nm"><u>${ptName(p)}</u><u>${esc(p.surname || '')}</u></div>
+    <div class="dob"><span>DOB: ${dmy(p.dob)}</span><span>HN: ${esc(v.HN)}</span></div>
+    <div class="dt">วันที่:${dmy(v.date)}</div>
+    <div class="wd">${esc(v.ward || '')}</div>
+  </div>`;
+}
+/** สติกเกอร์ขวดยา (แบบฉลากเดิมของ Access) */
+function labelHtml(v, b, pat) {
+  const k = bottleCalc(b, v), p = k.p || {}, d = k.d, pt = pat || {};
+  const rt = (lookup('route').find(r => r.code === b.route) || {}).text || b.route || '';
+  const [pd, ptm] = (v.mixTime || '').split(' '), [ed, etm] = (k.exp || '').split(' ');
+  const f1 = x => x == null ? '' : (+x).toFixed(1), mlhr = k.mlhr && b.rateUnit !== 'ml/hr' ? Math.round(k.mlhr) : '';
+  return `<div class="lbl">
+    <div class="r nm"><span>${ptName(pt)}</span><span>${esc(pt.surname || '')}</span></div>
+    <div class="r"><span>DOB: ${dmy(pt.dob)}</span><span style="margin-left:6mm">HN:${esc(v.HN)}</span></div>
+    <div class="r"><span class="bx drug">${esc(String(p.generic || p.productname || b.productcde).toUpperCase())}</span><u>${fmt(num(b.mg))}</u><span>${esc(p.unit || 'mg')}</span><span class="g">ml=</span><span class="bx num">${f1(k.mlDrug)}</span></div>
+    <div class="r"><span><span class="g">IN:</span> ${esc(d ? (d.generic || d.name) : '-')}</span><span>${esc(rt)}</span><u>${esc(b.rate || '')}</u><span>${esc(b.rateUnit || '')}</span>${mlhr !== '' ? `<span>( ${mlhr} <span class="g">ml/hr</span> )</span>` : ''}</div>
+    <div class="r"><span>ผลิต: ${dmy(pd)}</span><span>เวลา: ${esc(ptm || '')}</span><span class="g sp">TOTAL VOL</span><u>${f1(k.tvol)}</u><span class="bx">${esc(v.ward || '')}</span></div>
+    <div class="r"><span>หมดอายุ: <u>${ed ? dmy(ed) : '-'}</u></span><span>เวลา: <u>${esc(etm || '')}</u></span><span class="sp">ขวดที่:</span><span class="bx num">${esc(b.bottleNo)}</span></div>
+    <div class="r"><span>Storage</span><span>${esc(storageText(p.storage))}</span></div>
+    <div class="r"><span>Prepare by: ${esc(staffName(v.phcode))}</span><span class="sp" style="margin-right:8mm">Assist ${esc(staffName(v.emcode))}</span></div>
+  </div>`;
+}
+/** ส่งงานพิมพ์: pages = array ของ html สติกเกอร์ทีละดวง */
+function printPages(pages) {
+  if (!pages.length) return toast('ไม่มีฉลากให้พิมพ์');
+  const L = labelDims(), area = $('#printArea');
+  area.style.cssText = labelVars();
+  area.innerHTML = `<style>@page{size:${L.rot ? L.h : L.w}mm ${L.rot ? L.w : L.h}mm;margin:0}</style>` + (L.rot ? pages.map(x => '<div class="rot">' + x + '</div>').join('') : pages.join(''));
+  setTimeout(() => window.print(), 150);
+}
+function casePages(c, sel) { // sel: {head:bool, ids:Set|null}
+  const pages = [];
+  if (!sel || sel.head) pages.push(headLabelHtml(c.v, c.pat));
+  c.bottles.filter(b => b.productcde && (!sel || !sel.ids || sel.ids.has(b.id))).forEach(b => pages.push(labelHtml(c.v, b, c.pat)));
+  return pages;
+}
+async function printCases(list, isReprint, sel) {
+  const pages = list.flatMap(c => casePages(c, sel));
+  printPages(pages);
+  const ids = list.flatMap(c => c.bottles.filter(b => !sel || !sel.ids || sel.ids.has(b.id)).map(b => b.id)).filter(Boolean);
+  if (ids.length || isReprint) await api('apiMarkPrinted', ids, !!isReprint, list.map(c => c.v.id)).catch(() => {});
+}
+
+// =====================================================================
+//  ช่องวันที่ dd/mm/yyyy (พ.ศ.) + ช่องเวลา 24 ชม. ใช้ทั้งแอป
+// =====================================================================
+const TH_MON_S = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const TH_MON_L = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+function isoToDmy(iso) { if (!iso) return ''; const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); return `${pad2(d)}/${pad2(m)}/${y + 543}`; }
+function dmyToIso(s) {
+  const m = String(s || '').trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/); if (!m) return '';
+  let d = +m[1], mo = +m[2], y = +m[3];
+  if (y < 100) y += 2500;          // 69 → 2569
+  if (y > 2400) y -= 543;           // พ.ศ. → ค.ศ.
+  const dt = new Date(y, mo - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return '';
+  return `${y}-${pad2(mo)}-${pad2(d)}`;
+}
+/** HTML ช่องวันที่ */
+function dInput(id, iso, extra) {
+  return `<span class="dwrap"><input type="text" class="dfield" id="${id}" value="${isoToDmy(iso)}" data-iso="${iso || ''}" placeholder="วว/ดด/ปปปป" maxlength="10" inputmode="numeric" autocomplete="off" ${extra || ''}><button type="button" class="dbtn" tabindex="-1" title="เลือกจากปฏิทิน">📅</button></span>`;
+}
+/** HTML ช่องเวลา 24 ชม. */
+function tInput(id, hm, extra) { return `<input type="text" class="tfield" id="${id}" value="${esc(hm || '')}" placeholder="ชช:นน" maxlength="5" inputmode="numeric" autocomplete="off" ${extra || ''}>`; }
+const elOf = x => typeof x === 'string' ? $(x) : x;
+function dateVal(x) { const el = elOf(x); return el ? (el.dataset.iso || dmyToIso(el.value)) : ''; }
+function setDate(x, iso) { const el = elOf(x); if (!el) return; el.dataset.iso = iso || ''; el.value = isoToDmy(iso); }
+// พิมพ์ตัวเลขแล้วใส่ / และ : ให้อัตโนมัติ
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.classList && el.classList.contains('dfield') && e.inputType && !e.inputType.startsWith('delete')) {
+    const dg = el.value.replace(/\D/g, '').slice(0, 8); el.value = dg.length > 4 ? `${dg.slice(0, 2)}/${dg.slice(2, 4)}/${dg.slice(4)}` : dg.length > 2 ? `${dg.slice(0, 2)}/${dg.slice(2)}` : dg;
+  }
+
+}, true);
+// ตรวจรูปแบบก่อนส่งต่อให้ handler ของหน้า (capture จึงทำงานก่อน)
+document.addEventListener('change', e => {
+  const el = e.target; if (!el.classList) return;
+  if (el.classList.contains('dfield')) {
+    if (!el.value.trim()) { el.dataset.iso = ''; return; }
+    const iso = dmyToIso(el.value);
+    if (iso) { el.dataset.iso = iso; el.value = isoToDmy(iso); }
+    else { toast('รูปแบบวันที่ไม่ถูกต้อง ใช้ วว/ดด/ปปปป เช่น 15/11/2569'); el.value = isoToDmy(el.dataset.iso); e.stopImmediatePropagation(); }
+  }
+  if (el.classList.contains('tfield') && el.value.trim()) {
+    let h, mi; const mm = el.value.trim().match(/^(\d{1,2})[:.](\d{1,2})$/), dg = el.value.replace(/\D/g, '');
+    if (mm) { h = +mm[1]; mi = +mm[2]; } else if (dg.length <= 2) { h = +dg; mi = 0; } else if (dg.length === 3) { h = +dg[0]; mi = +dg.slice(1); } else { h = +dg.slice(0, 2); mi = +dg.slice(2, 4); }
+    const m = h < 24 && mi < 60 && dg.length <= 4;
+    if (m) { el.value = `${pad2(h)}:${pad2(mi)}`; el.defaultValue = el.value; }
+    else { toast('รูปแบบเวลาไม่ถูกต้อง ใช้ ชช:นน เช่น 09:30'); el.value = el.defaultValue; e.stopImmediatePropagation(); }
+  }
+}, true);
+// ปฏิทิน
+let DP = null;
+function closeDP() { if (DP) { DP.el.remove(); DP = null; } }
+function openDP(input) {
+  closeDP();
+  const iso = dateVal(input) || todayISO(), [y, m] = iso.split('-').map(Number);
+  const host = input.closest('dialog') || document.body, pop = document.createElement('div');
+  pop.className = 'dpop'; host.appendChild(pop);
+  DP = { el: pop, input, y, m: m - 1 };
+  const draw = () => {
+    const first = new Date(DP.y, DP.m, 1), start = first.getDay(), days = new Date(DP.y, DP.m + 1, 0).getDate(), sel = dateVal(input), today = todayISO();
+    let cells = '';
+    for (let i = 0; i < start; i++) cells += '<span></span>';
+    for (let d = 1; d <= days; d++) { const di = `${DP.y}-${pad2(DP.m + 1)}-${pad2(d)}`; cells += `<button type="button" data-d="${di}" class="${di === sel ? 'sel' : ''} ${di === today ? 'tdy' : ''}">${d}</button>`; }
+    pop.innerHTML = `<div class="dph"><button type="button" data-nav="-1">‹</button><b>${TH_MON_L[DP.m]} ${DP.y + 543}</b><button type="button" data-nav="1">›</button></div>
+      <div class="dpg">${['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map(x => `<i>${x}</i>`).join('')}${cells}</div>
+      <div class="dpf"><button type="button" data-d="${today}">วันนี้</button><button type="button" data-close>ปิด</button></div>`;
+  };
+  draw();
+  const r = input.getBoundingClientRect();
+  pop.style.left = Math.min(r.left, window.innerWidth - 270) + 'px';
+  pop.style.top = (r.bottom + 4 + 300 > window.innerHeight ? Math.max(4, r.top - 304) : r.bottom + 4) + 'px';
+  pop.onmousedown = ev => ev.preventDefault();
+  pop.onclick = ev => {
+    ev.stopPropagation();
+    const b = ev.target.closest('button'); if (!b) return;
+    if (b.dataset.nav) { DP.m += +b.dataset.nav; if (DP.m < 0) { DP.m = 11; DP.y--; } if (DP.m > 11) { DP.m = 0; DP.y++; } draw(); return; }
+    if (b.dataset.close !== undefined) { closeDP(); return; }
+    if (b.dataset.d) { setDate(input, b.dataset.d); closeDP(); input.dispatchEvent(new Event('change', { bubbles: true })); }
+  };
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('.dbtn');
+  if (b) { const inp = b.parentElement.querySelector('.dfield'); if (DP && DP.input === inp) closeDP(); else openDP(inp); return; }
+  if (DP && !e.target.closest('.dpop') && e.target !== DP.input) closeDP();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && DP) closeDP(); });
+
+
+// =====================================================================
+//  บันทึกเคมี: ฟอร์มบันทึกเคส (บน) + รายการที่เตรียมแล้ว (ล่าง)
+// =====================================================================
+const DAY = { list: null, cur: null };
+
+function blankCase(keep) {
+  keep = keep || {};
+  return { v: { id: '', date: keep.date || M.today, vn: '', HN: '', ward: '', phcode: keep.phcode || (USER && USER.role === 'pharmacist' ? USER.code : ''), emcode: keep.emcode || '',
+    mixTime: (keep.date || M.today) + ' ' + (M.settings.defaultMixTime || nowHM()), wt: '', ht: '', scr: '', regimen: '', note: '' },
+    bottles: [], pat: null, prev: null, dirty: false };
+}
+async function loadList(mode, date) {
+  mode = mode || $('#lsMode').value; date = date || dateVal('#lsDate') || M.today;
+  $('#lsMode').value = mode; setDate('#lsDate', date);
+  setList(await api('apiList', mode, date));
+}
+function setList(r) { DAY.list = r; DAY.list.patIdx = idx(r.patients, 'HN'); renderList(); }
+function caseOf(v) {
+  const L = DAY.list;
+  return { v, bottles: L.bottles.filter(b => b.visitId === v.id).sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true })), pat: L.patIdx[v.HN] || { HN: v.HN } };
+}
+
+// ---------------- รายการที่เตรียมแล้ว ----------------
+function renderList() {
+  const L = DAY.list, el = $('#caseList');
+  const act = L.visits.filter(v => !+v.cancelled), nb = L.bottles.filter(b => act.some(v => v.id === b.visitId)).length;
+  const byP = {}; act.forEach(v => { const p = partnerOf(v.ward); byP[p] = (byP[p] || 0) + 1; });
+  $('#lsSum').textContent = L.visits.length ? `${act.length} เคส · ${nb} ขวด` + (Object.keys(byP).length ? ' · ' + Object.entries(byP).map(([k, n]) => `${k} ${n}`).join(' · ') : '') + (L.visits.length - act.length ? ` · ยกเลิก ${L.visits.length - act.length}` : '') : '';
+  if (!L.visits.length) { el.innerHTML = `<tr><td class="empty">ไม่มีเคส${L.mode === 'prep' ? 'ที่เตรียมในวันที่นี้' : 'ที่ผสมในวันที่นี้'}</td></tr>`; return; }
+  el.innerHTML = `<thead><tr><th>VN</th><th>วันผสม · เวลา</th><th>ผู้ป่วย</th><th>วอร์ด</th><th>รายการ</th><th>ผู้ผสม / ผู้ช่วย</th><th>เตรียมเคสเมื่อ</th><th>รูป</th><th>ยกเลิก</th><th></th></tr></thead>` +
+    L.visits.map(v => { const c = caseOf(v), p = c.pat, nPh = String(v.photos || '').split(',').filter(String).length, cx = +v.cancelled;
+      const printed = c.bottles.length && c.bottles.every(b => +b.printed > 0);
+      return `<tr class="${cx ? 'cancelled' : ''} ${DAY.cur && DAY.cur.v.id === v.id ? 'editing' : ''}" data-id="${esc(v.id)}">
+        <td class="vn" data-label="VN">${esc(v.vn)}</td>
+        <td data-label="วันผสม · เวลา"><b>${dmyPad(v.date)}</b> <span class="muted">${esc((v.mixTime || '').split(' ')[1] || '')}</span></td>
+        <td data-label="ผู้ป่วย" class="c-pt"><div class="nm"><b>${esc((p.title || '') + (p.name || '') + ' ' + (p.surname || ''))}</b> ${+p.allergyFlag ? '<span class="pill red">แพ้ยา</span>' : ''}</div><span class="muted">HN ${esc(v.HN)}</span>${cx ? ' <span class="pill red">ยกเลิก</span>' : ''}</td>
+        <td data-label="วอร์ด">${esc(v.ward)} ${partnerPill(v.ward)}</td>
+        <td data-label="รายการ" class="c-items" style="font-size:13px">${c.bottles.map(b => { const pr = M.prodIdx[b.productcde] || {}; return `<div><b>${esc(pr.generic || pr.productname || b.productcde)}</b> ${fmt(num(b.mg))} ${esc(pr.unit || 'mg')}${b.diluent ? ' <span class="muted">+ ' + esc(dilName(b.diluent)) + '</span>' : ''}</div>`; }).join('')}
+          <div>${printed ? '<span class="pill grn">พิมพ์ฉลากแล้ว</span>' : '<span class="pill amb">ยังไม่พิมพ์</span>'} ${v.doseStatus && v.doseStatus !== 'import' ? `<span class="pill ${v.doseStatus === 'pass' ? 'grn' : v.doseStatus === 'fail' ? 'red' : 'amb'}" title="${esc(v.doseIssues || '')}">dose: ${DOSE_STATUS_TH[v.doseStatus] || v.doseStatus}${v.doseStatus === 'fail' ? ' · ' + esc((DOSE_REASONS.find(r => r[0] === v.doseReason) || ['', ''])[1].replace(' (โปรดระบุ)', '')) : ''}</span>` : ''}</div></td>
+        <td data-label="ผู้ผสม / ผู้ช่วย">${esc(staffName(v.phcode))}<br><span class="muted">${esc(staffName(v.emcode))}</span></td>
+        <td data-label="เตรียมเคสเมื่อ"><span class="muted">${thDate(v.preparedAt, true) || '-'}</span></td>
+        <td data-label="รูป"><button class="btn ${nPh ? '' : 'ghost'} sm" data-photo="${esc(v.id)}" title="ถ่ายรูป / แนบรูปเคส">📷 ${nPh ? nPh + ' รูป' : 'ถ่ายรูป'}</button></td>
+        <td data-label="ยกเลิก" class="c-cx"><input type="checkbox" data-cx="${esc(v.id)}" ${cx ? 'checked' : ''} title="ติ๊กเมื่อเคสนี้ยกเลิก"></td>
+        <td class="c-acts"><div class="acts"><button class="btn ghost sm" data-edit="${esc(v.id)}">แก้ไข</button><button class="btn ghost sm" data-rep="${esc(v.id)}">พิมพ์ซ้ำ</button><button class="btn red sm" data-del="${esc(v.id)}">ลบ</button></div></td></tr>`; }).join('');
+  $$('#caseList [data-edit]').forEach(b => b.onclick = () => editCase(b.dataset.edit));
+  $$('#caseList [data-del]').forEach(b => b.onclick = () => deleteCase(b.dataset.del));
+  $$('#caseList [data-rep]').forEach(b => b.onclick = () => reprintDialog(caseOf(DAY.list.visits.find(v => v.id === b.dataset.rep))));
+  $$('#caseList [data-photo]').forEach(b => b.onclick = () => photoDialog(DAY.list.visits.find(v => v.id === b.dataset.photo)));
+  $$('#caseList [data-cx]').forEach(b => b.onchange = () => toggleCancel(b));
+}
+async function deleteCase(id) {
+  const v = DAY.list.visits.find(x => x.id === id), p = DAY.list.patIdx[v.HN] || {};
+  if (!await ask(`ลบเคส VN ${v.vn} (${dmyPad(v.date)})\n${(p.title || '') + (p.name || '') + ' ' + (p.surname || '')} HN ${v.HN}\nและขวดยาทั้งหมด?\n\nลบแล้วกู้คืนไม่ได้`, 'ลบเคส', { title: 'ยืนยันการลบ', danger: true })) return;
+  setList(await api('apiDeleteVisit', id, DAY.list.mode, DAY.list.date));
+  if (DAY.cur && DAY.cur.v.id === id) { DAY.cur = null; renderForm(); }
+  toast('ลบแล้ว');
+}
+async function toggleCancel(box) {
+  const id = box.dataset.cx, v = DAY.list.visits.find(x => x.id === id);
+  if (box.checked) {
+    const r = await ask(`ทำเครื่องหมาย “ยกเลิก” เคส VN ${v.vn} HN ${v.HN}?\nเคสที่ยกเลิกจะไม่นับในรายงาน`, 'ยกเลิกเคส', { title: 'ยกเลิกเคส', input: 'เหตุผล (ไม่บังคับ) เช่น ผลเลือดไม่ผ่าน, คนไข้ไม่มา', danger: true });
+    if (!r) { box.checked = false; return; }
+    Object.assign(v, await api('apiSetCancelled', id, true, r.value));
+  } else {
+    if (!await ask(`เอาเครื่องหมายยกเลิกออก (กลับมาเป็นเคสปกติ)?`, 'ยืนยัน')) { box.checked = true; return; }
+    Object.assign(v, await api('apiSetCancelled', id, false, ''));
+  }
+  renderList();
+}
+
+// ---------------- ฟอร์มบันทึกเคส ----------------
+async function editCase(id) {
+  if (DAY.cur && DAY.cur.dirty && !await ask('มีข้อมูลในฟอร์มที่ยังไม่บันทึก ต้องการทิ้งแล้วเปิดเคสนี้แทน?', 'ทิ้งข้อมูล')) return;
+  const v = Object.assign({}, DAY.list.visits.find(x => x.id === id));
+  v.doseIncomplete = v.doseStatus === 'incomplete';
+  const c = caseOf(v);
+  DAY.cur = { v, bottles: c.bottles.map(b => Object.assign({}, b)), pat: c.pat, prev: null, dirty: false };
+  renderForm(); renderList();
+  $('#caseForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  api('apiPatient', v.HN).then(r => { if (DAY.cur && DAY.cur.v.id === id) { DAY.cur.prev = r; renderPrevHint(); } }).catch(() => {});
+}
+function newCase() {
+  const last = DAY.lastKeep || {};
+  DAY.cur = blankCase({ date: M.today, phcode: last.phcode, emcode: last.emcode });
+  renderForm(); renderList();
+  $('#caseForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => { const i = $('#pSearch'); if (i) i.focus(); }, 250);
+}
+async function closeForm(force) {
+  if (!force && DAY.cur && DAY.cur.dirty && !await ask('มีข้อมูลในฟอร์มที่ยังไม่บันทึก ต้องการปิดฟอร์มและทิ้งข้อมูล?', 'ปิดฟอร์ม', { danger: true })) return;
+  DAY.cur = null; renderForm(); renderList();
+}
+const resetForm = () => closeForm(false);
+function sec(n, title, extra, body) { return `<div class="fsec"><div class="fsh"><span class="n">${n}</span>${title}${extra || ''}</div><div class="fsb">${body}</div></div>`; }
+function renderForm() {
+  const box = $('#caseForm');
+  if (!DAY.cur) {
+    box.innerHTML = `<div class="addcase"><button class="btn" id="btnNewCase">+ เพิ่มเคส</button>
+      <div><b style="font-size:16px">บันทึกเคสเคมีบำบัด</b><div class="muted">กด “เพิ่มเคส” เพื่อเปิดฟอร์ม · แก้ไขเคสเดิมได้จากปุ่ม “แก้ไข” ในรายการด้านล่าง</div></div></div>`;
+    $('#btnNewCase').onclick = newCase; return;
+  }
+  const c = DAY.cur, v = c.v, pt = c.pat && c.pat.name ? c.pat : null, age = pt ? ageOf(pt.dob, v.date) : null, reg = regOf(v.regimen);
+  if (!c.pick) c.pick = { mode: 'all', q: '', cls: '', cancer: reg ? reg.c : '' };
+  const patBody = pt ? `<div class="pcard">
+      <div><div class="big">${esc((pt.title || '') + pt.name + ' ' + (pt.surname || ''))}</div>
+      <div class="muted">HN <b>${esc(pt.HN)}</b> · เกิด ${dmyPad(pt.dob) || '-'}${age != null ? ' (' + age + ' ปี)' : ''} · ${pt.sex === 'M' ? 'ชาย' : pt.sex === 'F' ? 'หญิง' : 'ไม่ระบุเพศ'}</div></div>
+      ${+pt.allergyFlag ? `<div class="allergy">⚠ แพ้ยา: ${esc(pt.allergy || 'ไม่ระบุ')}</div>` : '<span class="pill grn">ไม่มีประวัติแพ้ยา</span>'}
+      <span class="right"></span><button class="btn ghost sm" id="btnEditPat">แก้ไขข้อมูลผู้ป่วย</button>${!v.id ? '<button class="btn ghost sm" id="btnChangePat">เปลี่ยนคน</button>' : ''}</div>`
+    : `<div class="row"><div class="fld sr" style="flex:1">ค้นหาผู้ป่วย (HN หรือ ชื่อ-นามสกุล)
+        <input id="pSearch" placeholder="เช่น 650102221 หรือ ณฐวร" autocomplete="off"><div class="drop" id="pDrop" hidden></div></div>
+        <button class="btn ghost" id="btnNewPat">+ ผู้ป่วยใหม่</button></div>`;
+  const mixBody = `<div class="row">
+      <div class="fld"><span>วันที่ผสม <span class="req">*</span></span>${dInput('vDate', v.date)}</div>
+      <div class="fld">เวลาผสม${tInput('vTime', (v.mixTime || '').split(' ')[1] || '')}</div>
+      <div class="fld"><span>เภสัชกรผู้ผสม <span class="req">*</span></span><select id="vPh">${staffOpts('pharmacist', v.phcode)}</select></div>
+      <div class="fld">ผู้ช่วยเภสัชกร (เตรียมเคส)<select id="vEm">${staffOpts('assistant', v.emcode)}</select></div>
+      <div class="fld">แผนก / วอร์ด / รพ.<select id="vWard">${wardOpts(v.ward)}</select></div></div>
+    ${v.date !== M.today ? `<div class="chk amber" style="margin-bottom:0">วันที่ผสม ${dmyPad(v.date)} ไม่ใช่วันนี้ — เคสนี้จะไปอยู่ในรายงานของวันที่ ${dmyPad(v.date)}</div>` : ''}`;
+  const doseBody = `<div class="incbox ${v.doseIncomplete ? 'on' : ''}" style="margin-top:0"><label style="display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)"><input type="checkbox" id="vInc" ${v.doseIncomplete ? 'checked' : ''}> ข้อมูลไม่ครบ (ไม่ตรวจสอบขนาดยา)</label>
+      ${v.doseIncomplete ? `<div class="fld" style="flex:1;min-width:220px"><input id="vIncNote" placeholder="หมายเหตุ เช่น ไม่มีผล SCr / ไม่ทราบน้ำหนัก (ไม่บังคับ)" value="${esc(v.doseReasonNote || '')}"></div>` : '<span class="muted">ติ๊กเมื่อไม่มีน้ำหนัก ส่วนสูง หรือข้อมูลที่ต้องใช้ตรวจ</span>'}</div>
+    ${v.doseIncomplete ? '' : `<div class="dosetop">
+        <div class="fld"><span>น้ำหนัก (kg) <span class="req">*</span></span><input id="vWt" type="number" step="0.1" style="width:110px" value="${esc(v.wt)}"></div>
+        <div class="fld"><span>ส่วนสูง (cm) <span class="req">*</span></span><input id="vHt" type="number" step="0.1" style="width:110px" value="${esc(v.ht)}"></div>
+        <div class="fld"><span>SCr (mg/dL)</span><input id="vScr" type="number" step="0.01" style="width:110px" value="${esc(v.scr)}"></div>
+        <div class="chips" id="pCalc"></div>
+      </div>
+      <div class="dosegrid2">
+        <div class="picker">
+          <h4>เลือกสูตรยา <span class="req">*</span> <span class="b" id="regCount"></span></h4>
+          <div class="seg2" id="smode">${[['all', 'ทั้งหมด'], ['reg', 'ชื่อสูตร'], ['drug', 'ชื่อยา'], ['cancer', 'โรค']].map(([k, t]) => `<button type="button" data-m="${k}" class="${c.pick.mode === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+          <input id="regQ" type="search" placeholder="${esc(PICK_PH[c.pick.mode])}" value="${esc(c.pick.q)}" autocomplete="off">
+          <div class="fl" id="clsf">${[['', 'ทั้งหมด'], ['chemo', 'Chemo'], ['targeted', 'Targeted'], ['io', 'Immunotherapy'], ['hormone', 'Hormone']].map(([k, t]) => `<button type="button" data-k="${k}" class="${c.pick.cls === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+          <select id="regCancer" class="csel"><option value="">— ทุกชนิดมะเร็ง —</option>${Object.entries(CANCERS).map(([k, t]) => `<option value="${k}" ${k === c.pick.cancer ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
+          <div id="regList"></div>
+        </div>
+        <div class="regpanel"><div class="muted" style="margin-bottom:6px;font-weight:600">สูตรที่เลือก · ขนาดมาตรฐานคำนวณจาก BSA/น้ำหนัก/CrCl</div><div id="regCard"></div></div>
+      </div>`}`;
+  const bottleBody = `<div class="row" style="align-items:center;margin-bottom:8px"><span class="muted">ขวดที่รันเลขให้อัตโนมัติ เมื่อยา + ขนาด + สารน้ำเหมือนกัน</span><span class="right"></span><span id="prevHint"></span>
+      <button class="btn ghost sm" id="btnFromReg" ${reg && !v.doseIncomplete ? '' : 'disabled'} title="เพิ่มขวดตามสูตรที่เลือก">เติมจากสูตร</button>
+      <button class="btn sm" id="btnAddB">+ เพิ่มขวด</button></div>
+    <div style="overflow-x:auto"><table class="bt" id="btable"></table></div>
+    <div class="muted" style="margin-top:8px">ปริมาตรรวมคำนวณอัตโนมัติ (ml ยา + ml สารน้ำ) · เคสพิเศษ เช่น ดึงน้ำเกลือออกก่อนเติมยา พิมพ์ทับในช่อง “ปริมาตรรวม” ได้ ระบบจะคำนวณ ml/hr ความเข้มข้น และฉลากจากค่าที่แก้ (กด ↺ กลับค่าอัตโนมัติ)</div>
+    <datalist id="dlProd">${chemoProducts().sort((a, b) => a.productname.localeCompare(b.productname)).map(p => `<option value="${esc(prodLabel(p.productcde))}">`).join('')}</datalist>
+    <datalist id="dlDil">${M.diluents.filter(d => !+d.off).map(d => `<option value="${esc(dilLabel(d.pcode))}">`).join('')}</datalist>`;
+  box.innerHTML = `
+    <div class="fhead"><h2 style="margin:0">${v.id ? 'แก้ไขเคส' : 'บันทึกเคสใหม่'}</h2>
+      ${v.id ? `<span class="tag edit">VN ${esc(v.vn)} · ผสม ${dmyPad(v.id.slice(0, 10))}</span><span class="muted">เตรียมเคสเมื่อ ${thDate(v.preparedAt, true) || '-'}</span>` : '<span class="tag">เคสใหม่</span>'}
+      <span class="right"></span><button class="btn ghost sm" id="fReset">✕ ปิดฟอร์ม</button></div>
+    ${sec(1, 'ผู้ป่วย', '', patBody)}
+    ${sec(2, 'ข้อมูลการผสม', '', mixBody)}
+    ${sec(3, 'ตรวจสอบขนาดยา <span class="req">*</span>', '<span class="muted">ระบบเดียวกับแอปเภสัชกรเคมีบำบัด · บังคับก่อนบันทึก</span><span class="right"></span><span id="doseBadge"></span>', doseBody)}
+    ${sec(4, 'ขวดยา', '', bottleBody)}
+    ${sec(5, 'ผลตรวจสอบ', '', '<div id="checkOut"></div>')}
+    <div class="factions">
+      <div class="fld" style="flex:1;min-width:220px">หมายเหตุ<input id="vNote" value="${esc(v.note)}"></div>
+      <button class="btn ghost" id="btnPreview">ดูฉลาก</button>
+      <button class="btn" id="btnSave">${v.id ? 'บันทึกการแก้ไข' : 'บันทึก'}</button>
+      <button class="btn" id="btnSavePrint">บันทึก + พิมพ์ฉลาก</button>
+    </div>`;
+  bindForm(); renderBottles(); renderCheck(); renderPrevHint();
+}
+let BT_LOCK = 0;
+const PICK_PH = { all: 'ค้นหา: สูตร, ยา, ชื่อการค้า, โรค…', reg: 'ชื่อสูตร เช่น FOLFOX, R-CHOP, AC', drug: 'ชื่อยา/ชื่อการค้า เช่น cisplatin, Herceptin', cancer: 'ชื่อโรค เช่น ท่อน้ำดี, NPC, lung' };
+R.forEach(g => { g.cls = [...new Set(g.d.map(x => (DL[drugKey(x.n)] || {}).cls).filter(c => c && c !== 'support'))]; });
+const baseName = n => n.replace(/\s*\(.*?\)/g, '').replace(/\s+(bolus|infusion|loading|maintenance|weekly|push)$/i, '').trim();
+const drugNamesOf = g => [...new Set(g.d.map(x => baseName(x.n)))].join(' + ');
+const drugHay = g => g.d.map(x => x.n + ' ' + (BRAND[drugKey(x.n)] || '')).join(' ');
+function hl(text, terms) { let h = esc(text); terms.forEach(t => { const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'); h = h.replace(re, '<mark>$1</mark>'); }); return h; }
+function renderRegList() {
+  const c = DAY.cur, P = c.pick, el = $('#regList'); if (!el) return;
+  const terms = P.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const list = R.filter(g => {
+    if (P.cancer && g.c !== P.cancer) return false;
+    if (P.cls && !g.cls.includes(P.cls)) return false;
+    if (!terms.length) return true;
+    const reg = g.n + ' ' + (g.kw || ''), drug = drugHay(g), can = CANCERS[g.c] + ' ' + CANCER_KW[g.c] + ' ' + (g.s || '');
+    const hay = (P.mode === 'reg' ? reg : P.mode === 'drug' ? drug : P.mode === 'cancer' ? can : reg + ' ' + drug + ' ' + can + ' ' + (g.ref || '')).toLowerCase();
+    return terms.every(t => hay.includes(t));
+  });
+  $('#regCount').textContent = list.length + ' สูตร';
+  const ht = P.mode === 'cancer' ? [] : terms, sel = regOf(c.v.regimen);
+  let info = '';
+  if (terms.length && P.mode !== 'reg' && P.mode !== 'cancer') {
+    const keys = [...new Set(R.flatMap(g => g.d.map(x => drugKey(x.n))))].filter(k => terms.every(t => (k + ' ' + (BRAND[k] || '')).toLowerCase().includes(t)));
+    if (keys.length && keys.length <= 3) info = keys.map(k => { const L = DL[k] || {}; return `<div class="dinfo"><b>💊 ${esc(k)}</b>${BRAND[k] ? ` <span class="muted">${esc(BRAND[k])}</span>` : ''} ${L.cls ? `<span class="b b-${L.cls}">${CLS_LABEL[L.cls]}</span>` : ''}<div class="muted">อยู่ใน ${R.filter(g => g.d.some(x => drugKey(x.n) === k)).length} สูตร</div>${L.note ? `<div>${esc(L.note)}</div>` : ''}</div>`; }).join('');
+  }
+  el.innerHTML = info + (list.length ? list.map(g => `<button type="button" class="ri ${sel && sel.key === g.key ? 'on' : ''}" data-k="${esc(g.key)}">
+    <div class="rn">${hl(g.n, P.mode === 'drug' ? [] : ht)}</div><div class="rd">${hl(drugNamesOf(g), P.mode === 'reg' ? [] : ht)}</div><div class="rs">${esc(CANCERS[g.c])} · ${esc(g.s || '')}</div>
+    <div class="rt">${g.cls.map(x => `<span class="b b-${x}">${CLS_LABEL[x]}</span>`).join('')}</div></button>`).join('') : '<div class="muted" style="padding:8px">ไม่พบสูตร ลองคำค้นอื่นหรือเปลี่ยนโหมดค้นหา</div>');
+  $$('#regList [data-k]').forEach(b => b.onclick = () => { c.v.regimen = b.dataset.k; c.v.doseReason = ''; c.dirty = true; $$('#regList .ri').forEach(x => x.classList.toggle('on', x === b)); renderCheck(); const fb = $('#btnFromReg'); if (fb) fb.disabled = false; });
+}
+function renderRegCard() {
+  const c = DAY.cur, el = $('#regCard'); if (!el) return;
+  const reg = regOf(c.v.regimen), P = patientCalc(c.v, c.pat);
+  if (!reg) { el.innerHTML = '<div class="chk amber" style="margin:0">ยังไม่ได้เลือกสูตรยา — เลือกจากรายการทางซ้าย</div>'; return; }
+  el.innerHTML = `<div class="regcard"><div class="row" style="align-items:center"><div class="t">${esc(reg.n)}</div><span class="right"></span><button type="button" class="btn ghost xs" id="regClear">ล้างสูตร</button></div>
+    <div class="muted">${esc(CANCERS[reg.c] || '')}${reg.s ? ' · ' + esc(reg.s) : ''}${reg.cy ? ' · ' + esc(reg.cy) : ''}</div>
+    <table>${reg.d.map(dr => { const s = calcStd(dr, P); return `<tr><td><b>${esc(dr.n)}</b></td><td>${esc(stdText(dr))}</td><td>${esc(dr.days || '')}</td><td>${esc(dr.route || '')}</td><td style="text-align:right">${s && s.std != null ? '<b>' + fmt(s.std) + '</b> ' + (dr.unit.startsWith('units') ? 'units' : 'mg') : s && s.need ? '<span class="muted">ใส่' + esc(s.need) + '</span>' : ''}</td></tr>`; }).join('')}</table>
+    ${reg.note ? `<div class="muted" style="margin-top:4px">${esc(reg.note)}</div>` : ''}${reg.ref ? `<div class="muted">อ้างอิง: ${esc(reg.ref)}</div>` : ''}</div>`;
+  $('#regClear').onclick = () => { c.v.regimen = ''; c.dirty = true; renderRegList(); renderCheck(); const fb = $('#btnFromReg'); if (fb) fb.disabled = true; };
+}
+/** สถานะการตรวจขนาดยา: pass / fail / incomplete / missing (กรอกไม่ครบ) */
+function doseState(c) {
+  const v = c.v;
+  if (v.doseIncomplete) return { status: 'incomplete', missing: [], r: null, bad: [] };
+  const missing = [];
+  if (!(num(v.wt) > 0)) missing.push('น้ำหนัก'); if (!(num(v.ht) > 0)) missing.push('ส่วนสูง');
+  if (!regOf(v.regimen)) missing.push('สูตรยา');
+  const r = doseCheck(v, c.bottles.filter(b => b.productcde), c.pat);
+  r.items.forEach(it => { const m = /^กรอก (.+) เพื่อตรวจขนาดยา$/.exec(it.title || ''); if (m) m[1].split('/').forEach(x => { if (!missing.includes(x)) missing.push(x); }); });
+  if (!c.bottles.some(b => b.productcde)) missing.push('ขวดยา');
+  if (missing.length) return { status: 'missing', missing, r, bad: [] };
+  const bad = r.items.filter(it => ['red', 'amber', 'blue'].includes(it.lvl)).concat(r.general.filter(g => g.lvl === 'amber'));
+  return { status: bad.length ? 'fail' : 'pass', missing, r, bad };
+}
+const DOSE_REASONS = [['prev', 'ผู้ป่วยเคยได้รับขนาดนี้มาก่อน'], ['confirmed', 'ทวนแพทย์แล้ว แพทย์ยืนยัน'], ['other', 'อื่นๆ (โปรดระบุ)']];
+const DOSE_STATUS_TH = { pass: 'ผ่าน', fail: 'ไม่ผ่าน', incomplete: 'ข้อมูลไม่ครบ', missing: 'ยังตรวจไม่ครบ', import: 'ข้อมูลเก่า' };
+function renderBottles() {
+  const c = DAY.cur, rows = autoNumber(c.bottles, c.v), routes = lookup('route'), units = lookup('rateUnit');
+  // ถ้ามีช่องที่ยัง focus อยู่ ให้ blur ก่อน (change จะบันทึกค่าลงข้อมูลโดยไม่ render ซ้อน)
+  BT_LOCK++; try { const ae = document.activeElement; if (ae && ae.closest && ae.closest('#btable')) ae.blur(); } finally { BT_LOCK--; }
+  $('#btable').innerHTML = `<tr class="bt-head"><th style="width:48px">ขวดที่</th><th style="min-width:250px">ยา (ค้นชื่อยา/ชื่อสามัญ)</th><th style="width:90px">ขนาด</th><th style="min-width:170px">สารน้ำ (IN)</th><th style="width:110px">Route</th><th style="width:66px">Rate</th><th style="width:78px">หน่วย</th><th style="width:110px">ปริมาตรรวม (ml)</th><th>คำนวณ</th><th></th></tr>` +
+    (rows.length ? rows.map((b, i) => { const k = bottleCalc(b, c.v), p = k.p;
+      return `<tr data-i="${i}">
+        <td data-label="ขวดที่"><div class="bno">${esc(b.bottleNo)}</div>${b._of > 1 ? `<div class="muted" style="text-align:center">จาก ${b._of}</div>` : ''}</td>
+        <td data-label="ยา" class="b-drug"><input data-f="productcde" list="dlProd" value="${esc(prodLabel(b.productcde))}" placeholder="พิมพ์ชื่อยาหรือชื่อสามัญ">
+          ${p ? `<div class="muted">${esc(p.generic || '')}${num(p.mgPerMl) ? ' · ' + p.mgPerMl + ' mg/ml' : ''}</div>` : b.productcde ? '<div class="muted" style="color:var(--red)">ไม่พบรหัสยานี้</div>' : ''}</td>
+        <td data-label="ขนาด"><input data-f="mg" type="number" step="any" value="${esc(b.mg)}"><div class="muted">${esc(p ? p.unit : '')}</div></td>
+        <td data-label="สารน้ำ (IN)" class="b-wide"><input data-f="diluent" list="dlDil" value="${esc(dilLabel(b.diluent))}" placeholder="-"></td>
+        <td data-label="Route"><select data-f="route">${routes.map(r => `<option value="${esc(r.code)}" ${r.code === b.route ? 'selected' : ''}>${esc(r.text)}</option>`).join('')}${b.route && !routes.some(r => r.code === b.route) ? `<option selected>${esc(b.route)}</option>` : ''}</select></td>
+        <td data-label="Rate"><input data-f="rate" value="${esc(b.rate)}"></td>
+        <td data-label="หน่วย"><select data-f="rateUnit"><option value=""></option>${units.map(u => `<option ${u.code === b.rateUnit ? 'selected' : ''}>${esc(u.code)}</option>`).join('')}</select></td>
+        <td data-label="ปริมาตรรวม (ml)"><div style="display:flex;gap:3px"><input data-f="tvol" type="number" step="any" class="${k.over ? 'tv-over' : ''}" value="${esc(b.tvol)}" placeholder="${k.tvolAuto ? fmt(k.tvolAuto, 1) : ''}" title="ว่าง = ใช้ค่าอัตโนมัติ">${k.over ? `<button class="btn ghost xs" data-reset="${i}" title="กลับไปใช้ค่าอัตโนมัติ">↺</button>` : ''}</div>
+          <div class="muted">${k.over ? `<span style="color:var(--amb)">แก้เอง (อัตโนมัติ ${fmt(k.tvolAuto, 1)})</span>` : 'อัตโนมัติ'}</div></td>
+        <td class="calc b-wide" data-label="คำนวณ">${k.mlDrug != null ? `ยา <b>${fmt(k.mlDrug)}</b> ml` : ''}${k.vials != null ? ` · <b>${fmt(k.vials)}</b> vial` : ''}<br>
+          ${k.tvol ? `รวม <b>${fmt(k.tvol, 1)}</b> ml` : ''}${k.mlhr ? ` · <b>${fmt(k.mlhr)}</b> ml/hr` : ''}${k.hours ? ` · ${fmt(k.hours, 1)} ชม.` : ''}${k.conc ? ` · ${fmt(k.conc)} mg/ml` : ''}<br>
+          ${k.exp ? `หมดอายุ ${thDate(k.exp, true)}` : p ? '<span style="color:var(--amb)">ไม่มี stability</span>' : ''}${+b.printed ? ` · <span class="pill grn">พิมพ์ ${b.printed}</span>` : ''}</td>
+        <td class="b-del"><button class="btn red sm" data-del="${i}" title="ลบขวดนี้">✕</button></td></tr>`; }).join('')
+    : `<tr><td colspan="10" class="muted" style="padding:14px">ยังไม่มีขวดยา กด “+ เพิ่มขวด”, “ดึงยาครั้งก่อน” หรือ “เติมจากสูตร”</td></tr>`);
+  $$('#btable [data-f]').forEach(el => el.onchange = () => {
+    const i = +el.closest('tr').dataset.i, f = el.dataset.f; let val = el.value;
+    if (f === 'productcde' || f === 'diluent') val = codeIn(val);
+    c.bottles[i][f] = val; c.dirty = true;
+    if (BT_LOCK) return;
+    renderBottles(); renderCheck();
+  });
+  $$('#btable [data-reset]').forEach(b => b.onclick = () => { c.bottles[+b.dataset.reset].tvol = ''; c.dirty = true; renderBottles(); });
+  $$('#btable [data-del]').forEach(b => b.onclick = async () => {
+    const x = c.bottles[+b.dataset.del], p = M.prodIdx[x.productcde];
+    if (!await ask(`ลบขวดที่ ${x.bottleNo || ''}: ${p ? (p.generic || p.productname) : (x.productcde || '(ว่าง)')} ${x.mg || ''} ${p ? p.unit : ''}${x.diluent ? ' ใน ' + dilName(x.diluent) : ''}\nแน่ใจหรือไม่?`, 'ลบขวด', { title: 'ยืนยันการลบขวด', danger: true })) return;
+    c.bottles.splice(+b.dataset.del, 1); c.dirty = true; renderBottles(); renderCheck();
+  });
+}
+const newBottle = over => Object.assign({ bottleNo: 1, productcde: '', mg: '', diluent: '', route: 'IV1', rate: '', rateUnit: 'hr', tvol: '', note: '', printed: 0 }, over || {});
+function renderCheck() {
+  const c = DAY.cur, v = c.v, st = doseState(c), P = patientCalc(v, c.pat);
+  const pc = $('#pCalc');
+  if (pc) pc.innerHTML = P.ok ? `<div class="chip"><span>BSA (Mosteller)</span><b>${fmt(P.bsa, 2)}</b> m²</div><div class="chip"><span>BMI</span><b>${fmt(P.bmi, 1)}</b></div>` +
+    (P.age != null ? `<div class="chip"><span>อายุ</span><b>${P.age}</b> ปี</div>` : '') +
+    (P.okRenal ? `<div class="chip"><span>CrCl (C-G)</span><b>${fmt(P.crcl)}</b> ml/min</div>` : `<div class="chip"><span>CrCl</span><b>—</b><span>${P.sex ? 'ใส่ SCr' : 'ไม่ทราบเพศ'}</span></div>`)
+    : '<div class="muted" style="grid-column:1/-1">ใส่น้ำหนัก/ส่วนสูง เพื่อคำนวณ BSA</div>';
+  renderRegCard();
+  const badge = $('#doseBadge'); if (badge) badge.innerHTML = `<span class="dstat ${st.status}">${DOSE_STATUS_TH[st.status]}</span>`;
+  const out = $('#checkOut');
+  if (st.status === 'incomplete') { out.innerHTML = `<div class="chk amber" style="margin-top:0">ติ๊ก “ข้อมูลไม่ครบ” ไว้ — ไม่ได้ตรวจสอบขนาดยาในเคสนี้ (ระบบบันทึกสถานะนี้ไว้)</div>`; return; }
+  const r = st.r;
+  const box = (lvl, t, msgs) => `<div class="chk ${lvl}"><div class="t">${t}</div>${msgs && msgs.length ? '<ul>' + msgs.map(m => '<li>' + esc(m) + '</li>').join('') + '</ul>' : ''}</div>`;
+  out.innerHTML = `<div style="margin-bottom:6px">สถานะ: <span class="dstat ${st.status}">${DOSE_STATUS_TH[st.status]}</span></div>` +
+    (st.status === 'missing' ? `<div class="chk gray"><div class="t">กรอกให้ครบก่อนบันทึก: ${esc(st.missing.join(', '))}</div><div class="muted">หรือติ๊ก “ข้อมูลไม่ครบ” ถ้าไม่มีข้อมูล</div></div>` : '') +
+    r.general.map(g => box(g.lvl, esc(g.t))).join('') +
+    r.items.map(it => box(it.lvl, `${esc(it.name)}${it.n > 1 ? ' (' + it.n + ' ขวด)' : ''}${it.title ? ' — ' + esc(it.title) : ''}`, it.msgs)).join('') +
+    (st.status === 'fail' ? `<div class="reasonbox"><div style="color:var(--red);font-weight:700;margin-bottom:4px">ผลตรวจสอบไม่ผ่าน — เลือกเหตุผลก่อนบันทึก <span class="req">*</span></div>
+      ${DOSE_REASONS.map(([k, t]) => `<label><input type="radio" name="dReason" value="${k}" ${v.doseReason === k ? 'checked' : ''}> ${t}</label>`).join('')}
+      <div class="fld" id="dReasonNoteWrap" ${v.doseReason === 'other' ? '' : 'hidden'} style="margin-top:4px"><textarea id="dReasonNote" rows="2" placeholder="ระบุเหตุผล">${esc(v.doseReason === 'other' ? v.doseReasonNote || '' : '')}</textarea></div></div>` : '') +
+    `<div class="muted" style="margin-top:6px">เป็นเครื่องมือช่วย double-check ไม่ใช่คำสั่งการรักษา ยืนยันกับ protocol ของโรงพยาบาลและแพทย์ผู้สั่งเสมอ</div>`;
+  $$('[name=dReason]').forEach(x => x.onchange = () => { v.doseReason = x.value; c.dirty = true; $('#dReasonNoteWrap').hidden = x.value !== 'other'; if (x.value !== 'other') v.doseReasonNote = ''; else $('#dReasonNote').focus(); });
+  const rn = $('#dReasonNote'); if (rn) rn.oninput = () => { v.doseReasonNote = rn.value; c.dirty = true; };
+}
+function renderPrevHint() {
+  const c = DAY.cur, el = $('#prevHint'); if (!el) return;
+  const prev = c.prev; if (!prev || !prev.visits) { el.innerHTML = ''; return; }
+  const last = prev.visits.find(x => x.id !== c.v.id && x.date <= c.v.date) || prev.visits.find(x => x.id !== c.v.id);
+  if (!last) { el.innerHTML = '<span class="muted">ไม่มีประวัติครั้งก่อน</span>'; return; }
+  const bs = prev.bottles.filter(b => b.visitId === last.id);
+  el.innerHTML = `<button class="btn ghost sm" id="btnPrev" title="${esc(bs.map(b => ((M.prodIdx[b.productcde] || {}).generic || b.productcde) + ' ' + b.mg).join(' / '))}">ดึงยาครั้งก่อน (${dmyPad(last.date)} · ${bs.length} ขวด)</button>`;
+  $('#btnPrev').onclick = async () => {
+    if (c.bottles.length && !await ask('แทนที่ขวดยาที่มีอยู่ด้วยยาครั้งก่อน?', 'แทนที่')) return;
+    c.bottles = bs.sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true })).map(b => newBottle({ productcde: b.productcde, mg: b.mg, diluent: b.diluent, route: b.route, rate: b.rate, rateUnit: b.rateUnit, tvol: b.tvol }));
+    ['wt', 'ht'].forEach(k => { if (!c.v[k] && last[k]) c.v[k] = last[k]; });
+    if (!c.v.regimen && last.regimen && regOf(last.regimen)) { c.v.regimen = last.regimen; c.pick = { mode: 'all', q: '', cls: '', cancer: regOf(last.regimen).c }; }
+    c.dirty = true; renderForm(); toast('ดึงยาครั้งก่อนแล้ว ตรวจขนาดยาก่อนบันทึก');
+  };
+}
+function bindForm() {
+  const c = DAY.cur, v = c.v;
+  const set = (id, k, fn) => { const el = $(id); if (el) el.oninput = el.onchange = () => { v[k] = fn ? fn(el.value) : el.value; c.dirty = true; if (['wt', 'ht', 'scr'].includes(k)) renderCheck(); if (k === 'mixTime') renderBottles(); }; };
+  set('#vPh', 'phcode'); set('#vEm', 'emcode'); set('#vWard', 'ward'); set('#vNote', 'note');
+  set('#vWt', 'wt'); set('#vHt', 'ht'); set('#vScr', 'scr');
+  const vt = $('#vTime'); vt.onchange = () => { v.mixTime = v.date + ' ' + (vt.value || nowHM()); c.dirty = true; renderBottles(); };
+  $('#vDate').onchange = () => { v.date = dateVal('#vDate') || M.today; v.mixTime = v.date + ' ' + ((v.mixTime || '').split(' ')[1] || nowHM()); c.dirty = true; renderForm(); };
+  $('#fReset').onclick = resetForm;
+  const ps = $('#pSearch');
+  if (ps) {
+    let tm; const drop = $('#pDrop');
+    ps.oninput = () => { clearTimeout(tm); const q = ps.value.trim(); if (q.length < 2) { drop.hidden = true; return; }
+      tm = setTimeout(async () => { const list = await api('apiSearchPatients', q);
+        drop.innerHTML = list.length ? list.map((p, i) => `<div data-i="${i}"><b>${esc(p.title + p.name + ' ' + p.surname)}</b> <small>HN ${esc(p.HN)} · เกิด ${thDate(p.dob)} · มาล่าสุด ${thDate(p.lastVisit)}</small></div>`).join('') : '<div class="muted">ไม่พบ กด “+ ผู้ป่วยใหม่”</div>';
+        drop.hidden = false; $$('#pDrop [data-i]').forEach(x => x.onclick = () => pickPatient(list[+x.dataset.i])); }, 250); };
+    ps.onblur = () => setTimeout(() => drop.hidden = true, 250);
+  }
+  const bn = $('#btnNewPat'); if (bn) bn.onclick = () => editPatient({ HN: ps && /\d/.test(ps.value) ? ps.value.trim() : '', name: ps && !/\d/.test(ps.value) ? ps.value.trim() : '' }, true, pickPatient);
+  const be = $('#btnEditPat'); if (be) be.onclick = () => editPatient(c.pat, false, p => { c.pat = p; if (DAY.list.patIdx[p.HN]) Object.assign(DAY.list.patIdx[p.HN], p); renderForm(); renderList(); });
+  const bc = $('#btnChangePat'); if (bc) bc.onclick = () => { c.pat = null; v.HN = ''; renderForm(); };
+  // ข้อมูลไม่ครบ
+  $('#vInc').onchange = e => { v.doseIncomplete = e.target.checked; if (!v.doseIncomplete) v.doseReasonNote = ''; v.doseReason = ''; c.dirty = true; renderForm(); };
+  const inc = $('#vIncNote'); if (inc) inc.oninput = () => { v.doseReasonNote = inc.value; c.dirty = true; };
+  // ตัวเลือกสูตร
+  if (!v.doseIncomplete) {
+    $('#smode').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; c.pick.mode = b.dataset.m; $$('#smode [data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#regQ').placeholder = PICK_PH[c.pick.mode]; $('#regQ').focus(); renderRegList(); };
+    $('#regQ').oninput = e => { c.pick.q = e.target.value; renderRegList(); };
+    $('#clsf').onclick = e => { const b = e.target.closest('[data-k]'); if (!b) return; c.pick.cls = b.dataset.k; $$('#clsf [data-k]').forEach(x => x.classList.toggle('on', x === b)); renderRegList(); };
+    $('#regCancer').onchange = e => { c.pick.cancer = e.target.value; renderRegList(); };
+    renderRegList(); renderRegCard();
+  }
+  const bfr = $('#btnFromReg'); if (bfr) bfr.onclick = fillFromRegimen;
+  $('#btnAddB').onclick = () => { c.bottles.push(newBottle()); c.dirty = true; renderBottles(); renderCheck(); const ins = $$('#btable [data-f="productcde"]'); ins[ins.length - 1].focus(); };
+  $('#btnSave').onclick = () => saveCase(false);
+  $('#btnSavePrint').onclick = () => saveCase(true);
+  $('#btnPreview').onclick = () => previewCase({ v: c.v, bottles: autoNumber(c.bottles.filter(b => b.productcde), c.v), pat: c.pat });
+}
+async function pickPatient(p) {
+  const c = DAY.cur; c.pat = p; c.v.HN = p.HN; if (!c.v.ward) c.v.ward = p.ward || '';
+  if (!c.v.wt && p.wt) c.v.wt = p.wt; if (!c.v.ht && p.ht) c.v.ht = p.ht;
+  c.dirty = true; renderForm();
+  c.prev = await api('apiPatient', p.HN).catch(() => null); renderPrevHint();
+  if (c.prev && c.prev.visits.some(x => x.date === c.v.date && x.id !== c.v.id)) toast('ผู้ป่วยนี้มีเคสที่ผสมวันเดียวกันอยู่แล้ว ตรวจสอบว่าไม่ซ้ำ');
+}
+function fillFromRegimen() {
+  const c = DAY.cur, reg = regOf(c.v.regimen); if (!reg) return;
+  const P = patientCalc(c.v, c.pat), had = new Set(c.bottles.map(b => prodKey(M.prodIdx[b.productcde])));
+  let added = 0;
+  reg.d.forEach(dr => {
+    if (/^po|oral/i.test(dr.route || '')) return;
+    const k = drugKey(dr.n); if (had.has(k)) return;
+    const p = chemoProducts().find(x => prodKey(x) === k), s = calcStd(dr, P);
+    c.bottles.push(newBottle({ productcde: p ? p.productcde : '', mg: s && s.std != null ? Math.round(s.std * 10) / 10 : '', note: dr.n, route: /push/i.test(dr.route) ? 'IV2' : 'IV1' }));
+    added++;
+  });
+  c.dirty = true; renderBottles(); renderCheck();
+  toast(added ? `เติม ${added} ขวดจากสูตร (ขนาดมาตรฐาน) ตรวจสารน้ำ/rate/ขนาดตามคำสั่งแพทย์` : 'มีครบทุกยาแล้ว');
+}
+async function saveCase(andPrint) {
+  const c = DAY.cur, v = c.v;
+  if (!v.HN) return toast('เลือกผู้ป่วยก่อน');
+  if (!v.date) return toast('ใส่วันที่ผสม');
+  if (!v.phcode) return toast('เลือกเภสัชกรผู้ผสม');
+  const bottles = autoNumber(c.bottles.filter(b => b.productcde), v);
+  if (!bottles.length) return toast('ยังไม่มีขวดยา');
+  const bad = bottles.find(b => !M.prodIdx[b.productcde]); if (bad) return toast('มีรหัสยาที่ไม่พบ: ' + bad.productcde);
+  const st = doseState(c);
+  if (st.status === 'missing') { $('#checkOut').scrollIntoView({ behavior: 'smooth', block: 'center' }); return toast('ตรวจสอบขนาดยา: กรอก ' + st.missing.join(', ') + ' หรือติ๊ก “ข้อมูลไม่ครบ”'); }
+  if (st.status === 'fail') {
+    if (!v.doseReason) { $('#checkOut').scrollIntoView({ behavior: 'smooth', block: 'center' }); return toast('ผลตรวจขนาดยาไม่ผ่าน — เลือกเหตุผลก่อนบันทึก'); }
+    if (v.doseReason === 'other' && !String(v.doseReasonNote || '').trim()) { $('#dReasonNote').focus(); return toast('ระบุเหตุผลในช่อง “อื่นๆ”'); }
+  }
+  const P = st.r ? st.r.P : null, reg = regOf(v.regimen);
+  const payload = Object.assign({}, v, {
+    doseStatus: st.status,
+    doseReason: st.status === 'fail' ? v.doseReason : '',
+    doseReasonNote: st.status === 'pass' ? '' : (v.doseReasonNote || ''),
+    doseIssues: st.status === 'fail' ? st.bad.map(x => x.name ? `${x.name}: ${x.title}` : x.t).join(' | ') : '',
+    doseDetail: st.status === 'incomplete' ? '' : JSON.stringify({ regimen: reg ? reg.n : '', cancer: reg ? CANCERS[reg.c] : '', bsa: P && P.ok ? +P.bsa.toFixed(2) : null, bmi: P && P.ok ? +P.bmi.toFixed(1) : null,
+      crcl: P && P.okRenal ? Math.round(P.crcl) : null, items: st.r.items.map(it => ({ drug: it.name, lvl: it.lvl, result: it.title, detail: it.msgs.slice(0, 3) })) })
+  });
+  delete payload.doseIncomplete;
+  const wasEdit = !!v.id;
+  const r = await api('apiSaveVisit', payload, bottles.map(b => { const o = Object.assign({}, b); delete o._of; return o; }), DAY.list.mode, DAY.list.date);
+  setList(r);
+  toast(wasEdit ? 'บันทึกการแก้ไขแล้ว' : 'บันทึกเคสแล้ว');
+  let saved = r.visits.find(x => x.id === r.savedId);
+  if (!saved) { // เคสไม่ได้อยู่ในรายการที่กำลังแสดง → เปิดวันที่ผสมของเคสนั้น
+    await loadList('mix', r.savedId.slice(0, 10)); saved = DAY.list.visits.find(x => x.id === r.savedId);
+  }
+  if (andPrint && saved) await printCases([caseOf(saved)], false);
+  DAY.lastKeep = { phcode: v.phcode, emcode: v.emcode };
+  DAY.cur = null; renderForm(); renderList();
+}
+
+// ---------------- ผู้ป่วย (dialog) ----------------
+function editPatient(p, isNew, onSaved) {
+  p = Object.assign({ HN: '', title: '', name: '', surname: '', dob: '', sex: '', allergyFlag: 0, allergy: '', ward: '', offService: 0 }, p || {});
+  const d = $('#dlg');
+  d.innerHTML = `<h2>${isNew ? 'เพิ่มผู้ป่วยใหม่' : 'แก้ไขข้อมูลผู้ป่วย'}</h2>
+    <div class="row">
+      <div class="fld">HN<input id="fHN" value="${esc(p.HN)}" ${isNew ? '' : 'readonly'}></div>
+      <div class="fld">คำนำหน้า<select id="fTitle"><option></option>${M.titles.filter(t => t.title).map(t => `<option data-sex="${t.sex}" ${t.title === p.title ? 'selected' : ''}>${esc(t.title)}</option>`).join('')}</select></div>
+      <div class="fld">ชื่อ<input id="fName" value="${esc(p.name)}"></div>
+      <div class="fld">นามสกุล<input id="fSur" value="${esc(p.surname)}"></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div class="fld">วันเกิด${dInput('fDob', p.dob)}</div>
+      <div class="fld">เพศ<select id="fSex"><option value=""></option><option value="M" ${p.sex === 'M' ? 'selected' : ''}>ชาย</option><option value="F" ${p.sex === 'F' ? 'selected' : ''}>หญิง</option></select></div>
+      <div class="fld">วอร์ดประจำ<select id="fWard">${wardOpts(p.ward)}</select></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label class="muted"><input type="checkbox" id="fAlg" ${+p.allergyFlag ? 'checked' : ''}> แพ้ยา</label>
+      <div class="fld" style="flex:1">รายละเอียดการแพ้<input id="fAlgT" value="${esc(p.allergy)}"></div>
+    </div>
+    <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn ghost" id="fCancel">ยกเลิก</button><button class="btn" id="fOk">บันทึกผู้ป่วย</button></div>`;
+  d.showModal();
+  $('#fTitle').onchange = e => { const s = e.target.selectedOptions[0].dataset.sex; if (s) $('#fSex').value = s; };
+  $('#fCancel').onclick = () => d.close();
+  $('#fOk').onclick = async () => {
+    const o = { HN: $('#fHN').value.trim(), title: $('#fTitle').value, name: $('#fName').value.trim(), surname: $('#fSur').value.trim(), dob: dateVal('#fDob'),
+      sex: $('#fSex').value, ward: $('#fWard').value, allergyFlag: $('#fAlg').checked ? 1 : 0, allergy: $('#fAlgT').value.trim(), offService: 0 };
+    if (!o.HN || !o.name) return toast('ใส่ HN และชื่อ');
+    const saved = await api('apiSavePatient', o); d.close();
+    if (onSaved) onSaved(saved);
+  };
+}
+
+// ---------------- ฉลาก: ดูตัวอย่าง / พิมพ์ซ้ำ ----------------
+function previewCase(c) {
+  if (!c.bottles.length) return toast('ยังไม่มีขวดยา');
+  const d = $('#dlg'); d.style.maxWidth = '960px';
+  d.innerHTML = `<h2>ตัวอย่างฉลาก (${c.bottles.length + 1} ดวง: หัว 1 + ขวดยา ${c.bottles.length})</h2>
+    <div class="lblwrap" style="${labelVars()}"><div>${headLabelHtml(c.v, c.pat)}</div>${c.bottles.map(b => `<div>${labelHtml(c.v, b, c.pat)}</div>`).join('')}</div>
+    <p class="muted">ขนาดฉลาก ${M.settings.labelWidthMm}×${M.settings.labelHeightMm} มม. · ตอนพิมพ์เลือกขนาดกระดาษตามฉลาก ระยะขอบ “ไม่มี” สเกล 100%</p>
+    <div class="row" style="justify-content:flex-end"><button class="btn ghost" id="pvClose">ปิด</button></div>`;
+  d.showModal(); $('#pvClose').onclick = () => d.close(); d.onclose = () => d.style.maxWidth = '';
+}
+function reprintDialog(c) {
+  if (!c.bottles.length) return toast('เคสนี้ไม่มีขวดยา');
+  const d = $('#dlg'); d.style.maxWidth = '960px';
+  d.innerHTML = `<h2>พิมพ์ฉลากซ้ำ · VN ${esc(c.v.vn)} · ${esc((c.pat.title || '') + (c.pat.name || '') + ' ' + (c.pat.surname || ''))}</h2>
+    <div class="row" style="margin-bottom:8px"><button class="btn ghost xs" id="rpAll">เลือกทั้งหมด</button><button class="btn ghost xs" id="rpNone">ไม่เลือก</button><span class="muted">ติ๊กเฉพาะดวงที่ต้องการพิมพ์ซ้ำ</span></div>
+    <div class="lblwrap" style="${labelVars()}">
+      <label style="display:flex;flex-direction:column;gap:4px"><span><input type="checkbox" data-rp="head" checked> สติกเกอร์หัว (หน้ากล่อง)</span><div>${headLabelHtml(c.v, c.pat)}</div></label>
+      ${c.bottles.map(b => { const p = M.prodIdx[b.productcde] || {}; return `<label style="display:flex;flex-direction:column;gap:4px"><span><input type="checkbox" data-rp="${esc(b.id)}" checked> ขวดที่ ${esc(b.bottleNo)} · ${esc(p.generic || b.productcde)} ${fmt(num(b.mg))}${+b.printed ? ` <span class="pill">พิมพ์แล้ว ${b.printed}</span>` : ''}</span><div>${labelHtml(c.v, b, c.pat)}</div></label>`; }).join('')}
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="rpClose">ปิด</button><button class="btn" id="rpGo">พิมพ์ที่เลือก</button></div>`;
+  d.showModal(); d.onclose = () => d.style.maxWidth = '';
+  $('#rpAll').onclick = () => $$('#dlg [data-rp]').forEach(x => x.checked = true);
+  $('#rpNone').onclick = () => $$('#dlg [data-rp]').forEach(x => x.checked = false);
+  $('#rpClose').onclick = () => d.close();
+  $('#rpGo').onclick = async () => {
+    const head = $('#dlg [data-rp="head"]').checked, ids = new Set($$('#dlg [data-rp]').filter(x => x.checked && x.dataset.rp !== 'head').map(x => x.dataset.rp));
+    if (!head && !ids.size) return toast('ยังไม่ได้เลือกฉลาก');
+    d.close(); await printCases([c], true, { head, ids }); loadList();
+  };
+}
+
+// ---------------- รูปเคส ----------------
+let PHOTO_CASE = null;
+async function photoDialog(v, pat) {
+  PHOTO_CASE = v;
+  const p = pat || (DAY.list && DAY.list.patIdx[v.HN]) || {}, d = $('#dlg'); d.style.maxWidth = '820px';
+  d.innerHTML = `<h2>รูปเคส · VN ${esc(v.vn)} · ${esc((p.title || '') + (p.name || '') + ' ' + (p.surname || ''))}</h2>
+    <div class="muted">ถ่ายรูปเคสก่อนผสม รูปจะเก็บใน Google Drive (โฟลเดอร์ ChemoPrep รูปเคส / เดือน / วันที่ผสม) และใช้ตรวจตอนทำรายงาน</div>
+    <div class="row" style="margin:12px 0"><button class="btn" id="phCam">📷 ถ่ายรูป</button><button class="btn ghost" id="phAtt">📎 แนบรูป</button><span class="muted" id="phMsg"></span></div>
+    <div class="photos" id="phList"><span class="muted">กำลังโหลดรูป…</span></div>
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="phClose">ปิด</button></div>`;
+  d.showModal(); d.onclose = () => { d.style.maxWidth = ''; PHOTO_CASE = null; };
+  $('#phClose').onclick = () => d.close();
+  $('#phCam').onclick = () => { $('#fileCam').value = ''; $('#fileCam').click(); };
+  $('#phAtt').onclick = () => { $('#fileAtt').value = ''; $('#fileAtt').click(); };
+  loadPhotos();
+}
+async function loadPhotos() {
+  if (!PHOTO_CASE) return;
+  const list = await api('apiGetPhotos', PHOTO_CASE.id), el = $('#phList'); if (!el) return;
+  el.innerHTML = list.length ? list.map(x => `<figure>${x.data ? `<img src="${x.data}" data-full="${esc(x.id)}" title="${esc(x.name)}">` : `<div class="muted" style="width:150px">${esc(x.name)}</div>`}<button class="btn red xs" data-delph="${esc(x.id)}">ลบ</button></figure>`).join('') : '<span class="muted">ยังไม่มีรูป</span>';
+  $$('#phList [data-delph]').forEach(b => b.onclick = async () => {
+    if (!await ask('ลบรูปนี้? (ย้ายไปถังขยะใน Drive)', 'ลบรูป', { danger: true })) return;
+    Object.assign(PHOTO_CASE, await api('apiDeletePhoto', PHOTO_CASE.id, b.dataset.delph)); renderList(); loadPhotos();
+  });
+  $$('#phList img').forEach(img => img.onclick = () => { const w = $('#dlg2'); w.style.maxWidth = '95vw'; w.innerHTML = `<img src="${img.src}" style="max-width:100%;max-height:80vh;display:block;margin:auto"><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn ghost" onclick="document.getElementById('dlg2').close()">ปิด</button></div>`; w.onclose = () => w.style.maxWidth = ''; w.showModal(); });
+}
+function resizeImage(file, max = 1600, q = 0.82) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => { const img = new Image(); img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); res(cv.toDataURL('image/jpeg', q)); };
+      img.onerror = () => rej(new Error('เปิดไฟล์รูปไม่ได้')); img.src = fr.result; };
+    fr.onerror = () => rej(new Error('อ่านไฟล์ไม่ได้')); fr.readAsDataURL(file);
+  });
+}
+async function uploadPhotos(files) {
+  if (!PHOTO_CASE || !files.length) return;
+  let n = 0;
+  for (const f of files) {
+    $('#phMsg').textContent = `กำลังอัปโหลด ${++n}/${files.length}…`;
+    try { const data = await resizeImage(f); Object.assign(PHOTO_CASE, await api('apiAddPhoto', PHOTO_CASE.id, data)); } catch (e) { toast('อัปโหลดไม่สำเร็จ: ' + e.message); }
+  }
+  $('#phMsg').textContent = 'อัปโหลดแล้ว'; renderList(); loadPhotos();
+}
+
+// =====================================================================
+//  ยาหยอดตา (ผสมยาหยอดตาจากยาฉีด)
+// =====================================================================
+const EYE = { day: null, cur: null };
+const EYE_SIDE_DEF = ['ข้างซ้าย', 'ข้างขวา', 'ทั้งสองข้าง', 'ข้างที่เป็น'];
+const EYE_FREQ_DEF = ['ทุก 2 ชั่วโมง (ตลอด 24 ชั่วโมง)'];
+const eyeF = code => M.eyeFormulas.find(f => f.code === code);
+const eyeSides = () => { const l = lookup('eyeSide').map(x => x.text); return l.length ? l : EYE_SIDE_DEF; };
+const eyeFreqs = () => { const l = lookup('eyeFreq').map(x => x.text); return l.length ? l : EYE_FREQ_DEF; };
+const hmDot = t => (t || '').replace(':', '.');
+function storageTxt(f) { const s = (f && f.storage) || ''; return /ตู้เย็น/.test(s) ? 'เก็บในตู้เย็น' : /ห้อง/.test(s) ? 'เก็บที่อุณหภูมิห้อง' : s; }
+/** ข้อความวิธีใช้ 1 บรรทัด: หยอดตา{ข้าง} ครั้งละ {n} หยด {ความถี่} */
+function dirLineText(l) {
+  if (l.free) return l.free;
+  if (l.side !== undefined) return `หยอดตา${l.side || ''} ครั้งละ ${l.drops || 1} หยด ${l.freq || ''}`.trim();
+  const eye = l.eye === 'ทั้งสองข้าง' ? 'หยอดตาทั้งสองข้าง' : 'หยอดตาข้าง' + (l.eye || '');   // รูปแบบเดิม
+  return `${eye} ครั้งละ ${l.drops || 1} หยด ทุก ${l.every || 1} ชั่วโมง${l.span ? ' ' + l.span : ''}`;
+}
+function parseLines(d) {
+  let lines; try { lines = JSON.parse(d); } catch (e) { lines = null; }
+  if (!Array.isArray(lines)) lines = String(d || '').split('\n').filter(Boolean).map(t => ({ free: t }));
+  return lines;
+}
+
+async function loadEyeDay(date) {
+  setDate('#eyeDate', date);
+  EYE.day = await api('apiEyeDay', date);
+  EYE.day.patIdx = idx(EYE.day.patients, 'HN');
+  renderEyeList();
+}
+function renderEyeList() {
+  const d = EYE.day, el = $('#eyeList');
+  const n = d.eyes.reduce((a, e) => a + (+e.qty || 1), 0);
+  $('#eyeSum').textContent = d.eyes.length ? `${d.eyes.length} รายการ · ${n} ขวด` : '';
+  el.innerHTML = d.eyes.length ? d.eyes.map(e => { const p = d.patIdx[e.HN] || {}, f = eyeF(e.formula) || {};
+    return `<div class="vitem ${EYE.cur && EYE.cur.id === e.id ? 'on' : ''}" data-id="${esc(e.id)}"><div class="vn">${esc(e.seq)}</div>
+      <div><div class="nm">${esc((p.title || '') + (p.name || '') + ' ' + (p.surname || ''))}</div><div class="meta">HN ${esc(e.HN)} · ${esc(f.name || e.formula)}</div>
+        <div class="meta">ผลิต ${thDate(e.prepTime, true)} · ${esc(e.qty || 1)} ขวด ${+e.printed ? '<span class="pill grn">พิมพ์แล้ว</span>' : '<span class="pill amb">ยังไม่พิมพ์</span>'}</div>
+        <div class="eacts"><button class="btn ghost xs" data-eedit="${esc(e.id)}">แก้ไข</button><button class="btn ghost xs" data-erep="${esc(e.id)}">พิมพ์ซ้ำ</button><button class="btn red xs" data-edel="${esc(e.id)}">ลบ</button></div></div>
+      <div></div></div>`; }).join('')
+    : '<div class="empty">ยังไม่มีรายการวันนี้</div>';
+  $$('#eyeList .vitem').forEach(x => x.onclick = ev => { if (ev.target.closest('button')) return; openEye(x.dataset.id); });
+  $$('#eyeList [data-eedit]').forEach(b => b.onclick = () => openEye(b.dataset.eedit));
+  $$('#eyeList [data-erep]').forEach(b => b.onclick = () => eyeReprint(b.dataset.erep));
+  $$('#eyeList [data-edel]').forEach(b => b.onclick = () => eyeDelete(b.dataset.edel));
+}
+function eyeCase(id) { const e = Object.assign({}, EYE.day.eyes.find(x => x.id === id)); e.lines = parseLines(e.directions); e.pat = EYE.day.patIdx[e.HN] || { HN: e.HN }; return e; }
+function newEye() {
+  const date = dateVal('#eyeDate') || M.today;
+  EYE.cur = { id: '', date, HN: '', ward: '', formula: '', qty: 1, prepTime: date + ' ' + nowHM(), note: '',
+    lines: [{ side: eyeSides()[0], drops: 1, freq: eyeFreqs()[0] }], pat: null, dirty: false };
+  renderEyeList(); renderEyeEditor(); setTimeout(() => $('#eSearch') && $('#eSearch').focus(), 30);
+}
+function openEye(id) { EYE.cur = eyeCase(id); renderEyeList(); renderEyeEditor(); }
+async function eyeDelete(id) {
+  const e = eyeCase(id), f = eyeF(e.formula) || {};
+  if (!await ask(`ลบรายการยาหยอดตา #${e.seq}\n${f.name || e.formula} · ${(e.pat.title || '') + (e.pat.name || '') + ' ' + (e.pat.surname || '')} HN ${e.HN}?\n\nลบแล้วกู้คืนไม่ได้`, 'ลบ', { title: 'ยืนยันการลบ', danger: true })) return;
+  EYE.day = await api('apiDeleteEye', id); EYE.day.patIdx = idx(EYE.day.patients, 'HN');
+  if (EYE.cur && EYE.cur.id === id) { EYE.cur = null; $('#eyeEditor').innerHTML = '<div class="empty">ลบแล้ว</div>'; }
+  renderEyeList(); toast('ลบแล้ว');
+}
+function eyeReprint(id) {
+  const e = eyeCase(id), d = $('#dlg'); d.style.maxWidth = '900px';
+  d.innerHTML = `<h2>พิมพ์ฉลากยาหยอดตาซ้ำ #${esc(e.seq)}</h2>
+    <div class="row" style="margin-bottom:10px"><label class="muted"><input type="checkbox" id="erL" checked> ฉลากผู้ป่วย</label><label class="muted"><input type="checkbox" id="erM" checked> สติกเกอร์วิธีผสม</label>
+      <div class="fld">จำนวนชุด<input type="number" id="erN" min="1" value="${esc(e.qty || 1)}" style="width:80px"></div></div>
+    <div class="lblwrap" style="${labelVars()}"><div>${eyeLabelHtml(e, e.pat)}</div><div>${eyeMethodHtml(e, e.pat)}</div></div>
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="erNo">ปิด</button><button class="btn" id="erGo">พิมพ์</button></div>`;
+  d.showModal(); d.onclose = () => d.style.maxWidth = '';
+  $('#erNo').onclick = () => d.close();
+  $('#erGo').onclick = () => { const L = $('#erL').checked, Mx = $('#erM').checked; if (!L && !Mx) return toast('เลือกอย่างน้อย 1 แบบ'); d.close(); printEye([e], true, { label: L, method: Mx, qty: +$('#erN').value || 1 }); };
+}
+function renderEyeEditor() {
+  const c = EYE.cur, pt = c.pat && c.pat.name ? c.pat : null, f = eyeF(c.formula);
+  $('#eyeEditor').innerHTML = `
+    <div class="fhead"><h2 style="margin:0">${c.id ? 'แก้ไขยาหยอดตา #' + esc(c.seq) : 'ผสมยาหยอดตาใหม่'}</h2><span class="tag ${c.id ? 'edit' : ''}">${dmyPad(c.date)}</span><span class="right"></span>
+      ${c.id ? '<button class="btn red sm" id="eDel">ลบ</button>' : ''}<button class="btn ghost sm" id="eClose">✕ ปิด</button></div>
+    ${sec(1, 'ผู้ป่วย', '', pt ? `<div class="pcard"><div><div class="big">${esc((pt.title || '') + pt.name + ' ' + (pt.surname || ''))}</div><div class="muted">HN <b>${esc(pt.HN)}</b>${pt.dob ? ' · เกิด ' + dmyPad(pt.dob) : ''}</div></div>
+          ${+pt.allergyFlag ? `<div class="allergy">⚠ แพ้ยา: ${esc(pt.allergy || 'ไม่ระบุ')}</div>` : ''}<span class="right"></span>${!c.id ? '<button class="btn ghost sm" id="eChange">เปลี่ยนคน</button>' : ''}</div>`
+      : `<div class="row"><div class="fld sr" style="flex:1">ค้นหาผู้ป่วย (HN หรือ ชื่อ)<input id="eSearch" autocomplete="off" placeholder="HN หรือชื่อ"><div class="drop" id="eDrop" hidden></div></div><button class="btn ghost" id="eNewPat">+ ผู้ป่วยใหม่</button></div>`)}
+    ${sec(2, 'สูตรยา', '', `<div class="eform">${M.eyeFormulas.filter(x => +x.active || x.code === c.formula).map(x => `<button type="button" data-f="${esc(x.code)}" class="${x.code === c.formula ? 'on' : ''}"><b>${esc(x.name)}</b><br><small>${esc(x.storage)} · ${esc(x.expDays)} วัน</small></button>`).join('')}</div>
+      ${f ? `<div class="chk gray" style="margin-top:10px"><div class="t">วิธีการเตรียม (Aseptic technique)</div><div style="font-size:14px;margin-top:4px">${esc(f.method)}</div></div>` : ''}`)}
+    ${sec(3, 'วิธีใช้', '<span class="right"></span><button type="button" class="btn ghost sm" id="eAddLine">+ เพิ่มบรรทัด (อีกข้าง)</button>', '<div id="eLines"></div>')}
+    ${sec(4, 'ข้อมูลการผลิต', '', `<div class="row">
+      <div class="fld">จำนวนขวด<input type="number" id="eQty" min="1" style="width:90px" value="${esc(c.qty || 1)}"></div>
+      <div class="fld">เวลาผลิต${tInput('eTime', (c.prepTime || '').split(' ')[1] || '')}</div>
+      <div class="fld">หอผู้ป่วย<select id="eWard">${wardOpts(c.ward)}</select></div>
+      <div class="fld" style="flex:1;min-width:200px">หมายเหตุ<input id="eNote" value="${esc(c.note || '')}"></div></div>`)}
+    ${sec(5, 'ตัวอย่างสติกเกอร์', '', '<div id="ePrev" class="lblwrap"></div>')}
+    <div class="factions"><div class="note-key">*** อุปกรณ์ที่ใช้ในการผสม คีย์ “EYEMIX” · ผสม 1 ขวด คีย์ 1 ครั้ง ***</div><span class="right"></span>
+      <button class="btn" id="eSave">${c.id ? 'บันทึกการแก้ไข' : 'บันทึก'}</button><button class="btn" id="ePrint">บันทึก + พิมพ์ฉลาก</button></div>`;
+  renderEyeLines(); renderEyePrev(); bindEye();
+}
+function renderEyeLines() {
+  const c = EYE.cur, sides = eyeSides(), freqs = eyeFreqs();
+  const opts = (list, sel) => list.map(x => `<option ${x === sel ? 'selected' : ''}>${esc(x)}</option>`).join('') + (sel && !list.includes(sel) ? `<option selected>${esc(sel)}</option>` : '');
+  $('#eLines').innerHTML = c.lines.map((l, i) => l.side === undefined && !l.free ? (Object.assign(l, { side: l.eye === 'ทั้งสองข้าง' ? 'ทั้งสองข้าง' : 'ข้าง' + (l.eye || 'ซ้าย'), freq: `ทุก ${l.every || 2} ชั่วโมง${l.span ? ' (' + l.span + ')' : ''}` }), '') : '').join('') +
+    c.lines.map((l, i) => l.free !== undefined ? `<div class="eline" data-i="${i}"><input data-k="free" value="${esc(l.free)}" style="flex:1"><button type="button" class="btn red sm" data-del="${i}">✕</button></div>` : `
+    <div class="eline" data-i="${i}">
+      <span class="w">หยอดตา</span><select data-k="side">${opts(sides, l.side)}</select>
+      <span class="w">ครั้งละ</span><input data-k="drops" type="number" min="1" value="${esc(l.drops || 1)}"><span>หยด</span>
+      <span class="w">ความถี่</span><select data-k="freq" style="flex:1;min-width:220px">${opts(freqs, l.freq)}</select>
+      <button type="button" class="btn red sm" data-del="${i}" ${c.lines.length < 2 ? 'disabled' : ''}>✕</button></div>`).join('') +
+    `<div class="muted">บนฉลาก: <b>${c.lines.map(l => esc(dirLineText(l))).join(' / ')}</b> · เพิ่มตัวเลือกข้าง/ความถี่ได้ที่ ตั้งค่า › ตัวเลือกวิธีใช้ยาหยอดตา</div>`;
+  $$('#eLines [data-k]').forEach(el => el.oninput = el.onchange = () => { const i = +el.closest('.eline').dataset.i; c.lines[i][el.dataset.k] = el.value; c.dirty = true; renderEyePrev();
+    const m = $('#eLines .muted b'); if (m) m.innerHTML = c.lines.map(l => esc(dirLineText(l))).join(' / '); });
+  $$('#eLines [data-del]').forEach(b => b.onclick = () => { c.lines.splice(+b.dataset.del, 1); c.dirty = true; renderEyeLines(); renderEyePrev(); });
+}
+function eyeExp(c) { const f = eyeF(c.formula); return f && c.prepTime ? addDays(c.prepTime, +f.expDays || 7) : ''; }
+/** ฉลากผู้ป่วย */
+function eyeLabelHtml(c, pat) {
+  const f = eyeF(c.formula) || {}, p = pat || {}, exp = eyeExp(c), [pd, pt] = (c.prepTime || '').split(' '), [ed, et] = exp.split(' ');
+  return `<div class="elbl2">
+    <div class="eh"><b>EYE DROP · ยาหยอดตา</b><span>${esc(M.settings.hospitalName || '')}</span></div>
+    <div class="ep"><span>${esc(((p.title || '') + ' ' + (p.name || '') + ' ' + (p.surname || '')).trim())}</span><span>HN ${esc(c.HN)}</span></div>
+    <div class="en">${esc(f.labelName || f.name || '')}</div>
+    <div class="ed">${c.lines.map(l => `<div>${esc(dirLineText(l))}</div>`).join('')}</div>
+    <div class="es"><span>${/ตู้เย็น/.test(f.storage || '') ? '❄ ' : ''}${esc(storageTxt(f))}</span></div>
+    <div class="ef"><div>วันผลิต <b>${dmyPad(pd)}</b> (${esc(hmDot(pt))} น.)</div><div>วันหมดอายุ <b>${dmyPad(ed)}</b> (${esc(hmDot(et))} น.)</div></div>
+  </div>`;
+}
+/** สติกเกอร์วิธีผสม */
+function eyeMethodHtml(c, pat) {
+  const f = eyeF(c.formula) || {}, p = pat || {}, exp = eyeExp(c);
+  return `<div class="mlbl2">
+    <div class="mh"><b>วิธีผสม · ${esc(f.name || '')}</b><span>${esc(storageTxt(f))} · ${esc(f.expDays || '')} วัน</span></div>
+    <div class="mb">${esc(f.method || '')}</div>
+    <div class="mf"><span>${esc(((p.name || '') + ' ' + (p.surname || '')).trim())} · HN ${esc(c.HN)}</span><span>หมดอายุ ${dmyPad(exp)} ${esc(hmDot(exp.split(' ')[1]))} น.</span></div>
+  </div>`;
+}
+function renderEyePrev() {
+  const c = EYE.cur, el = $('#ePrev'); if (!el) return;
+  if (!c.formula) { el.innerHTML = '<span class="muted">เลือกสูตรยาเพื่อดูตัวอย่าง</span>'; return; }
+  el.setAttribute('style', labelVars());
+  el.innerHTML = `<div>${eyeLabelHtml(c, c.pat)}</div><div>${eyeMethodHtml(c, c.pat)}</div>`;
+}
+function bindEye() {
+  const c = EYE.cur, es = $('#eSearch');
+  if (es) { let tm; const drop = $('#eDrop');
+    es.oninput = () => { clearTimeout(tm); const q = es.value.trim(); if (q.length < 2) { drop.hidden = true; return; }
+      tm = setTimeout(async () => { const list = await api('apiSearchPatients', q);
+        drop.innerHTML = list.length ? list.map((p, i) => `<div data-i="${i}"><b>${esc(p.title + p.name + ' ' + p.surname)}</b> <small>HN ${esc(p.HN)}</small></div>`).join('') : '<div class="muted">ไม่พบ กด “+ ผู้ป่วยใหม่”</div>';
+        drop.hidden = false; $$('#eDrop [data-i]').forEach(x => x.onclick = () => { const p = list[+x.dataset.i]; c.pat = p; c.HN = p.HN; if (!c.ward) c.ward = p.ward || ''; c.dirty = true; renderEyeEditor(); }); }, 250); };
+    es.onblur = () => setTimeout(() => drop.hidden = true, 250); }
+  const np = $('#eNewPat'); if (np) np.onclick = () => editPatient({ HN: es && /\d/.test(es.value) ? es.value.trim() : '', name: es && !/\d/.test(es.value) ? es.value.trim() : '' }, true, saved => { c.pat = saved; c.HN = saved.HN; c.ward = c.ward || saved.ward || ''; renderEyeEditor(); });
+  const ch = $('#eChange'); if (ch) ch.onclick = () => { c.pat = null; c.HN = ''; renderEyeEditor(); };
+  $$('.eform [data-f]').forEach(b => b.onclick = () => { c.formula = b.dataset.f; c.dirty = true; renderEyeEditor(); });
+  $('#eAddLine').onclick = () => { const used = c.lines.map(l => l.side), sides = eyeSides(); c.lines.push({ side: sides.find(s => !used.includes(s)) || sides[0], drops: 1, freq: c.lines[0] && c.lines[0].freq || eyeFreqs()[0] }); c.dirty = true; renderEyeLines(); renderEyePrev(); };
+  $('#eQty').oninput = e => { c.qty = e.target.value; c.dirty = true; };
+  $('#eWard').onchange = e => { c.ward = e.target.value; c.dirty = true; };
+  $('#eNote').oninput = e => { c.note = e.target.value; c.dirty = true; };
+  $('#eTime').onchange = e => { c.prepTime = c.date + ' ' + (e.target.value || nowHM()); c.dirty = true; renderEyePrev(); };
+  $('#eSave').onclick = () => saveEye(false); $('#ePrint').onclick = () => saveEye(true);
+  $('#eClose').onclick = async () => { if (c.dirty && !await ask('มีข้อมูลที่ยังไม่บันทึก ปิดเลย?', 'ปิด')) return; EYE.cur = null; $('#eyeEditor').innerHTML = '<div class="empty">เลือกรายการทางซ้าย หรือกด “+ ผสมยาหยอดตา”</div>'; renderEyeList(); };
+  const del = $('#eDel'); if (del) del.onclick = () => eyeDelete(c.id);
+}
+async function saveEye(andPrint) {
+  const c = EYE.cur;
+  if (!c.HN) return toast('เลือกผู้ป่วยก่อน');
+  if (!c.formula) return toast('เลือกสูตรยา');
+  if (!c.lines.length || c.lines.some(l => !dirLineText(l).trim())) return toast('ใส่วิธีใช้ให้ครบ');
+  const lines = c.lines.map(l => Object.assign({}, l, { text: dirLineText(l) }));
+  const rec = { id: c.id, date: c.date, seq: c.seq, HN: c.HN, ward: c.ward, formula: c.formula, directions: JSON.stringify(lines), qty: +c.qty || 1,
+    prepTime: c.prepTime, phcode: '', emcode: '', note: c.note || '', printed: c.printed || 0 };
+  const r = await api('apiSaveEye', rec);
+  EYE.day = r; EYE.day.patIdx = idx(r.patients, 'HN');
+  if (c.pat && !EYE.day.patIdx[c.HN]) EYE.day.patIdx[c.HN] = c.pat;
+  toast('บันทึกแล้ว · อย่าลืมคีย์ EYEMIX ' + rec.qty + ' ครั้ง');
+  const saved = eyeCase(r.savedId);
+  if (andPrint) printEye([saved], false);
+  EYE.cur = null; $('#eyeEditor').innerHTML = '<div class="empty">บันทึกแล้ว · กด “+ ผสมยาหยอดตา” เพื่อเพิ่มรายการถัดไป</div>'; renderEyeList();
+}
+function printEye(list, isReprint, opt) {
+  opt = opt || { label: true, method: true };
+  const pages = [];
+  list.forEach(c => { for (let i = 0; i < (opt.qty || +c.qty || 1); i++) { if (opt.label !== false) pages.push(eyeLabelHtml(c, c.pat)); if (opt.method !== false) pages.push(eyeMethodHtml(c, c.pat)); } });
+  printPages(pages);
+  const ids = list.map(c => c.id).filter(Boolean);
+  if (ids.length) api('apiMarkEyePrinted', ids, !!isReprint).then(() => loadEyeDay(dateVal('#eyeDate') || M.today)).catch(() => {});
+}
+function eyeReportHtml(r) {
+  const E = r.eyes || []; if (!E.length) return '';
+  const by = {}; E.forEach(e => { const n = (eyeF(e.formula) || {}).name || e.formula; by[n] = (by[n] || 0) + (+e.qty || 1); });
+  return `<div class="card" style="margin-top:14px"><h2>ยาหยอดตา (${E.length} รายการ · ${E.reduce((a, e) => a + (+e.qty || 1), 0)} ขวด)</h2>
+    <table class="rp"><tr><th>สูตร</th><th style="text-align:right">ขวด</th></tr>${Object.entries(by).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<tr><td>${esc(k)}</td><td style="text-align:right"><b>${n}</b></td></tr>`).join('')}</table></div>`;
+}
+
+// =====================================================================
+//  รายงาน (รูปแบบเดียวกับ “รายงานการเตรียมยาเคมีบำบัด” รายเดือน · แยกตามวันที่ผสม)
+// =====================================================================
+const RP = { data: null, model: null };
+const TH_MONTH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const HOSP_PREFIX = { CH9: 'จ', PAO: 'ป', RJRH: 'ร', PRINC: 'พ', KNT: 'ค' };
+const HOSP_COLOR = { CH9: '#dbeef4', PAO: '#ebdef0', RJRH: '#e2f0d9', PRINC: '#fbe5d6', KNT: '#fff2cc' };
+function thLongDate(iso) { const [y, m, d] = iso.split('-').map(Number); return `${d} ${TH_MONTH[m - 1]} ${y + 543}`; }
+function initReport() {
+  const t = new Date(M.today), opts = [];
+  for (let i = 0; i < 36; i++) { const d = new Date(t.getFullYear(), t.getMonth() - i, 1); opts.push([`${d.getFullYear()}-${pad2(d.getMonth() + 1)}`, `${TH_MONTH[d.getMonth()]} ${d.getFullYear() + 543}`]); }
+  $('#rMonth').innerHTML = opts.map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+  const setM = () => { const [y, m] = $('#rMonth').value.split('-').map(Number); setDate('#rFrom', `${y}-${pad2(m)}-01`); setDate('#rTo', `${y}-${pad2(m)}-${pad2(new Date(y, m, 0).getDate())}`); };
+  $('#rMonth').onchange = setM; setM();
+  $('#btnReport').onclick = runReport;
+  $('#btnCsv').onclick = downloadCsv;
+  $('#btnRpPrint').onclick = printReport;
+  $('#btnRpSheet').onclick = exportSheet;
+}
+function shiftOf(preparedAt) {
+  if (!preparedAt || String(preparedAt).length < 16) return 'unk';
+  return String(preparedAt).slice(11, 16) < (M.settings.shiftCutoff || '14:00') ? 'am' : 'pm';
+}
+function buildModel(r) {
+  const patIdx = idx(r.patients, 'HN');
+  const V = r.visits.slice().sort((a, b) => (a.date + (a.mixTime || '') + String(a.vn).padStart(4, '0')).localeCompare(b.date + (b.mixTime || '') + String(b.vn).padStart(4, '0')));
+  const act = V.filter(v => !+v.cancelled), cx = V.filter(v => +v.cancelled);
+  const bOf = v => r.bottles.filter(b => b.visitId === v.id).sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
+  const run = {}, days = [];
+  act.forEach(v => {
+    const hp = partnerOf(v.ward), pre = HOSP_PREFIX[hp] || 'จ';
+    run[pre] = (run[pre] || 0) + 1;
+    let d = days[days.length - 1]; if (!d || d.date !== v.date) { d = { date: v.date, cases: [] }; days.push(d); }
+    d.cases.push({ v, no: pre + run[pre], hosp: hp, pat: patIdx[v.HN] || {}, bottles: bOf(v) });
+  });
+  const cnt = (arr, f) => arr.reduce((m, x) => { const k = f(x); m[k] = (m[k] || 0) + 1; return m; }, {});
+  const shift = {};
+  act.forEach(v => { const k = staffName(v.emcode) || '(ไม่ระบุ)'; const s = shift[k] = shift[k] || { am: 0, pm: 0, unk: 0 }; s[shiftOf(v.preparedAt)]++; });
+  const drugs = {};
+  act.forEach(v => bOf(v).forEach(b => { const p = M.prodIdx[b.productcde] || {}; const k = p.productname || b.productcde;
+    const o = drugs[k] = drugs[k] || { n: 0, mg: 0, unit: p.unit || '', mgml: num(p.mgPerMl), mlv: num(p.mlPerVial) }; o.n++; o.mg += num(b.mg) || 0; }));
+  return { patIdx, days, act, cx: cx.map(v => ({ v, pat: patIdx[v.HN] || {}, bottles: bOf(v) })),
+    byHosp: cnt(act, v => partnerOf(v.ward)), byPh: cnt(act, v => staffName(v.phcode) || '(ไม่ระบุ)'), byEm: cnt(act, v => staffName(v.emcode) || '(ไม่ระบุ)'),
+    shift, drugs, nBottles: act.reduce((a, v) => a + bOf(v).length, 0), eyes: r.eyes || [] };
+}
+async function runReport() {
+  const from = dateVal('#rFrom'), to = dateVal('#rTo');
+  if (!from || !to) return toast('ใส่วันที่ให้ครบ');
+  RP.data = await api('apiReport', from, to);
+  RP.model = buildModel(RP.data);
+  const m = RP.model, cut = M.settings.shiftCutoff || '14:00';
+  const tbl = obj => Object.entries(obj).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<tr><td>${esc(k)}</td><td style="text-align:right"><b>${n}</b></td></tr>`).join('');
+  $('#reportOut').innerHTML = `
+    <div class="grid3">
+      <div class="stat"><div class="muted">จำนวนเคส (ไม่รวมยกเลิก)</div><div class="n">${m.act.length}</div><div class="muted">${m.nBottles} ขวด${m.cx.length ? ` · ยกเลิก ${m.cx.length} เคส` : ''}</div></div>
+      <div class="stat"><div class="muted">แยกตามโรงพยาบาล</div><table class="rp">${tbl(m.byHosp)}</table></div>
+      <div class="stat"><div class="muted">เภสัชกรผู้ผสม</div><table class="rp">${tbl(m.byPh)}</table></div>
+      <div class="stat"><div class="muted">ผู้ช่วยเภสัชกร · รอบเตรียมเคส (แบ่งที่ ${esc(cut)} น.)</div>
+        <table class="rp"><tr><th>ชื่อ</th><th style="text-align:right">ก่อน ${esc(cut)}</th><th style="text-align:right">ตั้งแต่ ${esc(cut)}</th><th style="text-align:right">รวม</th></tr>
+        ${Object.entries(m.shift).sort((a, b) => (b[1].am + b[1].pm + b[1].unk) - (a[1].am + a[1].pm + a[1].unk)).map(([k, s]) => `<tr><td>${esc(k)}</td><td style="text-align:right">${s.am}</td><td style="text-align:right">${s.pm}</td><td style="text-align:right"><b>${s.am + s.pm + s.unk}</b>${s.unk ? `<br><span class="muted">ไม่ทราบเวลา ${s.unk}</span>` : ''}</td></tr>`).join('')}</table></div>
+    </div>
+    <div class="card" style="margin-top:14px"><h2>รายงานการเตรียมยาเคมีบำบัด ${esc(rpTitleRange())}</h2>
+      <div class="scroll" style="max-height:none"><table class="rp">
+      <tr><th>No.</th><th>ชื่อ</th><th>นามสกุล</th><th>HN</th><th>ward</th><th>เภสัชกร</th><th>ผู้ช่วยเภสัชกร</th><th>เวลาผสม</th><th>เตรียมเคส (วันที่ เวลา)</th><th>ตรวจขนาดยา</th><th>รูป</th></tr>
+      ${m.days.map(d => `<tr class="dt"><td colspan="11">${thLongDate(d.date)} <span class="muted" style="font-weight:400">(${d.cases.length} เคส)</span></td></tr>` +
+        d.cases.map(c => { const nPh = String(c.v.photos || '').split(',').filter(String).length;
+          return `<tr class="pt p-${HOSP_PREFIX[c.hosp] ? c.hosp : 'OTHER'}"><td>${esc(c.no)}</td><td>${esc((c.pat.title || '') + (c.pat.name || ''))}</td><td>${esc(c.pat.surname || '')}</td><td>${esc(c.v.HN)}</td><td>${esc(c.v.ward)}</td><td>${esc(staffName(c.v.phcode))}</td><td>${esc(staffName(c.v.emcode))}</td><td>${esc((c.v.mixTime || '').split(' ')[1] || '')}</td><td>${thDate(c.v.preparedAt, true) || '-'}</td><td>${doseCell(c.v)}</td><td>${nPh ? `<button class="btn ghost xs" data-rph="${esc(c.v.id)}">📷 ${nPh}</button>` : '<span class="muted">-</span>'}</td></tr>` +
+            c.bottles.map(b => { const p = M.prodIdx[b.productcde] || {}; return `<tr><td></td><td>${esc(p.productname || b.productcde)}</td><td>${esc(b.productcde)}</td><td style="text-align:right">${fmt(num(b.mg))}</td><td>${esc(p.unit || '')}</td><td></td><td>${esc(dilName(b.diluent))}</td><td colspan="4"></td></tr>`; }).join(''); }).join('')).join('') || '<tr><td colspan="11" class="empty">ไม่มีข้อมูล</td></tr>'}
+      </table></div></div>
+    ${m.cx.length ? `<div class="card" style="margin-top:14px"><h2>เคสที่ยกเลิก (${m.cx.length}) — ไม่นับในรายงาน</h2><table class="rp"><tr><th>วันที่ผสม</th><th>VN</th><th>ชื่อ-สกุล</th><th>HN</th><th>ward</th><th>ยา</th><th>หมายเหตุ</th></tr>
+      ${m.cx.map(c => `<tr class="cx"><td>${dmyPad(c.v.date)}</td><td>${esc(c.v.vn)}</td><td>${esc((c.pat.title || '') + (c.pat.name || '') + ' ' + (c.pat.surname || ''))}</td><td>${esc(c.v.HN)}</td><td>${esc(c.v.ward)}</td><td>${c.bottles.map(b => esc(((M.prodIdx[b.productcde] || {}).generic || b.productcde) + ' ' + b.mg)).join(', ')}</td><td style="text-decoration:none">${esc(c.v.note || '')}</td></tr>`).join('')}</table></div>` : ''}
+    ${eyeReportHtml({ eyes: m.eyes })}
+    <div class="card" style="margin-top:14px"><h2>ปริมาณยาที่ใช้</h2><div class="scroll" style="max-height:340px"><table class="rp"><tr><th>ยา</th><th>ขวด</th><th>รวม</th><th>≈ vial</th></tr>
+      ${Object.entries(m.drugs).sort((a, b) => b[1].n - a[1].n).map(([k, o]) => `<tr><td>${esc(k)}</td><td>${o.n}</td><td>${fmt(o.mg)} ${esc(o.unit)}</td><td>${o.mgml && o.mlv ? fmt(o.mg / o.mgml / o.mlv, 1) : '—'}</td></tr>`).join('')}</table></div></div>`;
+  $$('#reportOut [data-rph]').forEach(b => b.onclick = () => { const v = RP.data.visits.find(x => x.id === b.dataset.rph); photoDialog(v, RP.model.patIdx[v.HN]); });
+  ['#btnCsv', '#btnRpPrint', '#btnRpSheet'].forEach(s => $(s).disabled = !RP.data.visits.length);
+}
+function doseText(v) {
+  if (!v.doseStatus || v.doseStatus === 'import') return '';
+  const r = (DOSE_REASONS.find(x => x[0] === v.doseReason) || ['', ''])[1].replace(' (โปรดระบุ)', '');
+  return (DOSE_STATUS_TH[v.doseStatus] || v.doseStatus) + (v.doseStatus === 'fail' ? ' · ' + r + (v.doseReasonNote ? ': ' + v.doseReasonNote : '') : v.doseStatus === 'incomplete' && v.doseReasonNote ? ' · ' + v.doseReasonNote : '');
+}
+function doseCell(v) { const t = doseText(v); if (!t) return '<span class="muted">-</span>'; return `<span class="pill ${v.doseStatus === 'pass' ? 'grn' : v.doseStatus === 'fail' ? 'red' : 'amb'}" style="white-space:normal" title="${esc(v.doseIssues || '')}">${esc(t)}</span>`; }
+function rpTitleRange() {
+  const f = dateVal('#rFrom'), t = dateVal('#rTo'), [y, m] = f.split('-').map(Number);
+  const full = f.endsWith('-01') && t === `${y}-${pad2(m)}-${pad2(new Date(y, m, 0).getDate())}`;
+  return full ? `เดือน${TH_MONTH[m - 1]} ${y + 543}` : `${dmyPad(f)} – ${dmyPad(t)}`;
+}
+/** แถวรายงาน (ใช้ทั้งส่งออก Sheet และพิมพ์) */
+function reportRows() {
+  const m = RP.model, rows = [], colors = [], cut = M.settings.shiftCutoff || '14:00';
+  rows.push(['รายงานการเตรียมยาเคมีบำบัด ' + rpTitleRange()]);
+  rows.push(['No.', 'ชื่อ', 'นามสกุล', 'HN', 'ward', 'เภสัชกร', 'ผู้ช่วยเภสัชกร', 'เวลาผสม', 'เตรียมเคส (วันที่ เวลา)', 'ตรวจขนาดยา', 'จำนวนรูป']); colors.push([rows.length, '#d9e2e8', 1]);
+  m.days.forEach(d => {
+    rows.push([thLongDate(d.date)]); colors.push([rows.length, '#ffffff', 1]);
+    d.cases.forEach(c => {
+      rows.push([c.no, (c.pat.title || '') + (c.pat.name || ''), c.pat.surname || '', c.v.HN, c.v.ward, staffName(c.v.phcode), staffName(c.v.emcode), (c.v.mixTime || '').split(' ')[1] || '', thDate(c.v.preparedAt, true), doseText(c.v), String(String(c.v.photos || '').split(',').filter(String).length)]);
+      colors.push([rows.length, HOSP_COLOR[c.hosp] || HOSP_COLOR.CH9, 1]);
+      c.bottles.forEach(b => { const p = M.prodIdx[b.productcde] || {}; rows.push(['', p.productname || b.productcde, b.productcde, fmt(num(b.mg)), p.unit || '', '', dilName(b.diluent)]); });
+    });
+  });
+  rows.push([]); rows.push(['สรุป']); colors.push([rows.length, '#ffffff', 1]);
+  rows.push(['จำนวนเคส', String(m.act.length), 'ขวด', String(m.nBottles), 'ยกเลิก', String(m.cx.length)]);
+  rows.push(['แยกตามโรงพยาบาล']); colors.push([rows.length, '#ffffff', 1]); Object.entries(m.byHosp).forEach(([k, n]) => rows.push(['', k, String(n)]));
+  rows.push(['เภสัชกรผู้ผสม']); colors.push([rows.length, '#ffffff', 1]); Object.entries(m.byPh).forEach(([k, n]) => rows.push(['', k, String(n)]));
+  rows.push(['ผู้ช่วยเภสัชกร', 'ชื่อ', 'ก่อน ' + cut, 'ตั้งแต่ ' + cut, 'ไม่ทราบเวลา', 'รวม']); colors.push([rows.length, '#ffffff', 1]);
+  Object.entries(m.shift).forEach(([k, s]) => rows.push(['', k, String(s.am), String(s.pm), String(s.unk), String(s.am + s.pm + s.unk)]));
+  if (m.cx.length) { rows.push(['เคสที่ยกเลิก']); colors.push([rows.length, '#ffffff', 1]); m.cx.forEach(c => rows.push([dmyPad(c.v.date), (c.pat.title || '') + (c.pat.name || ''), c.pat.surname || '', c.v.HN, c.v.ward, c.v.note || ''])); }
+  if (m.eyes.length) { rows.push(['ยาหยอดตา']); colors.push([rows.length, '#ffffff', 1]); const by = {}; m.eyes.forEach(e => { const n = (eyeF(e.formula) || {}).name || e.formula; by[n] = (by[n] || 0) + (+e.qty || 1); }); Object.entries(by).forEach(([k, n]) => rows.push(['', k, String(n)])); }
+  return { rows, colors };
+}
+async function exportSheet() {
+  const { rows, colors } = reportRows();
+  const url = await api('apiExportReport', 'รายงานการเตรียมยาเคมีบำบัด ' + rpTitleRange(), rows, colors);
+  const d = $('#dlg');
+  d.innerHTML = `<h2>สร้างไฟล์รายงานแล้ว</h2><p>ไฟล์อยู่ใน Google Drive โฟลเดอร์ “ChemoPrep รายงาน” เปิดแล้วดาวน์โหลดเป็น Excel ได้ที่ ไฟล์ › ดาวน์โหลด › Microsoft Excel</p>
+    <p><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></p><div class="row" style="justify-content:flex-end"><button class="btn ghost" id="exClose">ปิด</button></div>`;
+  d.showModal(); $('#exClose').onclick = () => d.close();
+}
+function printReport() {
+  const { rows, colors } = reportRows(), col = {}; colors.forEach(([r, c, b]) => col[r] = [c, b]);
+  const w = 10, area = $('#printArea');
+  area.style.cssText = '';
+  area.innerHTML = `<style>@page{size:A4 portrait;margin:10mm}</style><div class="rp-print"><h1>${esc(rows[0][0])}</h1><table>` +
+    rows.slice(1).map((r, i) => { const c = col[i + 2]; return `<tr style="${c ? `background:${c[0]};font-weight:${c[1] ? 700 : 400}` : ''}">${r.length === 1 ? `<td colspan="${w}">${esc(r[0])}</td>` : r.concat(new Array(Math.max(0, w - r.length)).fill('')).map(x => `<td>${esc(x)}</td>`).join('')}</tr>`; }).join('') + `</table></div>`;
+  setTimeout(() => window.print(), 150);
+}
+function downloadCsv() {
+  const r = RP.data; if (!r) return;
+  const patIdx = RP.model.patIdx;
+  const rows = [['date', 'วันที่ผสม', 'เวลาผสม', 'VN', 'title', 'name', 'surname', 'DOB', 'HN', 'ward', 'hospital', 'pharmacist', 'assistant', 'preparedAt', 'cancelled', 'doseStatus', 'doseReason', 'doseReasonNote', 'doseIssues', 'regimen', 'bottleNo', 'productname', 'productcode', 'MG', 'unit', 'diluent', 'route', 'rate', 'rateUnit', 'totalVol']];
+  r.visits.forEach(v => { const p = patIdx[v.HN] || {};
+    r.bottles.filter(b => b.visitId === v.id).forEach(b => { const pr = M.prodIdx[b.productcde] || {}, k = bottleCalc(b, v);
+      rows.push([v.date, dmyPad(v.date), (v.mixTime || '').split(' ')[1] || '', v.vn, p.title, p.name, p.surname, p.dob, v.HN, v.ward, partnerOf(v.ward), staffName(v.phcode), staffName(v.emcode), v.preparedAt, +v.cancelled ? 'ยกเลิก' : '', DOSE_STATUS_TH[v.doseStatus] || v.doseStatus || '', (DOSE_REASONS.find(x => x[0] === v.doseReason) || ['', ''])[1], v.doseReasonNote, v.doseIssues, (regOf(v.regimen) || {}).n || '', b.bottleNo, pr.productname, b.productcde, b.mg, pr.unit, dilName(b.diluent), b.route, b.rate, b.rateUnit, k.tvol ? k.tvol.toFixed(1) : '']); }); });
+  const csv = '﻿' + rows.map(r => r.map(x => { x = String(x ?? ''); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `ข้อมูลเคมี_${dateVal('#rFrom')}_${dateVal('#rTo')}.csv`; a.click();
+}
+
+// =====================================================================
+//  ตั้งค่า
+// =====================================================================
+const SET = { tab: 'Products', q: '', showOff: false };
+const PARTNERS = [['CH9', 'CH9 (จุฬารัตน์ 9 แอร์พอร์ต)'], ['PAO', 'PAO (เปาโล)'], ['PRINC', 'PRINC (พริ้นซ์)'], ['RJRH', 'RJRH (รวมใจรักษ์)'], ['KNT', 'KNT'], ['SMK', 'SMK'], ['THNK', 'THNK (ไทยนครินทร์)']];
+const isAdmin = () => USER && +USER.admin;
+const chk = (id, on, label) => `<label style="display:flex;align-items:center;gap:8px;font-size:15px;color:var(--ink)"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${esc(label)}</label>`;
+function daysHint(v) { const x = num(v); if (x == null) return ''; const h = x * 24; return h < 48 ? `= ${fmt(h, 1)} ชั่วโมง` : `= ${fmt(x, 1)} วัน`; }
+
+function renderSettings() {
+  $$('#setNav button').forEach(b => b.classList.toggle('on', b.dataset.s === SET.tab));
+  ({ Products: setProducts, Diluents: setDiluents, Staff: setStaff, Wards: setWards, Storage: setStorage, EyeFormulas: setEye, EyeOptions: setEyeOpts, System: setSystem, Logs: setLogs })[SET.tab]();
+}
+function searchBar(placeholder, extra) {
+  return `<div class="row" style="margin-bottom:10px"><div class="fld" style="flex:1">ค้นหา<input id="sQ" value="${esc(SET.q)}" placeholder="${esc(placeholder)}"></div>${extra || ''}</div>`;
+}
+function bindSearch(fn) { const q = $('#sQ'); if (q) { q.oninput = () => { SET.q = q.value; fn(true); }; } }
+function keepFocus() { const q = $('#sQ'); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
+
+// ---------------- ยา ----------------
+function setProducts(refocus) {
+  const q = SET.q.toLowerCase();
+  const list = M.products.filter(p => +p.chemo && (SET.showOff || !+p.off) && (!q || (p.productcde + ' ' + p.productname + ' ' + p.generic).toLowerCase().includes(q))).sort((a, b) => a.productname.localeCompare(b.productname));
+  $('#setBody').innerHTML = searchBar('รหัส / ชื่อยา / ชื่อสามัญ', `<label class="muted" style="padding-bottom:8px"><input type="checkbox" id="sOff" ${SET.showOff ? 'checked' : ''}> แสดงยาที่เลิกใช้</label><button class="btn" id="sAdd">+ เพิ่มยาใหม่</button>`) +
+    `<div class="scroll"><table class="rp"><tr><th>รหัส</th><th>ชื่อยา</th><th>ชื่อสามัญ</th><th>ความเข้มข้น</th><th>ml/vial</th><th>Stab. หลังละลาย</th><th>Stab. หลังผสม</th><th>การเก็บ</th><th></th></tr>
+    ${list.map(p => `<tr style="${+p.off ? 'color:#999' : ''}"><td>${esc(p.productcde)}</td><td>${esc(p.productname)}${+p.off ? ' <span class="pill">เลิกใช้</span>' : ''}</td><td>${esc(p.generic)}</td><td>${p.mgPerMl !== '' ? esc(p.mgPerMl) + ' ' + esc(p.unit || 'mg') + '/ml' : '<span class="pill amb">ไม่มี</span>'}</td><td>${esc(p.mlPerVial)}</td>
+      <td>${p.stRecon !== '' ? esc(p.stRecon) + ' วัน' : '-'}</td><td>${p.stDilute !== '' ? esc(p.stDilute) + ' วัน' : '<span class="pill amb">ไม่มี</span>'}</td><td title="${esc(storageText(p.storage))}">${esc(p.storage)}</td>
+      <td><button class="btn ghost xs" data-k="${esc(p.productcde)}">แก้ไข</button></td></tr>`).join('')}</table></div>
+    <div class="muted" style="margin-top:6px">${list.length} รายการ · Stability เป็นหน่วย “วัน” (0.5 = 12 ชม., 0.17 ≈ 4 ชม.) · Stab. หลังผสม ใช้คำนวณวันหมดอายุบนฉลาก</div>`;
+  bindSearch(setProducts); if (refocus) keepFocus();
+  $('#sOff').onchange = e => { SET.showOff = e.target.checked; setProducts(); };
+  $('#sAdd').onclick = () => productForm(null);
+  $$('#setBody [data-k]').forEach(b => b.onclick = () => productForm(M.prodIdx[b.dataset.k]));
+}
+function storageSelect(id, sel) {
+  return `<select id="${id}"><option value="">— ไม่ระบุ —</option>${lookup('storage').map(s => `<option value="${esc(s.code)}" ${String(s.code).trim() === String(sel || '').trim() ? 'selected' : ''}>${esc(s.code)} — ${esc(s.text)}</option>`).join('')}</select>`;
+}
+function storageHelp() { return `<div class="codehelp"><b>ความหมายรหัสการเก็บ</b><table>${lookup('storage').map(s => `<tr><td style="width:70px"><b>${esc(s.code)}</b></td><td>${esc(s.text)}</td></tr>`).join('')}</table><div class="muted" style="margin-top:4px">เพิ่ม/แก้รหัสได้ที่แท็บ “รหัสการเก็บ”</div></div>`; }
+function productForm(p) {
+  const isNew = !p; p = Object.assign({ productcde: '', productname: '', generic: '', mgPerMl: '', mlPerVial: '', unit: 'mg', stRecon: '', stDilute: '', storage: '', recon: '', mlRecon: '', chemo: 1, off: 0 }, p || {});
+  const d = $('#dlg'); d.style.maxWidth = '780px';
+  d.innerHTML = `<h2>${isNew ? 'เพิ่มยาใหม่' : 'แก้ไขยา · ' + esc(p.productcde)}</h2>
+    <div class="form2">
+      <div class="fld">รหัสยา<input id="pCode" value="${esc(p.productcde)}" ${isNew ? '' : 'readonly'}><span class="hint">ใช้รหัสเดียวกับระบบโรงพยาบาล เช่น 5FUOI2</span></div>
+      <div class="fld">ชื่อยา (ชื่อการค้า / ความแรง)<input id="pName" value="${esc(p.productname)}"><span class="hint">เช่น fluorouracil 500 MG/10ML</span></div>
+      <div class="fld">ชื่อสามัญ<input id="pGen" value="${esc(p.generic)}"><span class="hint">แสดงบนฉลาก และใช้จับคู่กับสูตรยาเพื่อตรวจ dose</span></div>
+      <div class="fld">หน่วยขนาดยา<select id="pUnit">${['mg', 'unit', 'g', 'mcg', 'ml'].map(u => `<option ${String(p.unit).toLowerCase() === u ? 'selected' : ''}>${u}</option>`).join('')}</select></div>
+      <div class="fld">ความเข้มข้นของยา (หน่วย/ml)<input id="pConc" type="number" step="any" value="${esc(p.mgPerMl)}"><span class="hint">หลังละลายแล้ว หรือในขวด เช่น 500 mg/10 ml = 50 · ใช้คำนวณ ml ที่ต้องดูด</span></div>
+      <div class="fld">ปริมาตรต่อ vial (ml)<input id="pMlv" type="number" step="any" value="${esc(p.mlPerVial)}"><span class="hint">ใช้คำนวณจำนวน vial</span></div>
+      <div class="fld">Stability หลังละลาย (recon) · วัน<input id="pStR" type="number" step="any" value="${esc(p.stRecon)}"><span class="hint" id="hStR">${daysHint(p.stRecon)}</span></div>
+      <div class="fld">Stability หลังผสม (dilute) · วัน<input id="pStD" type="number" step="any" value="${esc(p.stDilute)}"><span class="hint" id="hStD">${daysHint(p.stDilute)} · ใช้คำนวณ “หมดอายุ” บนฉลาก</span></div>
+      <div class="fld">สารละลายสำหรับละลายยา (ถ้ามี)<select id="pRecon"><option value="">— ไม่ต้องละลาย / ไม่ระบุ —</option>${M.diluents.map(x => `<option value="${esc(x.pcode)}" ${x.pcode === p.recon ? 'selected' : ''}>${esc(x.generic || x.name)} [${esc(x.pcode)}]</option>`).join('')}</select></div>
+      <div class="fld">ปริมาตรที่ใช้ละลาย (ml)<input id="pMlR" type="number" step="any" value="${esc(p.mlRecon)}"></div>
+      <div class="fld full">รหัสการเก็บ${storageSelect('pStor', p.storage)}<span class="hint" id="hStor">${esc(storageText(p.storage))}</span></div>
+      <div class="full">${storageHelp()}</div>
+      <div class="full">${chk('pOff', +p.off, 'เลิกใช้ (ติ๊กถ้ายานี้ไม่ใช้แล้ว จะไม่แสดงในรายการเลือกยา)')}</div>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="pNo">ยกเลิก</button><button class="btn" id="pOk">บันทึก</button></div>`;
+  d.showModal(); d.onclose = () => d.style.maxWidth = '';
+  $('#pStR').oninput = e => $('#hStR').textContent = daysHint(e.target.value);
+  $('#pStD').oninput = e => $('#hStD').textContent = daysHint(e.target.value) + ' · ใช้คำนวณ “หมดอายุ” บนฉลาก';
+  $('#pStor').onchange = e => $('#hStor').textContent = storageText(e.target.value);
+  $('#pNo').onclick = () => d.close();
+  $('#pOk').onclick = async () => {
+    const o = { productcde: $('#pCode').value.trim(), productname: $('#pName').value.trim(), generic: $('#pGen').value.trim(), unit: $('#pUnit').value,
+      mgPerMl: $('#pConc').value, mlPerVial: $('#pMlv').value, stRecon: $('#pStR').value, stDilute: $('#pStD').value, storage: $('#pStor').value,
+      recon: $('#pRecon').value, mlRecon: $('#pMlR').value, chemo: 1, off: $('#pOff').checked ? 1 : 0 };
+    if (!o.productcde || !o.productname) return toast('ใส่รหัสและชื่อยา');
+    if (isNew) o._new = true;
+    M.products = await api('apiSaveMaster', 'Products', o); buildIdx(); d.close(); setProducts(); toast('บันทึกยาแล้ว');
+  };
+}
+
+// ---------------- สารน้ำ ----------------
+function setDiluents(refocus) {
+  const q = SET.q.toLowerCase();
+  const list = M.diluents.filter(x => (SET.showOff || !+x.off) && (!q || (x.pcode + ' ' + x.name + ' ' + x.generic).toLowerCase().includes(q)));
+  $('#setBody').innerHTML = searchBar('รหัส / ชื่อสารน้ำ', `<label class="muted" style="padding-bottom:8px"><input type="checkbox" id="sOff" ${SET.showOff ? 'checked' : ''}> แสดงที่เลิกใช้</label><button class="btn" id="sAdd">+ เพิ่มสารน้ำ</button>`) +
+    `<div class="scroll"><table class="rp"><tr><th>รหัส</th><th>ชื่อ</th><th>ชื่อบนฉลาก</th><th>ปริมาณ (ml/ขวด)</th><th></th></tr>
+    ${list.map(x => `<tr style="${+x.off ? 'color:#999' : ''}"><td>${esc(x.pcode)}</td><td>${esc(x.name)}${+x.off ? ' <span class="pill">เลิกใช้</span>' : ''}</td><td>${esc(x.generic)}</td><td>${x.mlPerBot !== '' ? esc(x.mlPerBot) : '<span class="pill amb">ไม่มี</span>'}</td><td><button class="btn ghost xs" data-k="${esc(x.pcode)}">แก้ไข</button></td></tr>`).join('')}</table></div>
+    <div class="muted" style="margin-top:6px">ปริมาณ ml/ขวด ใช้คำนวณปริมาตรรวม (ml ยา + ml สารน้ำ)</div>`;
+  bindSearch(setDiluents); if (refocus) keepFocus();
+  $('#sOff').onchange = e => { SET.showOff = e.target.checked; setDiluents(); };
+  $('#sAdd').onclick = () => diluentForm(null);
+  $$('#setBody [data-k]').forEach(b => b.onclick = () => diluentForm(M.dilIdx[b.dataset.k]));
+}
+function diluentForm(x) {
+  const isNew = !x; x = Object.assign({ pcode: '', name: '', generic: '', mlPerBot: '', off: 0 }, x || {});
+  const d = $('#dlg');
+  d.innerHTML = `<h2>${isNew ? 'เพิ่มสารน้ำ' : 'แก้ไขสารน้ำ · ' + esc(x.pcode)}</h2>
+    <div class="form2">
+      <div class="fld">รหัส<input id="dCode" value="${esc(x.pcode)}" ${isNew ? '' : 'readonly'}><span class="hint">เช่น NSSOD0</span></div>
+      <div class="fld">ชื่อ<input id="dName" value="${esc(x.name)}"><span class="hint">เช่น NSS 100 ML</span></div>
+      <div class="fld">ชื่อบนฉลาก (บรรทัด IN:)<input id="dGen" value="${esc(x.generic)}"></div>
+      <div class="fld">ปริมาณสารน้ำ (ml/ขวด)<input id="dMl" type="number" step="any" value="${esc(x.mlPerBot)}"></div>
+      <div class="full">${chk('dOff', +x.off, 'เลิกใช้')}</div>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="dNo">ยกเลิก</button><button class="btn" id="dOk">บันทึก</button></div>`;
+  d.showModal();
+  $('#dNo').onclick = () => d.close();
+  $('#dOk').onclick = async () => {
+    const o = { pcode: $('#dCode').value.trim(), name: $('#dName').value.trim(), generic: $('#dGen').value.trim() || $('#dName').value.trim(), mlPerBot: $('#dMl').value, off: $('#dOff').checked ? 1 : 0 };
+    if (!o.pcode || !o.name) return toast('ใส่รหัสและชื่อ');
+    if (isNew) o._new = true;
+    M.diluents = await api('apiSaveMaster', 'Diluents', o); buildIdx(); d.close(); setDiluents(); toast('บันทึกแล้ว');
+  };
+}
+
+// ---------------- เภสัชกร / ผู้ช่วย ----------------
+function setStaff() {
+  const tb = role => { const list = M.staff.filter(s => s.role === role).sort((a, b) => (+b.active - +a.active) || (+b.mixer - +a.mixer) || a.name.localeCompare(b.name));
+    return `<table class="rp"><tr><th>รหัสพนักงาน</th><th>ชื่อบนฉลาก</th><th>ชื่อ-นามสกุล</th><th>ใช้งาน</th>${role === 'pharmacist' ? '<th>ผู้ผสมประจำ</th><th>เข้าระบบได้</th><th>ผู้ดูแลระบบ</th>' : ''}<th></th></tr>
+      ${list.map(s => `<tr style="${+s.active ? '' : 'color:#999'}"><td data-label="รหัสพนักงาน"><b>${esc(s.empId || '—')}</b>${s.code && s.code !== s.empId ? ` <span class="muted">(${esc(s.code)})</span>` : ''}</td><td data-label="ชื่อบนฉลาก">${esc(s.name)}</td><td data-label="ชื่อ-นามสกุล">${esc(s.fullName || '')}</td><td>${+s.active ? '✅' : '—'}</td>
+        ${role === 'pharmacist' ? `<td>${+s.mixer ? '🧪' : ''}</td><td>${+s.canLogin ? '✅' : '—'}</td><td>${+s.admin ? '⭐' : ''}</td>` : ''}
+        <td>${isAdmin() ? `<button class="btn ghost xs" data-k="${esc(s.code)}">แก้ไข</button> ${+s.canLogin && s.empId ? `<button class="btn ghost xs" data-rs="${esc(s.code)}">รีเซ็ตรหัสผ่าน</button>` : ''}` : ''}</td></tr>`).join('')}</table>`; };
+  $('#setBody').innerHTML = `${isAdmin() ? '' : '<div class="chk amber" style="margin-top:0">ดูได้อย่างเดียว · เพิ่ม/แก้ไขเจ้าหน้าที่ได้เฉพาะผู้ดูแลระบบ</div>'}
+    <div class="row" style="align-items:center"><h3 style="margin:0">เภสัชกร</h3><span class="right"></span>${isAdmin() ? '<button class="btn sm" data-add="pharmacist">+ เพิ่มเภสัชกร</button>' : ''}</div>
+    <div style="margin-top:8px;overflow-x:auto">${tb('pharmacist')}</div>
+    <div class="row" style="align-items:center;margin-top:18px"><h3 style="margin:0">ผู้ช่วยเภสัชกร</h3><span class="right"></span>${isAdmin() ? '<button class="btn sm" data-add="assistant">+ เพิ่มผู้ช่วยเภสัชกร</button>' : ''}</div>
+    <div style="margin-top:8px;overflow-x:auto">${tb('assistant')}</div>
+    <div class="muted" style="margin-top:10px">เข้าสู่ระบบด้วย <b>รหัสพนักงาน</b> (รหัสผ่านตั้งต้น 12345678) · “ผู้ผสมประจำ” = ขึ้นเป็นกลุ่มแรกในช่องเลือกผู้ผสม · “ใช้งาน” = แสดงในรายการเลือกตอนบันทึกเคส · เอาติ๊กใช้งานออกแทนการลบ เพื่อให้ข้อมูลเก่ายังแสดงชื่อได้ · ตัวย่อในวงเล็บคือรหัสเดิมจากโปรแกรม Access</div>`;
+  $$('#setBody [data-add]').forEach(b => b.onclick = () => staffForm(null, b.dataset.add));
+  $$('#setBody [data-k]').forEach(b => b.onclick = () => staffForm(M.staffIdx[b.dataset.k]));
+  $$('#setBody [data-rs]').forEach(b => b.onclick = async () => { const s = M.staffIdx[b.dataset.rs]; if (!await ask(`รีเซ็ตรหัสผ่านของ ${s.name} (${s.empId}) กลับเป็น 12345678?`, 'รีเซ็ต')) return; await api('apiResetPassword', b.dataset.rs); toast('รีเซ็ตรหัสผ่านแล้ว'); });
+}
+function staffForm(s, role) {
+  const isNew = !s; const r0 = role || 'pharmacist';
+  s = Object.assign({ code: '', empId: '', name: '', fullName: '', role: r0, active: 1, canLogin: r0 === 'pharmacist' ? 1 : 0, admin: 0, mixer: 0 }, s || {});
+  const d = $('#dlg');
+  d.innerHTML = `<h2>${isNew ? 'เพิ่ม' + (s.role === 'pharmacist' ? 'เภสัชกร' : 'ผู้ช่วยเภสัชกร') : 'แก้ไข · ' + esc(s.name)}</h2>
+    <div class="form2">
+      <div class="fld">รหัสพนักงาน<input id="stEmp" value="${esc(s.empId)}" style="text-transform:uppercase" placeholder="เช่น 57020197"><span class="hint">ใช้เข้าสู่ระบบ${isNew ? '' : ' · รหัสภายใน ' + esc(s.code)}</span></div>
+      <div class="fld">ตำแหน่ง<select id="stRole"><option value="pharmacist" ${s.role === 'pharmacist' ? 'selected' : ''}>เภสัชกร</option><option value="assistant" ${s.role === 'assistant' ? 'selected' : ''}>ผู้ช่วยเภสัชกร</option></select></div>
+      <div class="fld">ชื่อบนฉลาก (Prepare by / Assist)<input id="stName" value="${esc(s.name)}" placeholder="เช่น วทัญญู"></div>
+      <div class="fld">ชื่อ-นามสกุล<input id="stFull" value="${esc(s.fullName)}" placeholder="เช่น ภก.วทัญญู โตเจริญนิรัติศัย"></div>
+      <div>${chk('stAct', +s.active, 'ใช้งาน')}</div>
+      <div>${chk('stMix', +s.mixer, 'ผู้ผสมประจำ (ขึ้นก่อนในช่องเลือกผู้ผสม)')}</div>
+      <div>${chk('stLog', +s.canLogin, 'เข้าระบบได้')}</div>
+      <div>${chk('stAdm', +s.admin, 'ผู้ดูแลระบบ (แก้เจ้าหน้าที่ / ค่าระบบ / ดู log)')}</div>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="stNo">ยกเลิก</button><button class="btn" id="stOk">บันทึก</button></div>`;
+  d.showModal();
+  $('#stNo').onclick = () => d.close();
+  $('#stOk').onclick = async () => {
+    const o = { code: s.code, empId: $('#stEmp').value.trim().toUpperCase(), name: $('#stName').value.trim(), fullName: $('#stFull').value.trim(), role: $('#stRole').value,
+      active: $('#stAct').checked ? 1 : 0, mixer: $('#stMix').checked ? 1 : 0, canLogin: $('#stLog').checked ? 1 : 0, admin: $('#stAdm').checked ? 1 : 0 };
+    if (!o.name) return toast('ใส่ชื่อบนฉลาก');
+    if (o.canLogin && !o.empId) return toast('ต้องใส่รหัสพนักงานก่อน จึงจะเข้าระบบได้');
+    if (o.empId && M.staff.some(x => String(x.empId).toUpperCase() === o.empId && x.code !== s.code)) return toast('รหัสพนักงานนี้มีคนใช้แล้ว');
+    if (s.code === USER.code && !o.admin) return toast('ห้ามเอาสิทธิ์ผู้ดูแลระบบออกจากตัวเอง');
+    if (isNew) o._new = true;
+    M.staff = await api('apiSaveMaster', 'Staff', o); buildIdx(); d.close(); setStaff(); toast('บันทึกแล้ว');
+  };
+}
+
+// ---------------- แผนก / วอร์ด / รพ. ----------------
+function setWards(refocus) {
+  const q = SET.q.toLowerCase(), list = M.wards.filter(w => !q || (w.code + ' ' + w.name + ' ' + w.partner).toLowerCase().includes(q));
+  $('#setBody').innerHTML = searchBar('รหัส / ชื่อ', '<button class="btn" id="sAdd">+ เพิ่มแผนก/วอร์ด/รพ.</button>') +
+    `<div class="scroll"><table class="rp"><tr><th>รหัส (แสดงบนฉลาก)</th><th>ชื่อ</th><th>โทร</th><th>โรงพยาบาล</th><th></th></tr>
+    ${list.map(w => `<tr><td><b>${esc(w.code)}</b></td><td>${esc(w.name)}</td><td>${esc(w.tel)}</td><td>${esc(w.partner)} ${partnerPill(w.code)}</td><td><button class="btn ghost xs" data-k="${esc(w.code)}">แก้ไข</button></td></tr>`).join('')}</table></div>
+    <div class="muted" style="margin-top:6px">“โรงพยาบาล” ใช้แยกยอดในรายงาน (CH9 = ผู้ป่วยของเรา, PAO/PRINC/RJRH/KNT = โรงพยาบาลที่ส่งมาผสม)</div>`;
+  bindSearch(setWards); if (refocus) keepFocus();
+  $('#sAdd').onclick = () => wardForm(null);
+  $$('#setBody [data-k]').forEach(b => b.onclick = () => wardForm(M.wardIdx[b.dataset.k]));
+}
+function wardForm(w) {
+  const isNew = !w; w = Object.assign({ code: '', name: '', tel: '', partner: 'CH9' }, w || {});
+  const d = $('#dlg');
+  d.innerHTML = `<h2>${isNew ? 'เพิ่มแผนก/วอร์ด/รพ.' : 'แก้ไข · ' + esc(w.code)}</h2>
+    <div class="form2">
+      <div class="fld">รหัส<input id="wCode" value="${esc(w.code)}" ${isNew ? '' : 'readonly'}><span class="hint">แสดงบนฉลากและสติกเกอร์หัว เช่น 4C, one day</span></div>
+      <div class="fld">ชื่อเต็ม<input id="wName" value="${esc(w.name)}"></div>
+      <div class="fld">เบอร์โทร<input id="wTel" value="${esc(w.tel)}"></div>
+      <div class="fld">โรงพยาบาล<select id="wP">${PARTNERS.map(([k, t]) => `<option value="${k}" ${k === w.partner ? 'selected' : ''}>${esc(t)}</option>`).join('')}${w.partner && !PARTNERS.some(p => p[0] === w.partner) ? `<option selected>${esc(w.partner)}</option>` : ''}</select></div>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="wNo">ยกเลิก</button><button class="btn" id="wOk">บันทึก</button></div>`;
+  d.showModal();
+  $('#wNo').onclick = () => d.close();
+  $('#wOk').onclick = async () => {
+    const o = { code: $('#wCode').value.trim(), name: $('#wName').value.trim(), tel: $('#wTel').value.trim(), partner: $('#wP').value };
+    if (!o.code) return toast('ใส่รหัส');
+    if (isNew) o._new = true;
+    M.wards = await api('apiSaveMaster', 'Wards', o); buildIdx(); d.close(); setWards(); toast('บันทึกแล้ว');
+  };
+}
+
+// ---------------- รหัสการเก็บ ----------------
+function setStorage() {
+  const list = lookup('storage');
+  $('#setBody').innerHTML = `<div class="row" style="margin-bottom:10px"><span class="muted">รหัสที่ใช้ในช่อง “รหัสการเก็บ” ของยา ข้อความจะพิมพ์บนฉลากบรรทัด Storage</span><span class="right"></span><button class="btn" id="sAdd">+ เพิ่มรหัส</button></div>
+    <table class="rp"><tr><th>รหัส</th><th>ความหมาย (พิมพ์บนฉลาก)</th><th>ยาที่ใช้รหัสนี้</th><th></th></tr>
+    ${list.map(s => `<tr><td><b>${esc(s.code)}</b></td><td>${esc(s.text)}</td><td>${M.products.filter(p => +p.chemo && !+p.off && String(p.storage).trim() === String(s.code).trim()).length}</td><td><button class="btn ghost xs" data-k="${esc(s.code)}">แก้ไข</button></td></tr>`).join('')}</table>`;
+  const form = s => { const isNew = !s; s = s || { code: '', text: '' }; const d = $('#dlg');
+    d.innerHTML = `<h2>${isNew ? 'เพิ่มรหัสการเก็บ' : 'แก้ไขรหัส ' + esc(s.code)}</h2><div class="form2"><div class="fld">รหัส<input id="lgC" value="${esc(s.code)}" ${isNew ? '' : 'readonly'}></div><div class="fld full">ความหมาย<input id="lgT" value="${esc(s.text)}" placeholder="เช่น เก็บในอุณหภูมิ 2-8 C และพ้นแสง"></div></div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="lgNo">ยกเลิก</button><button class="btn" id="lgOk">บันทึก</button></div>`;
+    d.showModal(); $('#lgNo').onclick = () => d.close();
+    $('#lgOk').onclick = async () => { const c = $('#lgC').value.trim(), t = $('#lgT').value.trim(); if (!c || !t) return toast('ใส่รหัสและความหมาย');
+      if (isNew && lookup('storage').some(x => String(x.code).trim() === c)) return toast('รหัสนี้มีอยู่แล้ว');
+      M.lookups = await api('apiSaveLookup', 'storage', c, t, isNew ? '' : s.code); d.close(); setStorage(); toast('บันทึกแล้ว'); }; };
+  $('#sAdd').onclick = () => form(null);
+  $$('#setBody [data-k]').forEach(b => b.onclick = () => form(list.find(x => String(x.code) === b.dataset.k)));
+}
+
+// ---------------- สูตรยาหยอดตา ----------------
+function setEye() {
+  $('#setBody').innerHTML = `<div class="row" style="margin-bottom:10px"><span class="right"></span><button class="btn" id="sAdd">+ เพิ่มสูตร</button></div>
+    <table class="rp"><tr><th>รหัส</th><th>ชื่อสูตร</th><th>ชื่อบนฉลาก</th><th>การเก็บ</th><th>อายุ</th><th>ใช้งาน</th><th></th></tr>
+    ${M.eyeFormulas.map(f => `<tr style="${+f.active ? '' : 'color:#999'}"><td><b>${esc(f.code)}</b></td><td>${esc(f.name)}</td><td>${esc(f.labelName)}</td><td>${esc(f.storage)}</td><td>${esc(f.expDays)} วัน</td><td>${+f.active ? '✅' : '—'}</td><td><button class="btn ghost xs" data-k="${esc(f.code)}">แก้ไข</button></td></tr>`).join('')}</table>`;
+  const form = f => { const isNew = !f; f = Object.assign({ code: '', name: '', labelName: '', method: '', storage: 'เก็บในตู้เย็น', expDays: 7, active: 1 }, f || {}); const d = $('#dlg'); d.style.maxWidth = '760px';
+    d.innerHTML = `<h2>${isNew ? 'เพิ่มสูตรยาหยอดตา' : 'แก้ไข · ' + esc(f.name)}</h2><div class="form2">
+      <div class="fld">รหัส<input id="efC" value="${esc(f.code)}" ${isNew ? '' : 'readonly'}></div><div class="fld">ชื่อสูตร<input id="efN" value="${esc(f.name)}" placeholder="เช่น Amikacin ED 50 mg/ml 10 ml"></div>
+      <div class="fld">ชื่อบนฉลาก<input id="efL" value="${esc(f.labelName)}" placeholder="เช่น F. Amikacin Eye drop"></div>
+      <div class="fld">การเก็บรักษา<select id="efS">${['เก็บในตู้เย็น', 'อุณหภูมิห้อง'].map(x => `<option ${x === f.storage ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+      <div class="fld">อายุหลังผสม (วัน)<input id="efE" type="number" value="${esc(f.expDays)}"></div><div>${chk('efA', +f.active, 'ใช้งาน')}</div>
+      <div class="fld full">วิธีการเตรียม (Aseptic technique) — พิมพ์บนสติกเกอร์วิธีผสม<textarea id="efM" rows="5">${esc(f.method)}</textarea></div></div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="efNo">ยกเลิก</button><button class="btn" id="efOk">บันทึก</button></div>`;
+    d.showModal(); d.onclose = () => d.style.maxWidth = ''; $('#efNo').onclick = () => d.close();
+    $('#efOk').onclick = async () => { const o = { code: $('#efC').value.trim().toUpperCase(), name: $('#efN').value.trim(), labelName: $('#efL').value.trim(), storage: $('#efS').value, expDays: $('#efE').value, active: $('#efA').checked ? 1 : 0, method: $('#efM').value.trim() };
+      if (!o.code || !o.name) return toast('ใส่รหัสและชื่อสูตร'); if (isNew) o._new = true;
+      M.eyeFormulas = await api('apiSaveMaster', 'EyeFormulas', o); d.close(); setEye(); toast('บันทึกแล้ว'); }; };
+  $('#sAdd').onclick = () => form(null);
+  $$('#setBody [data-k]').forEach(b => b.onclick = () => form(M.eyeFormulas.find(x => x.code === b.dataset.k)));
+}
+
+// ---------------- ตัวเลือกวิธีใช้ยาหยอดตา ----------------
+function setEyeOpts() {
+  const tb = (type, title, hint) => { const list = lookup(type);
+    return `<div class="fsec" style="margin-top:0;margin-bottom:14px"><div class="fsh">${title}<span class="muted">${hint}</span><span class="right"></span><button class="btn sm" data-addopt="${type}">+ เพิ่ม</button></div><div class="fsb">
+      <table class="rp"><tr><th style="width:50px">ลำดับ</th><th>ข้อความ (แสดงในตัวเลือกและบนฉลาก)</th><th style="width:140px"></th></tr>
+      ${list.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.text)}</td><td><button class="btn ghost xs" data-edopt="${type}|${esc(x.code)}">แก้ไข</button> <button class="btn red xs" data-delopt="${type}|${esc(x.code)}">ลบ</button></td></tr>`).join('') || '<tr><td colspan="3" class="muted">ยังไม่มีตัวเลือก</td></tr>'}</table></div></div>`; };
+  $('#setBody').innerHTML = `<div class="muted" style="margin-bottom:10px">ฉลากจะแสดงเป็น “หยอดตา<b>[ข้าง]</b> ครั้งละ N หยด <b>[ความถี่]</b>” เช่น หยอดตาข้างซ้าย ครั้งละ 1 หยด ทุก 2 ชั่วโมง (ตลอด 24 ชั่วโมง)</div>` +
+    tb('eyeSide', 'ข้างที่หยอด', ' · ต่อท้ายคำว่า “หยอดตา”') + tb('eyeFreq', 'ความถี่', ' · ต่อท้าย “ครั้งละ N หยด”');
+  const form = (type, x) => { const isNew = !x, d = $('#dlg');
+    d.innerHTML = `<h2>${isNew ? 'เพิ่ม' : 'แก้ไข'}${type === 'eyeSide' ? 'ข้างที่หยอด' : 'ความถี่'}</h2>
+      <div class="fld">ข้อความ<input id="eoT" value="${esc(x ? x.text : '')}" placeholder="${type === 'eyeSide' ? 'เช่น ข้างที่เป็น' : 'เช่น ทุก 3 ชั่วโมง (ตลอด 24 ชั่วโมง)'}"></div>
+      <div class="muted" style="margin-top:6px">ตัวอย่างบนฉลาก: <b id="eoEx"></b></div>
+      <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="eoNo">ยกเลิก</button><button class="btn" id="eoOk">บันทึก</button></div>`;
+    const ex = () => { const t = $('#eoT').value.trim(); $('#eoEx').textContent = type === 'eyeSide' ? `หยอดตา${t} ครั้งละ 1 หยด ${eyeFreqs()[0]}` : `หยอดตา${eyeSides()[0]} ครั้งละ 1 หยด ${t}`; };
+    d.showModal(); ex(); $('#eoT').oninput = ex; $('#eoNo').onclick = () => d.close();
+    $('#eoOk').onclick = async () => { const t = $('#eoT').value.trim(); if (!t) return toast('ใส่ข้อความ');
+      if (lookup(type).some(o => o.text === t && (!x || o.code !== x.code))) return toast('มีตัวเลือกนี้อยู่แล้ว');
+      M.lookups = await api('apiSaveLookup', type, x ? x.code : (type === 'eyeSide' ? 'S' : 'F') + Date.now().toString(36).toUpperCase(), t, x ? x.code : ''); d.close(); setEyeOpts(); toast('บันทึกแล้ว'); }; };
+  $$('#setBody [data-addopt]').forEach(b => b.onclick = () => form(b.dataset.addopt, null));
+  $$('#setBody [data-edopt]').forEach(b => b.onclick = () => { const [t, c] = b.dataset.edopt.split('|'); form(t, lookup(t).find(x => String(x.code) === c)); });
+  $$('#setBody [data-delopt]').forEach(b => b.onclick = async () => { const [t, c] = b.dataset.delopt.split('|'), x = lookup(t).find(o => String(o.code) === c);
+    if (lookup(t).length < 2) return toast('ต้องมีอย่างน้อย 1 ตัวเลือก');
+    if (!await ask(`ลบตัวเลือก “${x.text}”?\n(รายการที่บันทึกไปแล้วไม่เปลี่ยน)`, 'ลบ', { danger: true })) return;
+    M.lookups = await api('apiDeleteLookup', t, c); setEyeOpts(); toast('ลบแล้ว'); });
+}
+
+// ---------------- ค่าระบบ ----------------
+function setSystem() {
+  const s = M.settings, ro = isAdmin() ? '' : 'disabled';
+  $('#setBody').innerHTML = `${isAdmin() ? '' : '<div class="chk amber" style="margin-top:0">ดูได้อย่างเดียว · แก้ค่าระบบได้เฉพาะผู้ดูแลระบบ</div>'}
+    <div class="form2" style="max-width:760px">
+      <div class="fld">ขนาดฉลาก กว้าง (มม.)<input id="syW" type="number" value="${esc(s.labelWidthMm)}" ${ro}></div>
+      <div class="fld">ขนาดฉลาก สูง (มม.)<input id="syH" type="number" value="${esc(s.labelHeightMm)}" ${ro}></div>
+      <div class="full">${chk('syRot', +s.labelRotate, 'หมุนข้อความ 90° (เมื่อเครื่องพิมพ์ป้อนสติกเกอร์ด้านแคบเข้าก่อน)')}</div>
+      <div class="fld">ปีบนฉลาก<select id="syY" ${ro}><option value="" ${s.labelYear !== 'CE' ? 'selected' : ''}>พ.ศ.</option><option value="CE" ${s.labelYear === 'CE' ? 'selected' : ''}>ค.ศ.</option></select></div>
+      <div class="fld">เวลาผสมเริ่มต้น${tInput('syMix', s.defaultMixTime || '', ro)}<span class="hint">ว่างไว้ = ใช้เวลาปัจจุบัน</span></div>
+      <div class="fld">เวลาแบ่งรอบเตรียมเคส (เช้า/บ่าย)${tInput('syCut', s.shiftCutoff || '14:00', ro)}<span class="hint">ใช้สรุปยอดเตรียมเคสของผู้ช่วยเภสัชกรในรายงาน</span></div>
+      <div class="fld">เก็บข้อมูลย้อนหลัง (ปี)<input id="syKeep" type="number" value="${esc(s.keepYears)}" ${ro}><span class="hint">ใช้กับเมนู “ล้างข้อมูลเก่า” ใน Google Sheet</span></div>
+    </div>
+    ${isAdmin() ? '<div class="row" style="margin-top:14px"><button class="btn" id="sySave">บันทึกค่าระบบ</button></div>' : ''}`;
+  if (!isAdmin()) $('#syRot').disabled = true;
+  const sv = $('#sySave'); if (sv) sv.onclick = async () => {
+    M.settings = await api('apiSaveSettings', { labelWidthMm: $('#syW').value, labelHeightMm: $('#syH').value, labelRotate: $('#syRot').checked ? 1 : 0, labelYear: $('#syY').value, defaultMixTime: $('#syMix').value, shiftCutoff: $('#syCut').value || '14:00', keepYears: $('#syKeep').value });
+    toast('บันทึกค่าระบบแล้ว');
+  };
+}
+
+// ---------------- ประวัติการใช้งาน ----------------
+const LOG_TH = { login: 'เข้าสู่ระบบ', logout: 'ออกจากระบบ', 'auto-logout': 'ออกอัตโนมัติ', 'login-fail': 'เข้าระบบไม่สำเร็จ', 'change-password': 'เปลี่ยนรหัสผ่าน', 'reset-password': 'รีเซ็ตรหัสผ่าน',
+  'add-case': 'บันทึกเคสใหม่', 'edit-case': 'แก้ไขเคส', 'delete-case': 'ลบเคส', 'cancel-case': 'ยกเลิกเคส', 'uncancel-case': 'เลิกยกเลิกเคส', 'print-label': 'พิมพ์ฉลาก', 'reprint-label': 'พิมพ์ฉลากซ้ำ',
+  'add-photo': 'เพิ่มรูปเคส', 'delete-photo': 'ลบรูปเคส', 'add-patient': 'เพิ่มผู้ป่วย', 'edit-patient': 'แก้ไขผู้ป่วย', 'view-report': 'ดูรายงาน', 'export-report': 'ส่งออกรายงาน', 'edit-settings': 'แก้ค่าระบบ',
+  'add-eyedrop': 'บันทึกยาหยอดตา', 'edit-eyedrop': 'แก้ไขยาหยอดตา', 'delete-eyedrop': 'ลบยาหยอดตา', 'print-eyedrop': 'พิมพ์ฉลากยาหยอดตา', 'reprint-eyedrop': 'พิมพ์ซ้ำยาหยอดตา', 'add-lookup': 'เพิ่มตัวเลือก', 'edit-lookup': 'แก้ตัวเลือก', 'delete-lookup': 'ลบตัวเลือก', 'add-Products': 'เพิ่มยา', 'edit-Products': 'แก้ไขยา', 'add-Diluents': 'เพิ่มสารน้ำ', 'edit-Diluents': 'แก้ไขสารน้ำ', 'add-Staff': 'เพิ่มเจ้าหน้าที่', 'edit-Staff': 'แก้ไขเจ้าหน้าที่', 'add-Wards': 'เพิ่มแผนก/วอร์ด', 'edit-Wards': 'แก้ไขแผนก/วอร์ด', 'add-EyeFormulas': 'เพิ่มสูตรยาหยอดตา', 'edit-EyeFormulas': 'แก้ไขสูตรยาหยอดตา' };
+const logTh = a => LOG_TH[a] || a.replace(/^add-/, 'เพิ่ม ').replace(/^edit-/, 'แก้ไข ');
+/** log เก่าที่เก็บเป็น JSON → แปลงเป็นข้อความอ่านง่าย */
+function logDetail(d) {
+  const s = String(d || ''); if (!/^[\[{]/.test(s.trim())) return s;
+  try { const o = JSON.parse(s); if (Array.isArray(o)) return o.join(', ');
+    const parts = []; if (o.id) parts.push('เคส ' + o.id); if (o.HN) parts.push('HN ' + o.HN); if (o.bottles !== undefined) parts.push(o.bottles + ' ขวด');
+    if (o.dose) parts.push('ตรวจขนาดยา: ' + (DOSE_STATUS_TH[o.dose] || o.dose)); if (o.reason) parts.push('เหตุผล: ' + o.reason); if (o.key) parts.push(o.key);
+    return parts.join(' · ') || s; } catch (e) { return s; }
+}
+function setLogs() {
+  if (!isAdmin()) { $('#setBody').innerHTML = '<div class="chk amber" style="margin-top:0">ดูประวัติการใช้งานได้เฉพาะผู้ดูแลระบบ</div>'; return; }
+  const t = M.today, f = addDays(t + ' 00:00', -7).slice(0, 10);
+  $('#setBody').innerHTML = `<div class="row" style="margin-bottom:10px"><div class="fld">ตั้งแต่${dInput('lgF', f)}</div><div class="fld">ถึง${dInput('lgT', t)}</div>
+    <div class="fld" style="flex:1">ค้นหา (ชื่อ / การกระทำ / HN)<input id="lgQ"></div><button class="btn" id="lgGo">ดู</button></div><div id="lgOut"></div>`;
+  const go = async () => { const list = await api('apiLogs', dateVal('#lgF'), dateVal('#lgT'), $('#lgQ').value);
+    $('#lgOut').innerHTML = `<div class="muted" style="margin-bottom:6px">${list.length} รายการ (ล่าสุดอยู่บน · แสดงไม่เกิน 1,000)</div><div class="scroll"><table class="rp"><tr><th>วันเวลา</th><th>ผู้ใช้</th><th>การกระทำ</th><th>รายละเอียด</th></tr>
+      ${list.map(l => `<tr><td style="white-space:nowrap">${thDate(String(l.time).slice(0, 16), true)}</td><td style="white-space:nowrap">${esc(l.name || l.code)}</td><td style="white-space:nowrap;font-weight:600;${/fail|delete|cancel/.test(l.action) ? 'color:var(--red)' : ''}">${esc(logTh(l.action))}</td><td style="font-size:13.5px;line-height:1.45">${esc(logDetail(l.detail))}</td></tr>`).join('')}</table></div>`; };
+  $('#lgGo').onclick = go; go();
+}
+
+// =====================================================================
+//  INIT
+// =====================================================================
+let APP_BOUND = false;
+async function startApp() {
+  Object.assign(M, await api('apiBoot'));
+  buildIdx();
+  if (!APP_BOUND) {
+    APP_BOUND = true;
+    $$('nav button').forEach(b => b.onclick = () => { $$('nav button').forEach(x => x.classList.toggle('on', x === b)); ['day', 'eye', 'report', 'settings'].forEach(t => $('#tab-' + t).hidden = t !== b.dataset.tab);
+      if (b.dataset.tab === 'settings') renderSettings(); if (b.dataset.tab === 'eye' && !EYE.day) loadEyeDay(M.today); });
+    $$('#setNav button').forEach(b => b.onclick = () => { SET.tab = b.dataset.s; SET.q = ''; SET.showOff = false; renderSettings(); });
+    $('#lsMode').onchange = () => loadList(); $('#lsDate').onchange = () => loadList();
+    $('#btnRefresh').onclick = () => loadList();
+    $('#btnPrintAll').onclick = async () => { const L = DAY.list.visits.filter(v => !+v.cancelled); if (!L.length) return toast('ไม่มีเคส');
+      if (!await ask(`พิมพ์ฉลากทั้งหมด ${L.length} เคส (สติกเกอร์หัว + ขวดยา) ที่แสดงในรายการ?`, 'พิมพ์')) return; await printCases(L.map(caseOf), false); loadList(); };
+    $('#eyeDate').onchange = () => { EYE.cur = null; $('#eyeEditor').innerHTML = '<div class="empty">เลือกรายการทางซ้าย หรือกด “+ ผสมยาหยอดตา”</div>'; loadEyeDay(dateVal('#eyeDate') || M.today); };
+    $('#btnEyeNew').onclick = newEye;
+    $('#btnChgPw').onclick = () => changePassword(false);
+    $('#btnLogout').onclick = async () => { if (DAY.cur && DAY.cur.dirty && !await ask('มีข้อมูลในฟอร์มที่ยังไม่บันทึก ออกจากระบบเลย?', 'ออกจากระบบ')) return; const t = TOKEN; forceLogin('ออกจากระบบแล้ว'); rawCall('apiLogout', t); };
+    $('#fileCam').onchange = e => uploadPhotos([...e.target.files]);
+    $('#fileAtt').onchange = e => uploadPhotos([...e.target.files]);
+    window.addEventListener('beforeunload', e => { if (TOKEN && DAY.cur && DAY.cur.dirty) { e.preventDefault(); e.returnValue = ''; } });
+    initReport();
+  }
+  EYE.day = null; EYE.cur = null;
+  DAY.cur = null; renderForm();
+  await loadList('prep', M.today);
+}
+$('#loginForm').onsubmit = doLogin;
+if (!IS_GAS && !window.MOCK_API) { $('#svLink').style.display = ''; $('#svBtn').onclick = e => { e.preventDefault(); serverSetup(); }; }
+forceLogin(!IS_GAS && !window.MOCK_API && !apiUrl() ? 'ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์ กด ⚙️ ตั้งค่าเซิร์ฟเวอร์ ด้านล่าง' : '');
+
+</script>
+</body>
+</html>
