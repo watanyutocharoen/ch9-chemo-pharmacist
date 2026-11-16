@@ -2013,7 +2013,7 @@ async function startApp() {
   await loadList('prep', M.today);
 }
 $('#loginForm').onsubmit = doLogin;
-if (!IS_GAS && !window.MOCK_API) { $('#svLink').style.display = ''; $('#svBtn').onclick = e => { e.preventDefault(); serverSetup(); }; }
+if (!IS_GAS && !window.MOCK_API && !window.CHEMOPREP_API) { $('#svLink').style.display = ''; $('#svBtn').onclick = e => { e.preventDefault(); serverSetup(); }; }
 forceLogin(!IS_GAS && !window.MOCK_API && !apiUrl() ? 'ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์ กด ⚙️ ตั้งค่าเซิร์ฟเวอร์ ด้านล่าง' : '');
 
 </script>
