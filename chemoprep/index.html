@@ -142,7 +142,7 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 .reasonbox label{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:15px}
 .reasonbox input[type=radio]{width:18px;height:18px;accent-color:var(--red)}
 .dstat{display:inline-block;font-weight:700;border-radius:20px;padding:3px 12px;font-size:13px}
-.dstat.pass{background:var(--grnbg);color:var(--grn)}.dstat.fail{background:var(--redbg);color:var(--red)}.dstat.incomplete{background:#fff3cd;color:#8a6d00}.dstat.missing{background:#eef2f5;color:var(--mut)}
+.dstat.pass{background:var(--grnbg);color:var(--grn)}.dstat.fail{background:var(--redbg);color:var(--red)}.dstat.incomplete{background:#fff3cd;color:#8a6d00}.dstat.continuous{background:#fff3cd;color:#8a6d00}.dstat.missing{background:#eef2f5;color:var(--mut)}
 .pwwrap{position:relative;display:flex}.pwwrap input{flex:1;padding-right:44px!important}
 .pwwrap button{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;cursor:pointer;font-size:18px;padding:4px 6px;color:var(--mut)}
 /* ---- date / time fields ---- */
@@ -978,7 +978,7 @@ function renderList() {
         <td data-label="ผู้ป่วย" class="c-pt"><div class="nm"><b>${esc((p.title || '') + (p.name || '') + ' ' + (p.surname || ''))}</b> ${+p.allergyFlag ? '<span class="pill red">แพ้ยา</span>' : ''}</div><span class="muted">HN ${esc(v.HN)}</span>${cx ? ' <span class="pill red">ยกเลิก</span>' : ''}</td>
         <td data-label="วอร์ด">${esc(v.ward)} ${partnerPill(v.ward)}</td>
         <td data-label="รายการ" class="c-items" style="font-size:13px">${c.bottles.map(b => { const pr = M.prodIdx[b.productcde] || {}; return `<div><b>${esc(pr.generic || pr.productname || b.productcde)}</b> ${fmt(num(b.mg))} ${esc(pr.unit || 'mg')}${b.diluent ? ' <span class="muted">+ ' + esc(dilName(b.diluent)) + '</span>' : ''}</div>`; }).join('')}
-          <div>${printed ? '<span class="pill grn">พิมพ์ฉลากแล้ว</span>' : '<span class="pill amb">ยังไม่พิมพ์</span>'} ${v.doseStatus && v.doseStatus !== 'import' ? `<span class="pill ${v.doseStatus === 'pass' ? 'grn' : v.doseStatus === 'fail' ? 'red' : 'amb'}" title="${esc(v.doseIssues || '')}">dose: ${DOSE_STATUS_TH[v.doseStatus] || v.doseStatus}${v.doseStatus === 'fail' ? ' · ' + esc((DOSE_REASONS.find(r => r[0] === v.doseReason) || ['', ''])[1].replace(' (โปรดระบุ)', '')) : ''}</span>` : ''}</div></td>
+          <div>${printed ? '<span class="pill grn">พิมพ์ฉลากแล้ว</span>' : '<span class="pill amb">ยังไม่พิมพ์</span>'} ${v.doseStatus && v.doseStatus !== 'import' ? `<span class="pill ${v.doseStatus === 'pass' ? 'grn' : v.doseStatus === 'fail' ? 'red' : 'amb'}" title="${esc(v.doseIssues || '')}">dose: ${DOSE_STATUS_TH[dsKey(v)] || v.doseStatus}${v.doseStatus === 'fail' ? ' · ' + esc((DOSE_REASONS.find(r => r[0] === v.doseReason) || ['', ''])[1].replace(' (โปรดระบุ)', '')) : ''}</span>` : ''}</div></td>
         <td data-label="ผู้ผสม / ผู้ช่วย">${esc(staffName(v.phcode))}<br><span class="muted">${esc(staffName(v.emcode))}</span></td>
         <td data-label="เตรียมเคสเมื่อ"><span class="muted">${thDate(v.preparedAt, true) || '-'}</span></td>
         <td data-label="รูป"><button class="btn ${nPh ? '' : 'ghost'} sm" data-photo="${esc(v.id)}" title="ถ่ายรูป / แนบรูปเคส">📷 ${nPh ? nPh + ' รูป' : 'ถ่ายรูป'}</button></td>
@@ -1014,6 +1014,7 @@ async function toggleCancel(box) {
 async function editCase(id) {
   if (DAY.cur && DAY.cur.dirty && !await ask('มีข้อมูลในฟอร์มที่ยังไม่บันทึก ต้องการทิ้งแล้วเปิดเคสนี้แทน?', 'ทิ้งข้อมูล')) return;
   const v = Object.assign({}, DAY.list.visits.find(x => x.id === id));
+  v.doseCont = v.doseStatus === 'incomplete' && v.doseReason === 'continuous';
   v.doseIncomplete = v.doseStatus === 'incomplete';
   try { const dd = JSON.parse(v.doseDetail || '{}'); if (dd.opt) v.doseOpt = dd.opt; } catch (e) {}
   const c = caseOf(v);
@@ -1060,8 +1061,11 @@ function renderForm() {
       <div class="fld">ผู้ช่วยเภสัชกร (เตรียมเคส)<select id="vEm">${staffOpts('assistant', v.emcode)}</select></div>
       <div class="fld">แผนก / วอร์ด / รพ.<select id="vWard">${wardOpts(v.ward)}</select></div></div>
     ${v.date !== M.today ? `<div class="chk amber" style="margin-bottom:0">วันที่ผสม ${dmyPad(v.date)} ไม่ใช่วันนี้ — เคสนี้จะไปอยู่ในรายงานของวันที่ ${dmyPad(v.date)}</div>` : ''}`;
-  const doseBody = `<div class="incbox ${v.doseIncomplete ? 'on' : ''}" style="margin-top:0"><label style="display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)"><input type="checkbox" id="vInc" ${v.doseIncomplete ? 'checked' : ''}> ข้อมูลไม่ครบ (ไม่ตรวจสอบขนาดยา)</label>
-      ${v.doseIncomplete ? `<div class="fld" style="flex:1;min-width:220px"><input id="vIncNote" placeholder="หมายเหตุ เช่น ไม่มีผล SCr / ไม่ทราบน้ำหนัก (ไม่บังคับ)" value="${esc(v.doseReasonNote || '')}"></div>` : '<span class="muted">ติ๊กเมื่อไม่มีน้ำหนัก ส่วนสูง หรือข้อมูลที่ต้องใช้ตรวจ</span>'}</div>
+  const incOn = v.doseIncomplete && !v.doseCont, contOn = !!v.doseCont;
+  const doseBody = `<div class="incbox ${incOn ? 'on' : ''}" style="margin-top:0"><label style="display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)"><input type="checkbox" id="vInc" ${incOn ? 'checked' : ''}> ข้อมูลไม่ครบ (ไม่ตรวจสอบขนาดยา)</label>
+      ${incOn ? `<div class="fld" style="flex:1;min-width:220px"><input id="vIncNote" placeholder="หมายเหตุ เช่น ไม่มีผล SCr / ไม่ทราบน้ำหนัก (ไม่บังคับ)" value="${esc(v.doseReasonNote || '')}"></div>` : '<span class="muted">ติ๊กเมื่อไม่มีน้ำหนัก ส่วนสูง หรือข้อมูลที่ต้องใช้ตรวจ</span>'}</div>
+    <div class="incbox ${contOn ? 'on' : ''}"><label style="display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)"><input type="checkbox" id="vCont" ${contOn ? 'checked' : ''}> เคสต่อเนื่องหลายวัน (ไม่ตรวจสอบขนาดยา)</label>
+      ${contOn ? `<div class="fld" style="flex:1;min-width:220px"><input id="vContNote" placeholder="หมายเหตุ เช่น 5-FU วันที่ 2 / ต่อจากเคสวันที่ … (ไม่บังคับ)" value="${esc(v.doseReasonNote || '')}"></div>` : '<span class="muted">ติ๊กเมื่อเป็นยาหยดต่อเนื่อง/วันถัดไปของรอบเดิม ที่ตรวจขนาดไปแล้วในวันแรก</span>'}</div>
     ${v.doseIncomplete ? '' : `<div class="dosetop">
         <div class="fld"><span>น้ำหนัก (kg) <span class="req">*</span></span><input id="vWt" type="number" step="0.1" style="width:110px" value="${esc(v.wt)}"></div>
         <div class="fld"><span>ส่วนสูง (cm) <span class="req">*</span></span><input id="vHt" type="number" step="0.1" style="width:110px" value="${esc(v.ht)}"></div>
@@ -1185,6 +1189,7 @@ function bindOptPanel(c) {
 /** สถานะการตรวจขนาดยา: pass / fail / incomplete / missing (กรอกไม่ครบ) */
 function doseState(c) {
   const v = c.v;
+  if (v.doseCont) return { status: 'continuous', missing: [], r: null, bad: [] };
   if (v.doseIncomplete) return { status: 'incomplete', missing: [], r: null, bad: [] };
   const missing = [];
   if (!(num(v.wt) > 0)) missing.push('น้ำหนัก'); if (!(num(v.ht) > 0)) missing.push('ส่วนสูง');
@@ -1197,7 +1202,9 @@ function doseState(c) {
   return { status: bad.length ? 'fail' : 'pass', missing, r, bad };
 }
 const DOSE_REASONS = [['prev', 'ผู้ป่วยเคยได้รับขนาดนี้มาก่อน'], ['confirmed', 'ทวนแพทย์แล้ว แพทย์ยืนยัน'], ['other', 'อื่นๆ (โปรดระบุ)']];
-const DOSE_STATUS_TH = { pass: 'ผ่าน', fail: 'ไม่ผ่าน', incomplete: 'ข้อมูลไม่ครบ', missing: 'ยังตรวจไม่ครบ', import: 'ข้อมูลเก่า' };
+const DOSE_STATUS_TH = { pass: 'ผ่าน', fail: 'ไม่ผ่าน', incomplete: 'ข้อมูลไม่ครบ', continuous: 'เคสต่อเนื่องหลายวัน', missing: 'ยังตรวจไม่ครบ', import: 'ข้อมูลเก่า' };
+/** สถานะสำหรับแสดงผล (เคสต่อเนื่อง เก็บเป็น incomplete + เหตุผล continuous) */
+const dsKey = v => v.doseStatus === 'incomplete' && v.doseReason === 'continuous' ? 'continuous' : v.doseStatus;
 function renderBottles() {
   const c = DAY.cur, rows = autoNumber(c.bottles, c.v), routes = lookup('route'), units = lookup('rateUnit');
   // ถ้ามีช่องที่ยัง focus อยู่ ให้ blur ก่อน (change จะบันทึกค่าลงข้อมูลโดยไม่ render ซ้อน)
@@ -1248,6 +1255,7 @@ function renderCheck() {
   renderRegCard();
   const badge = $('#doseBadge'); if (badge) badge.innerHTML = `<span class="dstat ${st.status}">${DOSE_STATUS_TH[st.status]}</span>`;
   const out = $('#checkOut');
+  if (st.status === 'continuous') { out.innerHTML = `<div class="chk amber" style="margin-top:0">ติ๊ก “เคสต่อเนื่องหลายวัน” ไว้ — ไม่ได้ตรวจสอบขนาดยาในเคสนี้ (ระบบบันทึกสถานะนี้ไว้)</div>`; return; }
   if (st.status === 'incomplete') { out.innerHTML = `<div class="chk amber" style="margin-top:0">ติ๊ก “ข้อมูลไม่ครบ” ไว้ — ไม่ได้ตรวจสอบขนาดยาในเคสนี้ (ระบบบันทึกสถานะนี้ไว้)</div>`; return; }
   const r = st.r;
   const box = (lvl, t, msgs) => `<div class="chk ${lvl}"><div class="t">${t}</div>${msgs && msgs.length ? '<ul>' + msgs.map(m => '<li>' + esc(m) + '</li>').join('') + '</ul>' : ''}</div>`;
@@ -1299,8 +1307,10 @@ function bindForm() {
   const be = $('#btnEditPat'); if (be) be.onclick = () => editPatient(c.pat, false, p => { c.pat = p; if (DAY.list.patIdx[p.HN]) Object.assign(DAY.list.patIdx[p.HN], p); renderForm(); renderList(); });
   const bc = $('#btnChangePat'); if (bc) bc.onclick = () => { c.pat = null; v.HN = ''; renderForm(); };
   // ข้อมูลไม่ครบ
-  $('#vInc').onchange = e => { v.doseIncomplete = e.target.checked; if (!v.doseIncomplete) v.doseReasonNote = ''; v.doseReason = ''; c.dirty = true; renderForm(); };
+  $('#vInc').onchange = e => { v.doseCont = false; v.doseIncomplete = e.target.checked; v.doseReasonNote = ''; v.doseReason = ''; c.dirty = true; renderForm(); };
+  $('#vCont').onchange = e => { v.doseCont = e.target.checked; v.doseIncomplete = e.target.checked; v.doseReasonNote = ''; v.doseReason = ''; c.dirty = true; renderForm(); };
   const inc = $('#vIncNote'); if (inc) inc.oninput = () => { v.doseReasonNote = inc.value; c.dirty = true; };
+  const cnt = $('#vContNote'); if (cnt) cnt.oninput = () => { v.doseReasonNote = cnt.value; c.dirty = true; };
   // ตัวเลือกสูตร
   if (!v.doseIncomplete) {
     $('#smode').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; c.pick.mode = b.dataset.m; $$('#smode [data-m]').forEach(x => x.classList.toggle('on', x === b)); $('#regQ').placeholder = PICK_PH[c.pick.mode]; $('#regQ').focus(); renderRegList(); };
@@ -1352,14 +1362,14 @@ async function saveCase(andPrint) {
   }
   const P = st.r ? st.r.P : null, reg = regOf(v.regimen);
   const payload = Object.assign({}, v, {
-    doseStatus: st.status,
-    doseReason: st.status === 'fail' ? v.doseReason : '',
+    doseStatus: st.status === 'continuous' ? 'incomplete' : st.status,
+    doseReason: st.status === 'fail' ? v.doseReason : st.status === 'continuous' ? 'continuous' : '',
     doseReasonNote: st.status === 'pass' ? '' : (v.doseReasonNote || ''),
     doseIssues: st.status === 'fail' ? st.bad.map(x => x.name ? `${x.name}: ${x.title}` : x.t).join(' | ') : '',
-    doseDetail: st.status === 'incomplete' ? '' : JSON.stringify({ regimen: reg ? reg.n : '', cancer: reg ? CANCERS[reg.c] : '', bsa: P && P.ok ? +P.bsa.toFixed(2) : null, bmi: P && P.ok ? +P.bmi.toFixed(1) : null,
+    doseDetail: st.status === 'incomplete' || st.status === 'continuous' ? '' : JSON.stringify({ regimen: reg ? reg.n : '', cancer: reg ? CANCERS[reg.c] : '', bsa: P && P.ok ? +P.bsa.toFixed(2) : null, bmi: P && P.ok ? +P.bmi.toFixed(1) : null,
       crcl: P && P.okRenal ? Math.round(P.crcl) : null, gfr: P && P.okRenal ? Math.round(P.gfr) : null, opt: v.doseOpt || null, items: st.r.items.map(it => ({ drug: it.name, lvl: it.lvl, result: it.title, detail: it.msgs.slice(0, 3) })) })
   });
-  delete payload.doseIncomplete; delete payload.doseOpt;
+  delete payload.doseIncomplete; delete payload.doseCont; delete payload.doseOpt;
   const wasEdit = !!v.id;
   const r = await api('apiSaveVisit', payload, bottles.map(b => { const o = Object.assign({}, b); delete o._of; return o; }), DAY.list.mode, DAY.list.date);
   setList(r);
@@ -1762,6 +1772,7 @@ async function runReport() {
 function doseText(v) {
   if (!v.doseStatus || v.doseStatus === 'import') return '';
   const r = (DOSE_REASONS.find(x => x[0] === v.doseReason) || ['', ''])[1].replace(' (โปรดระบุ)', '');
+  if (dsKey(v) === 'continuous') return DOSE_STATUS_TH.continuous + (v.doseReasonNote ? ' · ' + v.doseReasonNote : '');
   return (DOSE_STATUS_TH[v.doseStatus] || v.doseStatus) + (v.doseStatus === 'fail' ? ' · ' + r + (v.doseReasonNote ? ': ' + v.doseReasonNote : '') : v.doseStatus === 'incomplete' && v.doseReasonNote ? ' · ' + v.doseReasonNote : '');
 }
 function doseCell(v) { const t = doseText(v); if (!t) return '<span class="muted">-</span>'; return `<span class="pill ${v.doseStatus === 'pass' ? 'grn' : v.doseStatus === 'fail' ? 'red' : 'amb'}" style="white-space:normal" title="${esc(v.doseIssues || '')}">${esc(t)}</span>`; }
@@ -1815,7 +1826,7 @@ function downloadCsv() {
   const rows = [['date', 'วันที่ผสม', 'เวลาผสม', 'VN', 'title', 'name', 'surname', 'DOB', 'HN', 'ward', 'hospital', 'pharmacist', 'assistant', 'preparedAt', 'cancelled', 'doseStatus', 'doseReason', 'doseReasonNote', 'doseIssues', 'regimen', 'bottleNo', 'productname', 'productcode', 'MG', 'unit', 'diluent', 'route', 'rate', 'rateUnit', 'totalVol']];
   r.visits.forEach(v => { const p = patIdx[v.HN] || {};
     r.bottles.filter(b => b.visitId === v.id).forEach(b => { const pr = M.prodIdx[b.productcde] || {}, k = bottleCalc(b, v);
-      rows.push([v.date, dmyPad(v.date), (v.mixTime || '').split(' ')[1] || '', v.vn, p.title, p.name, p.surname, p.dob, v.HN, v.ward, partnerOf(v.ward), staffName(v.phcode), staffName(v.emcode), v.preparedAt, +v.cancelled ? 'ยกเลิก' : '', DOSE_STATUS_TH[v.doseStatus] || v.doseStatus || '', (DOSE_REASONS.find(x => x[0] === v.doseReason) || ['', ''])[1], v.doseReasonNote, v.doseIssues, (regOf(v.regimen) || {}).n || '', b.bottleNo, pr.productname, b.productcde, b.mg, pr.unit, dilName(b.diluent), b.route, b.rate, b.rateUnit, k.tvol ? k.tvol.toFixed(1) : '']); }); });
+      rows.push([v.date, dmyPad(v.date), (v.mixTime || '').split(' ')[1] || '', v.vn, p.title, p.name, p.surname, p.dob, v.HN, v.ward, partnerOf(v.ward), staffName(v.phcode), staffName(v.emcode), v.preparedAt, +v.cancelled ? 'ยกเลิก' : '', DOSE_STATUS_TH[dsKey(v)] || v.doseStatus || '', (DOSE_REASONS.find(x => x[0] === v.doseReason) || ['', ''])[1], v.doseReasonNote, v.doseIssues, (regOf(v.regimen) || {}).n || '', b.bottleNo, pr.productname, b.productcde, b.mg, pr.unit, dilName(b.diluent), b.route, b.rate, b.rateUnit, k.tvol ? k.tvol.toFixed(1) : '']); }); });
   const csv = '﻿' + rows.map(r => r.map(x => { x = String(x ?? ''); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(',')).join('\r\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   a.download = `ข้อมูลเคมี_${dateVal('#rFrom')}_${dateVal('#rTo')}.csv`; a.click();

@@ -204,6 +204,7 @@ function caseDesc_(v, bottles) {
   let t = `${caseRef_(v)} เวลาผสม ${String(v.mixTime || '').slice(11, 16)} น. · ผู้ผสม ${staffName_(v.phcode)}${v.emcode ? ' / ผู้ช่วย ' + staffName_(v.emcode) : ''} · ${drugs.length} ขวด (${drugs.join(', ')})`;
   t += ` · ตรวจขนาดยา: ${DOSE_TH_[v.doseStatus] || '-'}`;
   if (v.doseStatus === 'fail') t += ` เพราะ ${v.doseIssues || '-'} → เหตุผล: ${REASON_TH_[v.doseReason] || '-'}${v.doseReasonNote ? ' (' + v.doseReasonNote + ')' : ''}`;
+  if (v.doseStatus === 'incomplete' && v.doseReason === 'continuous') t = t.replace('ข้อมูลไม่ครบ (ไม่ได้ตรวจ)', 'เคสต่อเนื่องหลายวัน (ไม่ได้ตรวจ)');
   if (v.doseStatus === 'incomplete' && v.doseReasonNote) t += ` (${v.doseReasonNote})`;
   return t;
 }
