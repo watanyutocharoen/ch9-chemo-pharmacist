@@ -66,7 +66,18 @@ function onOpen() {
 // แคชภายในการเรียก 1 ครั้ง (ลดการอ่าน Sheet ซ้ำ ๆ ให้เร็วขึ้น)
 let SS_ = null; const SHEET_ = {}, HM_ = {}, MEMO_ = {};
 const MASTER_SHEETS_ = { Products: 1, Diluents: 1, Staff: 1, Wards: 1, Lookups: 1, Titles: 1, EyeFormulas: 1, Settings: 1 };
-function dirty_(name) { delete MEMO_[name]; if (MASTER_SHEETS_[name]) masterClear_(); }
+const DATA_SHEETS_ = { Visits: 1, Bottles: 1, Patients: 1 }; let DV_BUMPED_ = false;
+function dirty_(name) { delete MEMO_[name]; if (MASTER_SHEETS_[name]) masterClear_(); if (DATA_SHEETS_[name] && !DV_BUMPED_) { DV_BUMPED_ = true; try { CacheService.getScriptCache().put('dv', String(Date.now()), 21600); } catch (e) {} } }
+// cache ก้อนใหญ่ (แบ่งเป็นชิ้น ≤90KB ตามข้อจำกัดของ CacheService)
+function cacheGetBig_(key) { try { const c = CacheService.getScriptCache(), n = Number(c.get(key + '_n') || 0); if (!n) return null; const ks = Array.from({ length: n }, (_, i) => key + '_' + i), p = c.getAll(ks); if (Object.keys(p).length !== n) return null; return JSON.parse(ks.map(k => p[k]).join('')); } catch (e) { return null; } }
+function cachePutBig_(key, obj, sec) { try { const s = JSON.stringify(obj), size = 90000, n = Math.ceil(s.length / size), o = {}; if (n > 8) return; for (let i = 0; i < n; i++) o[key + '_' + i] = s.slice(i * size, (i + 1) * size); o[key + '_n'] = String(n); CacheService.getScriptCache().putAll(o, sec); } catch (e) {} }
+function dataVer_() { const c = CacheService.getScriptCache(); let v = c.get('dv'); if (!v) { v = String(Date.now()); c.put('dv', v, 21600); } return v; }
+/** รายการเคสตามวัน — ใช้ cache ถ้ายังไม่มีใครแก้ข้อมูล */
+function listCached_(mode, d) {
+  const key = 'L' + dataVer_() + '|' + mode + '|' + d, hit = cacheGetBig_(key); if (hit) return hit;
+  const r = listCases_(v => mode === 'prep' ? String(v.preparedAt).slice(0, 10) === d : v.date === d, [mode === 'prep' ? 'preparedAt' : 'date'], d);
+  r.mode = mode; r.date = d; cachePutBig_(key, r, 600); return r;
+}
 function ss_() { return SS_ || (SS_ = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SSID'))); }
 function sheet_(name) {
   const sh = SHEET_[name] || (SHEET_[name] = ss_().getSheetByName(name));
@@ -347,7 +358,7 @@ function master_() {
 function bootData_(u, listMode, listDate) {
   const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   const r = Object.assign({ user: u, today }, master_());
-  if (listMode) { const d = listDate || today; r.list = listCases_(v => listMode === 'prep' ? String(v.preparedAt).slice(0, 10) === d : v.date === d, [listMode === 'prep' ? 'preparedAt' : 'date'], d); r.list.mode = listMode; r.list.date = d; }
+  if (listMode) r.list = listCached_(listMode, listDate || today);
   return r;
 }
 function apiBoot(token, listMode, listDate) { return bootData_(auth_(token), listMode, listDate); }
@@ -372,9 +383,7 @@ function listCases_(filterFn, keyCols, fromDate) {
 }
 function apiList(token, mode, date) {
   auth_(token);
-  const r = listCases_(v => mode === 'prep' ? String(v.preparedAt).slice(0, 10) === date : v.date === date, [mode === 'prep' ? 'preparedAt' : 'date'], date);
-  r.mode = mode; r.date = date;
-  return r;
+  return listCached_(mode, date);
 }
 
 // ---------- ผู้ป่วย ----------

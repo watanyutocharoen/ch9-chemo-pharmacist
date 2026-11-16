@@ -439,14 +439,17 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 // =====================================================================
 let TOKEN = null, USER = null;
 const PUBLIC_FN = { apiLogin: 1 };
-function api(fn, ...args) {
-  busy(true); idleReset();
+function api(fn, ...args) { return callApi(false, fn, args); }
+/** เรียกแบบเงียบ: ไม่ขึ้น "กำลังโหลด" ไม่บังหน้าจอ (ใช้กับงานเบื้องหลัง) */
+function apiQ(fn, ...args) { return callApi(true, fn, args); }
+function callApi(quiet, fn, args) {
+  if (!quiet) busy(true); idleReset();
   const a = PUBLIC_FN[fn] ? args : [TOKEN, ...args];
   return new Promise((res, rej) => {
-    const ok = v => { busy(false); res(v); };
-    const fail = e => { busy(false); const m = (e && e.message) || String(e);
+    const ok = v => { if (!quiet) busy(false); res(v); };
+    const fail = e => { if (!quiet) busy(false); const m = (e && e.message) || String(e);
       if (/SESSION_EXPIRED/.test(m)) { forceLogin('หมดเวลาการใช้งาน กรุณาเข้าสู่ระบบใหม่'); rej(e); return; }
-      toast('ผิดพลาด: ' + m); rej(e); };
+      if (!quiet) toast('ผิดพลาด: ' + m); rej(e); };
     if (window.MOCK_API) { Promise.resolve().then(() => MOCK_API[fn](...a)).then(ok, fail); return; }
     if (IS_GAS) { google.script.run.withSuccessHandler(ok).withFailureHandler(fail)[fn](...a); return; }
     httpCall(fn, a).then(ok, fail);
@@ -933,12 +936,17 @@ function blankCase(keep) {
     mixTime: (keep.date || M.today) + ' ' + (M.settings.defaultMixTime || nowHM()), wt: '', ht: '', scr: '', regimen: '', note: '' },
     bottles: [], pat: null, prev: null, dirty: false };
 }
+// รายการที่เคยโหลดแล้ว เก็บไว้ในหน่วยความจำ → แสดงทันที แล้วค่อยดึงของใหม่เบื้องหลัง
+const LIST_CACHE = {};
 async function loadList(mode, date) {
   mode = mode || $('#lsMode').value; date = date || dateVal('#lsDate') || M.today;
   $('#lsMode').value = mode; setDate('#lsDate', date);
+  const key = mode + '|' + date, hit = LIST_CACHE[key];
+  if (hit) { setList(hit); markListRefreshing(true); try { const r = await apiQ('apiList', mode, date); if ($('#lsMode').value === mode && dateVal('#lsDate') === date) setList(r); } catch (e) {} finally { markListRefreshing(false); } return; }
   setList(await api('apiList', mode, date));
 }
-function setList(r) { DAY.list = r; DAY.list.patIdx = idx(r.patients, 'HN'); renderList(); }
+function markListRefreshing(on) { const b = $('#btnRefresh'); if (b) { b.disabled = on; b.textContent = on ? 'กำลังอัปเดต…' : 'รีเฟรช'; } }
+function setList(r) { DAY.list = r; DAY.list.patIdx = idx(r.patients, 'HN'); if (r.mode && r.date) LIST_CACHE[r.mode + '|' + r.date] = r; renderList(); }
 function caseOf(v) {
   const L = DAY.list;
   return { v, bottles: L.bottles.filter(b => b.visitId === v.id).sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric: true })), pat: L.patIdx[v.HN] || { HN: v.HN } };
@@ -1002,7 +1010,7 @@ async function editCase(id) {
   DAY.cur = { v, bottles: c.bottles.map(b => Object.assign({}, b)), pat: c.pat, prev: null, dirty: false };
   renderForm(); renderList();
   $('#caseForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  api('apiPatient', v.HN).then(r => { if (DAY.cur && DAY.cur.v.id === id) { DAY.cur.prev = r; renderPrevHint(); } }).catch(() => {});
+  apiQ('apiPatient', v.HN).then(r => { if (DAY.cur && DAY.cur.v.id === id) { DAY.cur.prev = r; renderPrevHint(); } }).catch(() => {});
 }
 function newCase() {
   const last = DAY.lastKeep || {};
@@ -1300,7 +1308,7 @@ async function pickPatient(p) {
   const c = DAY.cur; c.pat = p; c.v.HN = p.HN; if (!c.v.ward) c.v.ward = p.ward || '';
   if (!c.v.wt && p.wt) c.v.wt = p.wt; if (!c.v.ht && p.ht) c.v.ht = p.ht;
   c.dirty = true; renderForm();
-  c.prev = await api('apiPatient', p.HN).catch(() => null); renderPrevHint();
+  c.prev = await apiQ('apiPatient', p.HN).catch(() => null); renderPrevHint();
   if (c.prev && c.prev.visits.some(x => x.date === c.v.date && x.id !== c.v.id)) toast('ผู้ป่วยนี้มีเคสที่ผสมวันเดียวกันอยู่แล้ว ตรวจสอบว่าไม่ซ้ำ');
 }
 function fillFromRegimen() {
@@ -1436,7 +1444,7 @@ async function photoDialog(v, pat) {
 }
 async function loadPhotos() {
   if (!PHOTO_CASE) return;
-  const list = await api('apiGetPhotos', PHOTO_CASE.id), el = $('#phList'); if (!el) return;
+  const list = await apiQ('apiGetPhotos', PHOTO_CASE.id).catch(() => []), el = $('#phList'); if (!el) return;
   el.innerHTML = list.length ? list.map(x => `<figure>${x.data ? `<img src="${x.data}" data-full="${esc(x.id)}" title="${esc(x.name)}">` : `<div class="muted" style="width:150px">${esc(x.name)}</div>`}<button class="btn red xs" data-delph="${esc(x.id)}">ลบ</button></figure>`).join('') : '<span class="muted">ยังไม่มีรูป</span>';
   $$('#phList [data-delph]').forEach(b => b.onclick = async () => {
     if (!await ask('ลบรูปนี้? (ย้ายไปถังขยะใน Drive)', 'ลบรูป', { danger: true })) return;
@@ -2104,8 +2112,14 @@ function setLogs() {
 // =====================================================================
 let APP_BOUND = false;
 async function startApp(boot) {
-  const b = boot || await api('apiBoot', 'prep', ''), list = b.list; delete b.list;
+  // รีเฟรชหน้า: ใช้ข้อมูลตั้งต้นที่เก็บไว้ในเครื่องแสดงก่อน แล้วโหลดของใหม่เบื้องหลัง
+  let b = boot, bg = null;
+  if (!b) { let cached = null; try { cached = JSON.parse(localStorage.getItem('chemoprep_m') || 'null'); } catch (e) {}
+    if (cached && cached.products) { b = cached; bg = apiQ('apiBoot', 'prep', ''); } else b = await api('apiBoot', 'prep', ''); }
+  const list = b.list; delete b.list;
   Object.assign(M, b);
+  try { const m = Object.assign({}, M); ['prodIdx', 'dilIdx', 'staffIdx', 'wardIdx', 'user'].forEach(k => delete m[k]); localStorage.setItem('chemoprep_m', JSON.stringify(m)); } catch (e) {}
+  if (bg) bg.then(nb => { const l = nb.list; delete nb.list; Object.assign(M, nb); buildIdx(); try { localStorage.setItem('chemoprep_m', JSON.stringify(Object.assign({}, nb, { user: undefined }))); } catch (e) {} if (l && !DAY.cur) setList(l); }).catch(() => {});
   buildIdx();
   if (!APP_BOUND) {
     APP_BOUND = true;
