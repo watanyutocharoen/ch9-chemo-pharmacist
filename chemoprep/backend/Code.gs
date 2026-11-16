@@ -176,12 +176,14 @@ function eyeDesc_(e) {
   let lines = []; try { lines = JSON.parse(e.directions || '[]'); } catch (er) {}
   return `HN ${e.HN} ${patName_(e.HN)} · ${f.name || e.formula} · ${e.qty || 1} ขวด · ผลิต ${thd_(e.prepTime)} ${String(e.prepTime || '').slice(11, 16)} น.` + (lines.length ? ' · วิธีใช้: ' + lines.map(l => l.text || '').filter(String).join(' / ') : '');
 }
-function auth_(token) {
+function auth_(token, allowMustChange) {
   if (!token) throw new Error('SESSION_EXPIRED');
   const c = CacheService.getScriptCache(), raw = c.get('s_' + token);
   if (!raw) throw new Error('SESSION_EXPIRED');
   c.put('s_' + token, raw, SESSION_SEC);            // ต่ออายุทุกครั้งที่ใช้งาน
-  return JSON.parse(raw);
+  const u = JSON.parse(raw);
+  if (u.mustChange && !allowMustChange) throw new Error('MUST_CHANGE_PW: ต้องเปลี่ยนรหัสผ่านตั้งต้นก่อนใช้งาน');
+  return u;
 }
 function needAdmin_(u) { if (!+u.admin) throw new Error('ต้องเป็นผู้ดูแลระบบ (admin) จึงจะทำรายการนี้ได้'); }
 
@@ -199,24 +201,24 @@ function apiLogin(code, pw) {
   if (!ok) fail('ใส่รหัสผ่านไม่ถูกต้อง');
   cache.remove(lk);
   const token = Utilities.getUuid();
-  const u = { code: s.code, empId: s.empId, name: s.name, role: s.role, admin: +s.admin ? 1 : 0 };
+  const u = { code: s.code, empId: s.empId, name: s.name, role: s.role, admin: +s.admin ? 1 : 0, mustChange: s.pwHash ? 0 : 1 };
   cache.put('s_' + token, JSON.stringify(u), SESSION_SEC);
   log_(u, 'login', 'เข้าสู่ระบบสำเร็จ');
   return { token, user: u, mustChange: !s.pwHash };
 }
 function apiLogout(token) {
-  try { const u = auth_(token); log_(u, 'logout', 'กดออกจากระบบ'); } catch (e) {}
+  try { const u = auth_(token, true); log_(u, 'logout', 'กดออกจากระบบ'); } catch (e) {}
   CacheService.getScriptCache().remove('s_' + token);
   return true;
 }
 function apiAutoLogout(token) {
-  try { const u = auth_(token); log_(u, 'auto-logout', 'ระบบออกให้อัตโนมัติ เพราะไม่ได้ใช้งาน 15 นาที'); } catch (e) {}
+  try { const u = auth_(token, true); log_(u, 'auto-logout', 'ระบบออกให้อัตโนมัติ เพราะไม่ได้ใช้งาน 15 นาที'); } catch (e) {}
   CacheService.getScriptCache().remove('s_' + token);
   return true;
 }
-function apiPing(token) { auth_(token); return true; }
+function apiPing(token) { auth_(token, true); return true; }
 function apiChangePassword(token, oldPw, newPw) {
-  const u = auth_(token);
+  const u = auth_(token, true);
   return withLock_(() => {
     const rows = findRows_('Staff', 'code', u.code); if (!rows.length) throw new Error('ไม่พบผู้ใช้');
     const s = read_('Staff').find(x => x._row === rows[0]);
@@ -226,6 +228,7 @@ function apiChangePassword(token, oldPw, newPw) {
     if (newPw === DEFAULT_PW) throw new Error('ห้ามใช้รหัสผ่านตั้งต้น');
     s.pwHash = hash_(u.code, newPw); writeRow_('Staff', rows[0], s);
     log_(u, 'change-password', 'เปลี่ยนรหัสผ่านของตัวเอง');
+    if (u.mustChange) { u.mustChange = 0; CacheService.getScriptCache().put('s_' + token, JSON.stringify(u), SESSION_SEC); }
     return true;
   });
 }

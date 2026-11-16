@@ -314,7 +314,7 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
     <img src="../logo.png" alt="logo">
     <h1>บันทึกการผสมเคมีบำบัด</h1>
     <div class="muted" style="text-align:center">ห้องผสมยาเคมีบำบัด · ฝ่ายเภสัชกรรม</div>
-    <div class="fld">รหัสพนักงาน<input id="lgCode" autocomplete="username" placeholder="เช่น 57020197" inputmode="text" style="text-transform:uppercase"></div>
+    <div class="fld">รหัสพนักงาน<input id="lgCode" autocomplete="username" placeholder="รหัสพนักงาน 8 หลัก" inputmode="text" style="text-transform:uppercase"></div>
     <div class="fld">รหัสผ่าน<input id="lgPw" type="password" autocomplete="current-password"></div>
     <div class="err" id="lgErr"></div>
     <button class="btn" id="lgBtn" type="submit" style="width:100%;margin-top:6px;padding:10px">เข้าสู่ระบบ</button>
@@ -539,27 +539,29 @@ async function doLogin(e) {
     $('#login').hidden = true; $('#appHeader').hidden = false; $('#appMain').hidden = false;
     $('#uName').textContent = USER.name + (USER.admin ? ' (admin)' : '');
     idleReset();
+    if (r.mustChange) { const ok = await changePassword(true); if (!ok) return; }
     await startApp();
-    if (r.mustChange) changePassword(true);
   } catch (er) { $('#lgErr').textContent = (er && er.message) || 'เข้าสู่ระบบไม่สำเร็จ'; }
 }
-function changePassword(first) {
+function changePassword(first) { return new Promise(done => {
   const d = $('#dlg');
-  d.innerHTML = `<h2>เปลี่ยนรหัสผ่าน</h2>${first ? '<div class="chk amber" style="margin-top:0">ยังใช้รหัสผ่านตั้งต้นอยู่ กรุณาเปลี่ยนเป็นรหัสของตัวเอง</div>' : ''}
+  d.innerHTML = `<h2>เปลี่ยนรหัสผ่าน</h2>${first ? '<div class="chk amber" style="margin-top:0">ยังใช้รหัสผ่านตั้งต้นอยู่ ต้องเปลี่ยนเป็นรหัสของตัวเองก่อนจึงจะใช้งานได้</div>' : ''}
     <div class="fld">รหัสผ่านเดิม<input type="password" id="pw0" value="${first ? '12345678' : ''}"></div>
     <div class="fld" style="margin-top:8px">รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)<input type="password" id="pw1"></div>
     <div class="fld" style="margin-top:8px">ยืนยันรหัสผ่านใหม่<input type="password" id="pw2"></div>
-    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="pwNo">${first ? 'ไว้ภายหลัง' : 'ยกเลิก'}</button><button class="btn" id="pwOk">บันทึกรหัสผ่าน</button></div>`;
+    <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn ghost" id="pwNo">${first ? 'ออกจากระบบ' : 'ยกเลิก'}</button><button class="btn" id="pwOk">บันทึกรหัสผ่าน</button></div>`;
   pwToggles(d);
   d.showModal(); setTimeout(() => $(first ? '#pw1' : '#pw0').focus(), 30);
-  $('#pwNo').onclick = () => d.close();
+  d.oncancel = e => { if (first) e.preventDefault(); };
+  $('#pwNo').onclick = () => { d.oncancel = null; d.close(); if (first) { const t = TOKEN; forceLogin('ต้องเปลี่ยนรหัสผ่านก่อนใช้งาน'); rawCall('apiLogout', t); } done(false); };
   $('#pwOk').onclick = async () => {
     const a = $('#pw0').value, b = $('#pw1').value, c = $('#pw2').value;
     if (b !== c) return toast('รหัสผ่านใหม่ไม่ตรงกัน');
     if (b.length < 6) return toast('รหัสผ่านใหม่ต้องยาวอย่างน้อย 6 ตัว');
-    await api('apiChangePassword', a, b); d.close(); toast('เปลี่ยนรหัสผ่านแล้ว');
+    try { await api('apiChangePassword', a, b); } catch (e) { return; }
+    d.oncancel = null; d.close(); toast('เปลี่ยนรหัสผ่านแล้ว'); done(true);
   };
-}
+}); }
 
 // =====================================================================
 //  Master data + helpers
@@ -1815,7 +1817,7 @@ function staffForm(s, role) {
   const d = $('#dlg');
   d.innerHTML = `<h2>${isNew ? 'เพิ่ม' + (s.role === 'pharmacist' ? 'เภสัชกร' : 'ผู้ช่วยเภสัชกร') : 'แก้ไข · ' + esc(s.name)}</h2>
     <div class="form2">
-      <div class="fld">รหัสพนักงาน<input id="stEmp" value="${esc(s.empId)}" style="text-transform:uppercase" placeholder="เช่น 57020197"><span class="hint">ใช้เข้าสู่ระบบ${isNew ? '' : ' · รหัสภายใน ' + esc(s.code)}</span></div>
+      <div class="fld">รหัสพนักงาน<input id="stEmp" value="${esc(s.empId)}" style="text-transform:uppercase" placeholder="รหัสพนักงาน 8 หลัก"><span class="hint">ใช้เข้าสู่ระบบ${isNew ? '' : ' · รหัสภายใน ' + esc(s.code)}</span></div>
       <div class="fld">ตำแหน่ง<select id="stRole"><option value="pharmacist" ${s.role === 'pharmacist' ? 'selected' : ''}>เภสัชกร</option><option value="assistant" ${s.role === 'assistant' ? 'selected' : ''}>ผู้ช่วยเภสัชกร</option></select></div>
       <div class="fld">ชื่อบนฉลาก (Prepare by / Assist)<input id="stName" value="${esc(s.name)}" placeholder="เช่น วทัญญู"></div>
       <div class="fld">ชื่อ-นามสกุล<input id="stFull" value="${esc(s.fullName)}" placeholder="เช่น ภก.วทัญญู โตเจริญนิรัติศัย"></div>
