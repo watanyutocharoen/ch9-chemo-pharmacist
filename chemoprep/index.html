@@ -462,6 +462,7 @@ async function httpCall(fn, args) {
   catch (e) { throw new Error('ติดต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ต หรือ URL ของ Apps Script'); }
   const t = await r.text(); let j;
   try { j = JSON.parse(t); } catch (e) { throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง (ตรวจว่า Deploy เป็น Web app สิทธิ์ "Anyone")'); }
+  if (j.ms != null) console.log('[api]', fn, 'server', j.ms + 'ms');
   if (!j.ok) throw new Error(j.error); return j.data;
 }
 /** เรียก server แบบเงียบ ๆ (ไม่แสดงกำลังโหลด/ข้อผิดพลาด) */
@@ -539,23 +540,35 @@ function idleReset() {
 }, { passive: true }));
 function forceLogin(msg) {
   TOKEN = null; USER = null; clearTimeout(idleT); clearTimeout(warnT);
+  try { sessionStorage.removeItem('chemoprep_s'); } catch (e) {}
   const w = $('.idlewarn'); if (w) w.remove();
   $$('dialog').forEach(d => { if (d.open) d.close(); });
   $('#appHeader').hidden = true; $('#appMain').hidden = true; $('#login').hidden = false;
   $('#lgErr').textContent = msg || ''; $('#lgPw').value = ''; $('#lgPw').type = 'password'; pwToggles($('#login')); setTimeout(() => $('#lgCode').focus(), 50);
+}
+function enterApp(token, user) {
+  TOKEN = token; USER = user;
+  try { sessionStorage.setItem('chemoprep_s', JSON.stringify({ t: token, u: user })); } catch (e) {}
+  $('#login').hidden = true; $('#appHeader').hidden = false; $('#appMain').hidden = false;
+  $('#uName').textContent = USER.name + (USER.admin ? ' (admin)' : '');
+  idleReset();
+}
+/** รีเฟรชหน้าแล้วไม่ต้องเข้าระบบใหม่ (ถ้ายังไม่หมดเวลา 15 นาที) */
+async function resumeSession() {
+  let s = null; try { s = JSON.parse(sessionStorage.getItem('chemoprep_s') || 'null'); } catch (e) {}
+  if (!s || !s.t) return false;
+  enterApp(s.t, s.u);
+  try { await startApp(); return true; } catch (e) { forceLogin(/SESSION_EXPIRED/.test(e && e.message) ? 'หมดเวลาการใช้งาน กรุณาเข้าสู่ระบบใหม่' : ''); return false; }
 }
 async function doLogin(e) {
   e.preventDefault();
   const code = $('#lgCode').value.trim(), pw = $('#lgPw').value;
   if (!code || !pw) { $('#lgErr').textContent = 'กรอกรหัสพนักงานและรหัสผ่าน'; return; }
   try {
-    const r = await api('apiLogin', code, pw);
-    TOKEN = r.token; USER = r.user;
-    $('#login').hidden = true; $('#appHeader').hidden = false; $('#appMain').hidden = false;
-    $('#uName').textContent = USER.name + (USER.admin ? ' (admin)' : '');
-    idleReset();
+    const r = await api('apiLogin', code, pw, true);
+    enterApp(r.token, r.user);
     if (r.mustChange) { const ok = await changePassword(true); if (!ok) return; }
-    await startApp();
+    await startApp(r.boot);
   } catch (er) { $('#lgErr').textContent = (er && er.message) || 'เข้าสู่ระบบไม่สำเร็จ'; }
 }
 function changePassword(first) { return new Promise(done => {
@@ -2090,8 +2103,9 @@ function setLogs() {
 //  INIT
 // =====================================================================
 let APP_BOUND = false;
-async function startApp() {
-  Object.assign(M, await api('apiBoot'));
+async function startApp(boot) {
+  const b = boot || await api('apiBoot', 'prep', ''), list = b.list; delete b.list;
+  Object.assign(M, b);
   buildIdx();
   if (!APP_BOUND) {
     APP_BOUND = true;
@@ -2113,7 +2127,8 @@ async function startApp() {
   }
   EYE.day = null; EYE.cur = null;
   DAY.cur = null; renderForm();
-  await loadList('prep', M.today);
+  if (list) { $('#lsMode').value = 'prep'; setDate('#lsDate', list.date || M.today); setList(list); }
+  else await loadList('prep', M.today);
 }
 $('#loginForm').onsubmit = doLogin;
 // เปิดจาก LINE → ส่งไปเปิดในเบราว์เซอร์ของเครื่อง (กล้อง/แนบรูป/พิมพ์ ใช้ได้ครบ)
@@ -2121,7 +2136,7 @@ if (!IS_GAS && !window.MOCK_API && /\bLine\//i.test(navigator.userAgent) && !/op
   location.replace(location.href.split('#')[0] + (location.search ? '&' : '?') + 'openExternalBrowser=1');
 }
 if (!IS_GAS && !window.MOCK_API && !window.CHEMOPREP_API) { $('#svLink').style.display = ''; $('#svBtn').onclick = e => { e.preventDefault(); serverSetup(); }; }
-forceLogin(!IS_GAS && !window.MOCK_API && !apiUrl() ? 'ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์ กด ⚙️ ตั้งค่าเซิร์ฟเวอร์ ด้านล่าง' : '');
+resumeSession().then(ok => { if (!ok) forceLogin(!IS_GAS && !window.MOCK_API && !apiUrl() ? 'ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์ กด ⚙️ ตั้งค่าเซิร์ฟเวอร์ ด้านล่าง' : ''); });
 
 </script>
 </body>

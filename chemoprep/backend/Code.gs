@@ -65,7 +65,8 @@ function onOpen() {
 // =====================================================================
 // แคชภายในการเรียก 1 ครั้ง (ลดการอ่าน Sheet ซ้ำ ๆ ให้เร็วขึ้น)
 let SS_ = null; const SHEET_ = {}, HM_ = {}, MEMO_ = {};
-function dirty_(name) { delete MEMO_[name]; }
+const MASTER_SHEETS_ = { Products: 1, Diluents: 1, Staff: 1, Wards: 1, Lookups: 1, Titles: 1, EyeFormulas: 1, Settings: 1 };
+function dirty_(name) { delete MEMO_[name]; if (MASTER_SHEETS_[name]) masterClear_(); }
 function ss_() { return SS_ || (SS_ = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SSID'))); }
 function sheet_(name) {
   const sh = SHEET_[name] || (SHEET_[name] = ss_().getSheetByName(name));
@@ -217,7 +218,7 @@ function auth_(token, allowMustChange) {
 function needAdmin_(u) { if (!+u.admin) throw new Error('ต้องเป็นผู้ดูแลระบบ (admin) จึงจะทำรายการนี้ได้'); }
 
 const MAX_FAIL = 5, LOCK_SEC = 15 * 60;
-function apiLogin(code, pw) {
+function apiLogin(code, pw, withBoot) {
   code = String(code || '').trim().toUpperCase();
   if (!code) throw new Error('กรอกรหัสพนักงาน');
   const cache = CacheService.getScriptCache(), lk = 'lf_' + code, fails = Number(cache.get(lk) || 0);
@@ -233,7 +234,9 @@ function apiLogin(code, pw) {
   const u = { code: s.code, empId: s.empId, name: s.name, role: s.role, admin: +s.admin ? 1 : 0, mustChange: s.pwHash ? 0 : 1 };
   cache.put('s_' + token, JSON.stringify(u), SESSION_SEC);
   log_(u, 'login', 'เข้าสู่ระบบสำเร็จ');
-  return { token, user: u, mustChange: !s.pwHash };
+  const out = { token, user: u, mustChange: !s.pwHash };
+  if (withBoot && s.pwHash) out.boot = bootData_(u, 'prep', '');   // เข้าระบบ + โหลดข้อมูลในคำขอเดียว
+  return out;
 }
 function apiLogout(token) {
   try { const u = auth_(token, true); log_(u, 'logout', 'กดออกจากระบบ'); } catch (e) {}
@@ -276,6 +279,7 @@ function apiResetPassword(token, code) {
 //  ตั้งค่าแผ่นงาน
 // =====================================================================
 function setupSheets() {
+  masterClear_();
   const ss = ss_();
   PropertiesService.getScriptProperties().setProperty('SSID', ss.getId());
   Object.keys(SH).forEach(name => {
@@ -317,22 +321,25 @@ function ensureEyeLookups_() {
 // =====================================================================
 //  API: ข้อมูลตั้งต้น
 // =====================================================================
-function apiBoot(token) {
-  const u = auth_(token);
+// ข้อมูลตั้งต้น (ยา สารน้ำ เจ้าหน้าที่ ฯลฯ) เก็บใน cache 6 ชม. ล้างเมื่อมีการแก้ไขในหน้าตั้งค่า
+const MASTER_KEY = 'master_v1';
+function masterClear_() { try { const c = CacheService.getScriptCache(), n = Number(c.get(MASTER_KEY + '_n') || 0); c.remove(MASTER_KEY + '_n'); for (let i = 0; i < n; i++) c.remove(MASTER_KEY + '_' + i); } catch (e) {} }
+function master_() {
+  const c = CacheService.getScriptCache();
+  try { const n = Number(c.get(MASTER_KEY + '_n') || 0); if (n) { const parts = c.getAll(Array.from({ length: n }, (_, i) => MASTER_KEY + '_' + i)); const s = Array.from({ length: n }, (_, i) => parts[MASTER_KEY + '_' + i]).join(''); if (s && Object.keys(parts).length === n) return JSON.parse(s); } } catch (e) {}
   try { ensureEyeLookups_(); } catch (e) {}
-  return {
-    user: u,
-    products: read_('Products').map(strip_),
-    diluents: read_('Diluents').map(strip_),
-    staff: read_('Staff').map(strip_),
-    wards: read_('Wards').map(strip_),
-    lookups: read_('Lookups').map(strip_),
-    titles: read_('Titles').map(strip_),
-    eyeFormulas: read_('EyeFormulas').map(strip_),
-    settings: settings_(),
-    today: Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd')
-  };
+  const m = { products: read_('Products').map(strip_), diluents: read_('Diluents').map(strip_), staff: read_('Staff').map(strip_), wards: read_('Wards').map(strip_),
+    lookups: read_('Lookups').map(strip_), titles: read_('Titles').map(strip_), eyeFormulas: read_('EyeFormulas').map(strip_), settings: settings_() };
+  try { const s = JSON.stringify(m), size = 90000, o = {}; const n = Math.ceil(s.length / size); for (let i = 0; i < n; i++) o[MASTER_KEY + '_' + i] = s.slice(i * size, (i + 1) * size); o[MASTER_KEY + '_n'] = String(n); c.putAll(o, 21600); } catch (e) {}
+  return m;
 }
+function bootData_(u, listMode, listDate) {
+  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  const r = Object.assign({ user: u, today }, master_());
+  if (listMode) { const d = listDate || today; r.list = listCases_(v => listMode === 'prep' ? String(v.preparedAt).slice(0, 10) === d : v.date === d, [listMode === 'prep' ? 'preparedAt' : 'date']); r.list.mode = listMode; r.list.date = d; }
+  return r;
+}
+function apiBoot(token, listMode, listDate) { return bootData_(auth_(token), listMode, listDate); }
 
 // =====================================================================
 //  API: รายการเคส
@@ -559,6 +566,7 @@ function apiExportReport(token, title, rows, colors) {
 // ---------- ตั้งค่า (ข้อมูลหลัก) ----------
 const EDITABLE = { Products: 'productcde', Diluents: 'pcode', Staff: 'code', Wards: 'code', EyeFormulas: 'code' };
 function apiSaveMaster(token, name, obj) {
+  masterClear_();
   const u = auth_(token);
   if (!EDITABLE[name]) throw new Error('แก้ไขแผ่นงานนี้ไม่ได้');
   if (name === 'Staff') needAdmin_(u);
@@ -588,6 +596,7 @@ function apiSaveMaster(token, name, obj) {
 }
 function diff_(a, b) { const d = {}; Object.keys(b).forEach(k => { if (k !== '_row' && k !== 'pwHash' && String(a[k]) !== String(b[k])) d[k] = [a[k], b[k]]; }); return d; }
 function apiSaveLookup(token, type, code, text, oldCode) {
+  masterClear_();
   const u = auth_(token);
   return withLock_(() => {
     const all = read_('Lookups'), hit = all.find(x => x.type === type && String(x.code) === String(oldCode || code));
@@ -598,6 +607,7 @@ function apiSaveLookup(token, type, code, text, oldCode) {
   });
 }
 function apiDeleteLookup(token, type, code) {
+  masterClear_();
   const u = auth_(token);
   return withLock_(() => {
     const hit = read_('Lookups').find(x => x.type === type && String(x.code) === String(code));
@@ -606,6 +616,7 @@ function apiDeleteLookup(token, type, code) {
   });
 }
 function apiSaveSettings(token, obj) {
+  masterClear_();
   const u = auth_(token); needAdmin_(u);
   return withLock_(() => { const before = settings_(); Object.keys(obj).forEach(k => setSetting_(k, obj[k])); log_(u, 'edit-settings', 'แก้ค่าระบบ: ' + changesTh_('Settings', before, obj)); return settings_(); });
 }
@@ -709,7 +720,8 @@ function doPost(e) {
   try { req = JSON.parse(e.postData.contents); } catch (er) { return json_({ ok: false, error: 'คำขอไม่ถูกต้อง' }); }
   const fn = API_[req && req.fn];
   if (!fn) return json_({ ok: false, error: 'ไม่รู้จักคำสั่ง ' + (req && req.fn) });
-  try { return json_({ ok: true, data: fn.apply(null, Array.isArray(req.args) ? req.args : []) }); }
+  const t0 = Date.now();
+  try { const data = fn.apply(null, Array.isArray(req.args) ? req.args : []); return json_({ ok: true, data, ms: Date.now() - t0 }); }
   catch (err) { return json_({ ok: false, error: String(err && err.message || err) }); }
 }
 const API_ = { apiLogin, apiLogout, apiAutoLogout, apiPing, apiChangePassword, apiResetPassword, apiBoot, apiList, apiSearchPatients, apiPatient, apiSavePatient,
