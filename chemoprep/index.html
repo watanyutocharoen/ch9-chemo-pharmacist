@@ -320,6 +320,12 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 .ren.stop{background:#fde8e8;color:#9b1c1c}
 #regCard{overflow-x:auto}
 .dosegrid2>*{min-width:0}
+
+.spin{display:inline-block;width:1em;height:1em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite;margin-right:.5em;vertical-align:-.15em}
+@keyframes sp{to{transform:rotate(360deg)}}
+.busyq{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:160;background:#1f6f8b;color:#fff;padding:7px 16px;border-radius:20px;font-size:14px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.18);display:none;pointer-events:none}
+.busyq.on{display:block}
+@media print{.busyq{display:none!important}}
 </style>
 </head>
 <body>
@@ -426,7 +432,8 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 <dialog id="dlg2"></dialog>
 <div id="printArea"></div>
 <div class="toast" id="toast"></div>
-<div class="busy" id="busy">กำลังโหลด…</div>
+<div class="busy" id="busy"><span class="spin"></span>กำลังโหลด…</div>
+<div class="busyq" id="busyQ"><span class="spin"></span><span id="busyQt">กำลังโหลด…</span></div>
 <input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="fileAtt" accept="image/*" multiple hidden>
 
@@ -440,8 +447,9 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 let TOKEN = null, USER = null;
 const PUBLIC_FN = { apiLogin: 1 };
 function api(fn, ...args) { return callApi(false, fn, args); }
-/** เรียกแบบเงียบ: ไม่ขึ้น "กำลังโหลด" ไม่บังหน้าจอ (ใช้กับงานเบื้องหลัง) */
-function apiQ(fn, ...args) { return callApi(true, fn, args); }
+/** เรียกเบื้องหลัง: ขึ้นแถบ “กำลังโหลด…” ด้านบน แต่ไม่บังหน้าจอ ใช้งานต่อได้ */
+const BG_TEXT = { apiPatient: 'กำลังโหลดประวัติผู้ป่วย…', apiList: 'กำลังอัปเดตรายการ…', apiGetPhotos: 'กำลังโหลดรูป…', apiBoot: 'กำลังอัปเดตข้อมูล…' };
+function apiQ(fn, ...args) { busyQ(true, BG_TEXT[fn]); return callApi(true, fn, args).finally(() => busyQ(false)); }
 function callApi(quiet, fn, args) {
   if (!quiet) busy(true); idleReset();
   const a = PUBLIC_FN[fn] ? args : [TOKEN, ...args];
@@ -494,6 +502,8 @@ function fmt(x, d) { if (x == null || !isFinite(x)) return '—'; const a = Math
   const v = d != null ? +x.toFixed(d) : a >= 100 ? Math.round(x) : a >= 10 ? Math.round(x * 10) / 10 : Math.round(x * 100) / 100;
   return v.toLocaleString('en-US', { maximumFractionDigits: 2 }); }
 let busyN = 0;
+let busyQN = 0;
+function busyQ(on, text) { busyQN = Math.max(0, busyQN + (on ? 1 : -1)); if (on && text) $('#busyQt').textContent = text; if (!busyQN) $('#busyQt').textContent = 'กำลังโหลด…'; $('#busyQ').classList.toggle('on', busyQN > 0); }
 function busy(on) { busyN = Math.max(0, busyN + (on ? 1 : -1)); $('#busy').classList.toggle('on', busyN > 0); }
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 3000); }
 function nowHM() { const d = new Date(); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
@@ -1010,7 +1020,8 @@ async function editCase(id) {
   DAY.cur = { v, bottles: c.bottles.map(b => Object.assign({}, b)), pat: c.pat, prev: null, dirty: false };
   renderForm(); renderList();
   $('#caseForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  apiQ('apiPatient', v.HN).then(r => { if (DAY.cur && DAY.cur.v.id === id) { DAY.cur.prev = r; renderPrevHint(); } }).catch(() => {});
+  DAY.cur.prevLoading = true; renderPrevHint();
+  apiQ('apiPatient', v.HN).then(r => { if (DAY.cur && DAY.cur.v.id === id) { DAY.cur.prev = r; } }).catch(() => {}).finally(() => { if (DAY.cur && DAY.cur.v.id === id) { DAY.cur.prevLoading = false; renderPrevHint(); } });
 }
 function newCase() {
   const last = DAY.lastKeep || {};
@@ -1253,7 +1264,7 @@ function renderCheck() {
 }
 function renderPrevHint() {
   const c = DAY.cur, el = $('#prevHint'); if (!el) return;
-  const prev = c.prev; if (!prev || !prev.visits) { el.innerHTML = ''; return; }
+  const prev = c.prev; if (c.prevLoading) { el.innerHTML = '<span class="muted"><span class="spin"></span>กำลังโหลดประวัติครั้งก่อน…</span>'; return; } if (!prev || !prev.visits) { el.innerHTML = ''; return; }
   const last = prev.visits.find(x => x.id !== c.v.id && x.date <= c.v.date) || prev.visits.find(x => x.id !== c.v.id);
   if (!last) { el.innerHTML = '<span class="muted">ไม่มีประวัติครั้งก่อน</span>'; return; }
   const bs = prev.bottles.filter(b => b.visitId === last.id);
@@ -1308,7 +1319,7 @@ async function pickPatient(p) {
   const c = DAY.cur; c.pat = p; c.v.HN = p.HN; if (!c.v.ward) c.v.ward = p.ward || '';
   if (!c.v.wt && p.wt) c.v.wt = p.wt; if (!c.v.ht && p.ht) c.v.ht = p.ht;
   c.dirty = true; renderForm();
-  c.prev = await apiQ('apiPatient', p.HN).catch(() => null); renderPrevHint();
+  c.prevLoading = true; renderPrevHint(); c.prev = await apiQ('apiPatient', p.HN).catch(() => null); c.prevLoading = false; renderPrevHint();
   if (c.prev && c.prev.visits.some(x => x.date === c.v.date && x.id !== c.v.id)) toast('ผู้ป่วยนี้มีเคสที่ผสมวันเดียวกันอยู่แล้ว ตรวจสอบว่าไม่ซ้ำ');
 }
 function fillFromRegimen() {
