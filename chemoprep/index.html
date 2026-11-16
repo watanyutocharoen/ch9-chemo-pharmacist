@@ -305,6 +305,21 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 .vitem{padding:9px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;display:grid;grid-template-columns:30px 1fr auto;gap:6px;align-items:center}
 .vitem:hover{background:#f0f6f9}.vitem.on{background:var(--pri2);border-color:#b6d6e2}
 .vitem .vn{font-weight:700;color:var(--pri);font-size:17px;text-align:center}.vitem .nm{font-weight:600}.vitem .meta{font-size:12px;color:var(--mut)}
+
+.optbox{margin:8px 0 4px;border:1px dashed var(--line,#d9e2e8);border-radius:10px;padding:6px 10px;background:#fafcfd}
+.optbox summary{cursor:pointer;font-weight:600;color:var(--ink,#1d3b4a)}
+.optg{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end;margin-top:8px}
+.optg .ck{display:flex;align-items:center;gap:6px;font-size:13px}
+.regt th{font-size:12px;color:#6b7c86;font-weight:600;text-align:left;padding:4px}
+.regt td{vertical-align:top;padding:5px 4px;border-top:1px solid #eef2f4}
+.regt tr.po td{opacity:.55}
+.regt .pctin{width:52px;padding:4px 6px}
+.regt .aucsel{padding:3px 4px}
+.regt .tgt{color:#1f6f8b;font-size:13px}
+.ren{font-size:12px;margin-top:3px;padding:3px 6px;border-radius:6px;background:#fff6e0;color:#7a5b00}
+.ren.stop{background:#fde8e8;color:#9b1c1c}
+#regCard{overflow-x:auto}
+.dosegrid2>*{min-width:0}
 </style>
 </head>
 <body>
@@ -605,20 +620,46 @@ const codeIn = s => { const m = String(s).match(/\[([^\]]+)\]\s*$/); return m ? 
 // =====================================================================
 R.forEach((g, i) => { g.id = i; g.key = g.c + '|' + g.n; });
 function regOf(v) { if (!v || v === '') return null; if (/^\d+$/.test(String(v))) return R[+v] || null; return R.find(g => g.key === v) || null; }
+// ตัวเลือกการคำนวณ (เหมือนแอปเภสัชกรเคมีบำบัด) เก็บต่อเคสใน v.doseOpt
+const DOSE_OPT0 = { bsaF: 'mosteller', bsaCap: '0', crclWt: 'actual', scrFloor: true, gfrCap: true, gPct: 100, pct: {}, auc: {}, sex: '', age: '' };
+function optOf(v) { const o = v.doseOpt || (v.doseOpt = {}); Object.keys(DOSE_OPT0).forEach(k => { if (o[k] === undefined) o[k] = DOSE_OPT0[k]; }); if (!o.pct || typeof o.pct !== 'object') o.pct = {}; if (!o.auc || typeof o.auc !== 'object') o.auc = {}; return o; }
 function patientCalc(v, pat) {
-  const wt = num(v.wt), ht = num(v.ht), scr = num(v.scr), age = ageOf(pat && pat.dob, v.date), sex = (pat && pat.sex) || '';
-  const o = { wt, ht, scr, age, sex, ok: false, okRenal: false, warn: [] };
+  const op = optOf(v);
+  const wt = num(v.wt), ht = num(v.ht), scr = num(v.scr);
+  let age = ageOf(pat && pat.dob, v.date); if (age == null && num(op.age) > 0) age = num(op.age);
+  const sex = (pat && pat.sex) || op.sex || '';
+  const o = { wt, ht, scr, age, sex, ok: false, okRenal: false, warn: [], op };
   if (wt > 0 && ht > 0) {
-    o.ok = true; o.bsa = Math.sqrt(ht * wt / 3600); o.bmi = wt / Math.pow(ht / 100, 2);
+    o.ok = true;
+    o.bsaM = Math.sqrt(ht * wt / 3600); o.bsaD = 0.007184 * Math.pow(wt, 0.425) * Math.pow(ht, 0.725);
+    o.bsaRaw = op.bsaF === 'dubois' ? o.bsaD : o.bsaM;
+    const cap = num(op.bsaCap); o.bsa = cap > 0 ? Math.min(o.bsaRaw, cap) : o.bsaRaw; o.bsaCapped = cap > 0 && o.bsaRaw > cap;
+    o.bmi = wt / Math.pow(ht / 100, 2);
+    if (sex) { o.ibw = (sex === 'M' ? 50 : 45.5) + 2.3 * (ht / 2.54 - 60); o.adjbw = o.ibw + 0.4 * (wt - o.ibw); }
     if (wt < 25 || wt > 250) o.warn.push('น้ำหนักผิดปกติ ตรวจหน่วย (kg)');
     if (ht < 100 || ht > 220) o.warn.push('ส่วนสูงผิดปกติ ตรวจหน่วย (cm)');
+    if (o.bmi >= 30) o.warn.push('BMI ≥30: ASCO แนะนำใช้น้ำหนักจริงและไม่ cap BSA (ยกเว้นสถาบันกำหนด) · CrCl พิจารณาใช้ Adjusted BW');
   }
   if (o.ok && age != null && scr > 0 && sex) {
-    o.okRenal = true; o.scrUsed = Math.max(scr, 0.7);
-    o.crcl = ((140 - age) * wt) / (72 * o.scrUsed) * (sex === 'F' ? 0.85 : 1); o.gfr = Math.min(o.crcl, 125);
-    if (scr > 15) o.warn.push('SCr สูงมาก ตรวจหน่วย mg/dL');
+    o.okRenal = true; o.scrUsed = op.scrFloor ? Math.max(scr, 0.7) : scr;
+    let w = wt; if (op.crclWt === 'ideal') w = Math.min(o.ibw, wt); if (op.crclWt === 'adjusted') w = wt > o.ibw ? o.adjbw : wt;
+    o.crclW = w;
+    o.crcl = ((140 - age) * w) / (72 * o.scrUsed) * (sex === 'F' ? 0.85 : 1); o.gfr = op.gfrCap ? Math.min(o.crcl, 125) : o.crcl;
+    if (scr > 15) o.warn.push('SCr สูงมาก ตรวจหน่วย mg/dL (ถ้าเป็น µmol/L ให้หาร 88.4)');
   }
   return o;
+}
+/** ยาในสูตรหลังเลือก AUC เป้าหมาย */
+function effDr(dr, i, v) { const a = num(optOf(v).auc[i]); return dr.unit === 'AUC' && a ? Object.assign({}, dr, { dose: a, aucFrom: dr.dose }) : dr; }
+// ปรับทั้งสูตร: ไม่รวมยาขนาดคงที่ (flat dose เช่น immunotherapy) — ปรับรายตัวได้ถ้าต้องการ
+const drPct = (i, v) => { const o = optOf(v), x = num(o.pct[i]); if (x != null) return x;
+  const dr = (regOf(v.regimen) || { d: [] }).d[i]; if (dr && (dr.fixedText || dr.unit === 'mg' || dr.unit === 'units')) return 100; return num(o.gPct) || 100; };
+/** ขนาดมาตรฐาน + ขนาดเป้าหมายหลังปรับ % (cap ตามสูตร) */
+function calcTarget(dr0, i, v, P) {
+  const dr = effDr(dr0, i, v), s = calcStd(dr, P), pct = drPct(i, v);
+  if (!s || s.std == null) return Object.assign({ dr, pct }, s || {});
+  let t = s.raw * pct / 100; if (dr.cap && t > dr.cap) t = dr.cap;
+  return Object.assign({ dr, pct, target: t }, s);
 }
 function calcStd(dr, P) {
   if (dr.fixedText) return null;
@@ -679,25 +720,29 @@ function doseCheck(v, bottles, pat) {
     (groups[k] = groups[k] || { key: k, name: p.generic || p.productname, mg: 0, n: 0, unit: (p.unit || 'mg').toLowerCase() });
     groups[k].mg += num(b.mg) || 0; groups[k].n++; });
   const regComps = {};
-  if (reg) reg.d.forEach(dr => { if (/^po|oral/i.test(dr.route || '')) return; const k = drugKey(dr.n); (regComps[k] = regComps[k] || []).push(dr); });
+  if (reg) reg.d.forEach((dr, i) => { if (/^po|oral/i.test(dr.route || '')) return; const k = drugKey(dr.n); (regComps[k] = regComps[k] || []).push(Object.assign(effDr(dr, i, v), { _i: i })); });
   Object.values(groups).forEach(g => {
     const it = { name: g.name, n: g.n, lvl: 'gray', title: '', msgs: [] }, lib = DL[g.key] || {}, comps = regComps[g.key];
     if (reg && !comps) { it.lvl = 'amber'; it.title = 'ยานี้ไม่อยู่ในสูตร ' + reg.n; }
     if (comps) {
-      const stds = comps.map(dr => ({ dr, c: calcStd(dr, P) })), need = stds.find(s => s.c && s.c.need);
+      const stds = comps.map(dr => ({ dr, c: calcTarget(dr, dr._i, v, P) })), need = stds.find(s => s.c && s.c.need);
       if (need) it.title = 'กรอก ' + need.c.need + ' เพื่อตรวจขนาดยา';
       else {
-        const valid = stds.filter(s => s.c && s.c.std != null), tot = valid.reduce((a, s) => a + s.c.std, 0);
+        const valid = stds.filter(s => s.c && s.c.std != null), tot = valid.reduce((a, s) => a + s.c.std, 0), tgt = valid.reduce((a, s) => a + s.c.target, 0);
+        const adj = valid.some(s => s.c.pct !== 100);
         if (tot > 0) {
-          const ratio = g.mg / tot * 100;
-          let lvl = ratio > 110 ? 'red' : ratio > 105 ? 'amber' : ratio >= 90 ? 'green' : ratio >= 70 ? 'blue' : 'amber';
-          it.title = { red: 'สูงกว่ามาตรฐาน ตรวจสอบกับแพทย์', amber: ratio > 100 ? 'สูงกว่ามาตรฐานเล็กน้อย' : 'ต่ำกว่ามาตรฐานมาก ตรวจสอบ', green: 'อยู่ในช่วงมาตรฐาน', blue: 'ลดขนาด ตรวจว่าแพทย์ตั้งใจลด dose' }[lvl];
+          const ratio = g.mg / tot * 100, base = adj ? g.mg / tgt * 100 : ratio;
+          let lvl = base > 110 ? 'red' : base > 105 ? 'amber' : base >= 90 ? 'green' : base >= 70 ? 'blue' : 'amber';
+          it.title = { red: 'สูงกว่ามาตรฐาน ตรวจสอบกับแพทย์', amber: base > 100 ? 'สูงกว่ามาตรฐานเล็กน้อย' : 'ต่ำกว่ามาตรฐานมาก ตรวจสอบ', green: adj ? 'ตรงกับขนาดที่ปรับไว้' : 'อยู่ในช่วงมาตรฐาน', blue: 'ลดขนาด ตรวจว่าแพทย์ตั้งใจลด dose' }[lvl];
           it.msgs.push(`สั่ง ${fmt(g.mg)} ${g.unit} = ${fmt(ratio)}% ของมาตรฐาน ${fmt(tot)} ${g.unit}`);
-          valid.forEach(s => it.msgs.push(`${s.dr.n}: ${stdText(s.dr)} ${s.dr.days ? '(' + s.dr.days + ')' : ''} → ${fmt(s.c.std)}${s.dr.cap && s.c.raw > s.dr.cap ? ' [cap ' + s.dr.cap + ']' : ''}`));
+          if (adj) it.msgs.push(`เทียบกับขนาดที่ปรับไว้ (${[...new Set(valid.map(s => s.c.pct + '%'))].join(', ')}) ${fmt(tgt)} ${g.unit} = ${fmt(base)}%`);
+          valid.forEach(s => it.msgs.push(`${s.dr.n}: ${stdText(s.dr)}${s.dr.aucFrom ? ' (สูตรเดิม AUC ' + s.dr.aucFrom + ')' : ''} ${s.dr.days ? '(' + s.dr.days + ')' : ''} → ${fmt(s.c.std)}${s.c.pct !== 100 ? ' × ' + s.c.pct + '% = ' + fmt(s.c.target) : ''}${s.dr.cap && s.c.raw > s.dr.cap ? ' [cap ' + s.dr.cap + ']' : ''}`));
+          const mk = comps.find(dr => dr.unit === 'mg/kg'); if (mk && P.ok) it.msgs.push(`เท่ากับ ${fmt(g.mg / P.wt)} mg/kg`);
           if (comps.length > 1) it.msgs.push('สูตรนี้มียาตัวนี้หลายส่วน (เช่น bolus + infusion) เทียบจากผลรวมทุกขวดในเคสนี้');
           if (comps.some(dr => dr.nDays || /CI|ต่อเนื่อง/i.test(dr.route + dr.days)) && ratio < 90) it.msgs.push('ยาหยดต่อเนื่องหลายวัน ถ้าแบ่งผสมหลายวัน ให้รวมขนาดของทุกวันก่อนเทียบ');
           const auc = comps.find(dr => dr.unit === 'AUC');
-          if (auc && P.okRenal) { it.msgs.push(`เท่ากับ AUC ≈ ${fmt(g.mg / (P.gfr + 25))} (CrCl ${fmt(P.crcl)}${P.crcl > 125 ? ', cap 125' : ''})`); if (g.mg > auc.dose * 150 * 1.001) { lvl = 'red'; it.msgs.push(`⚠ เกินขนาดสูงสุดที่ AUC ${auc.dose} (${auc.dose * 150} mg)`); } }
+          if (auc && P.okRenal) { const impl = g.mg / (P.gfr + 25); it.msgs.push(`เท่ากับ AUC ≈ ${fmt(impl)} (GFR ${fmt(P.gfr)}${P.op.gfrCap && P.crcl > 125 ? ', cap 125' : ''})`);
+            if (Math.abs(impl - auc.dose) >= 0.4 && impl <= 7.2) it.msgs.push(`💡 ถ้าแพทย์ตั้งใจใช้ AUC ${Math.round(impl * 2) / 2} ให้เปลี่ยน “AUC เป้าหมาย” ในการ์ดสูตร แล้วตรวจใหม่`); if (g.mg > auc.dose * 150 * 1.001) { lvl = 'red'; it.msgs.push(`⚠ เกินขนาดสูงสุดที่ AUC ${auc.dose} (${auc.dose * 150} mg)`); } }
           const cap = comps.find(dr => dr.cap); if (cap && g.mg > cap.cap * 1.001) { lvl = 'red'; it.msgs.push(`⚠ เกิน cap ${cap.cap} mg`); }
           it.lvl = lvl;
         }
@@ -706,7 +751,10 @@ function doseCheck(v, bottles, pat) {
     if (P.ok && lib.maxSingle && g.unit === 'mg') { const perM2 = g.mg / P.bsa; it.msgs.push(`เท่ากับ ${fmt(perM2)} mg/m²`);
       if (perM2 > lib.maxSingle * 1.05 && !(comps || []).some(dr => dr.nDays)) { it.lvl = 'red'; it.title = it.title || 'เกินขนาดสูงสุดต่อครั้ง'; it.msgs.push(`⚠ เกินขนาดสูงสุดต่อครั้งที่พบในสูตรทั่วไป (${lib.maxSingle} mg/m²)`); } }
     if (g.key === 'vincristine' && g.mg > 2) { it.lvl = 'red'; it.title = 'Vincristine > 2 mg'; it.msgs.push('⚠ Vincristine เกิน 2 mg ต่อครั้ง'); }
-    if (P.okRenal && typeof lib.renal === 'function') { const r = lib.renal(P.crcl); if (r) { it.msgs.push(`ไต: ${r.text}`); if (r.lvl === 'stop') it.lvl = 'red'; else if (it.lvl === 'green' || it.lvl === 'gray') it.lvl = 'amber'; } }
+    if (P.okRenal && typeof lib.renal === 'function') { const r = lib.renal(P.crcl); if (r) {
+      const done = r.pct != null && comps && comps.every(dr => drPct(dr._i, v) <= r.pct);
+      it.msgs.push(`ไต (CrCl ${fmt(P.crcl)}): ${r.text}${done ? ' · ปรับขนาดแล้ว' : r.pct != null && r.pct > 0 ? ` · กด “ใช้ ${r.pct}%” ในการ์ดสูตรได้` : ''}`);
+      if (r.lvl === 'stop' && !done) it.lvl = 'red'; else if (!done && (it.lvl === 'green' || it.lvl === 'gray')) it.lvl = 'amber'; } }
     if (lib.hep) it.msgs.push('ตับ: ' + lib.hep);
     if (lib.life) it.msgs.push('สะสม: ' + lib.life);
     if (lib.note) it.msgs.push(lib.note);
@@ -936,6 +984,7 @@ async function editCase(id) {
   if (DAY.cur && DAY.cur.dirty && !await ask('มีข้อมูลในฟอร์มที่ยังไม่บันทึก ต้องการทิ้งแล้วเปิดเคสนี้แทน?', 'ทิ้งข้อมูล')) return;
   const v = Object.assign({}, DAY.list.visits.find(x => x.id === id));
   v.doseIncomplete = v.doseStatus === 'incomplete';
+  try { const dd = JSON.parse(v.doseDetail || '{}'); if (dd.opt) v.doseOpt = dd.opt; } catch (e) {}
   const c = caseOf(v);
   DAY.cur = { v, bottles: c.bottles.map(b => Object.assign({}, b)), pat: c.pat, prev: null, dirty: false };
   renderForm(); renderList();
@@ -987,6 +1036,7 @@ function renderForm() {
         <div class="fld"><span>SCr (mg/dL)</span><input id="vScr" type="number" step="0.01" style="width:110px" value="${esc(v.scr)}"></div>
         <div class="chips" id="pCalc"></div>
       </div>
+      ${optPanelHtml(c)}
       <div class="dosegrid2">
         <div class="picker">
           <h4>เลือกสูตรยา <span class="req">*</span> <span class="b" id="regCount"></span></h4>
@@ -1050,17 +1100,53 @@ function renderRegList() {
   el.innerHTML = info + (list.length ? list.map(g => `<button type="button" class="ri ${sel && sel.key === g.key ? 'on' : ''}" data-k="${esc(g.key)}">
     <div class="rn">${hl(g.n, P.mode === 'drug' ? [] : ht)}</div><div class="rd">${hl(drugNamesOf(g), P.mode === 'reg' ? [] : ht)}</div><div class="rs">${esc(CANCERS[g.c])} · ${esc(g.s || '')}</div>
     <div class="rt">${g.cls.map(x => `<span class="b b-${x}">${CLS_LABEL[x]}</span>`).join('')}</div></button>`).join('') : '<div class="muted" style="padding:8px">ไม่พบสูตร ลองคำค้นอื่นหรือเปลี่ยนโหมดค้นหา</div>');
-  $$('#regList [data-k]').forEach(b => b.onclick = () => { c.v.regimen = b.dataset.k; c.v.doseReason = ''; c.dirty = true; $$('#regList .ri').forEach(x => x.classList.toggle('on', x === b)); renderCheck(); const fb = $('#btnFromReg'); if (fb) fb.disabled = false; });
+  $$('#regList [data-k]').forEach(b => b.onclick = () => { if (c.v.regimen !== b.dataset.k) { const o = optOf(c.v); o.pct = {}; o.auc = {}; } c.v.regimen = b.dataset.k; c.v.doseReason = ''; c.dirty = true; $$('#regList .ri').forEach(x => x.classList.toggle('on', x === b)); renderCheck(); const fb = $('#btnFromReg'); if (fb) fb.disabled = false; });
 }
 function renderRegCard() {
   const c = DAY.cur, el = $('#regCard'); if (!el) return;
-  const reg = regOf(c.v.regimen), P = patientCalc(c.v, c.pat);
+  const v = c.v, reg = regOf(v.regimen), P = patientCalc(v, c.pat), op = optOf(v);
   if (!reg) { el.innerHTML = '<div class="chk amber" style="margin:0">ยังไม่ได้เลือกสูตรยา — เลือกจากรายการทางซ้าย</div>'; return; }
+  const row = (dr0, i) => {
+    const t = calcTarget(dr0, i, v, P), dr = t.dr, lib = DL[drugKey(dr.n)] || {}, u = dr.unit.startsWith('units') ? 'units' : 'mg';
+    const po = /^po|oral/i.test(dr.route || ''), ren = !po && P.okRenal && typeof lib.renal === 'function' ? lib.renal(P.crcl) : null;
+    const auc = dr0.unit === 'AUC' ? `<select class="aucsel" data-auc="${i}">${[1.5, 2, 3, 4, 4.5, 5, 5.5, 6, 7].map(x => `<option value="${x}" ${x == dr.dose ? 'selected' : ''}>AUC ${x}${x == dr0.dose ? ' (ตามสูตร)' : ''}</option>`).join('')}</select>` : esc(stdText(dr));
+    const res = t.std != null ? `<div><b>${fmt(t.std)}</b> ${u}</div>${t.pct !== 100 ? `<div class="tgt">${t.pct}% → <b>${fmt(t.target)}</b></div>` : ''}${dr.cap && t.raw > dr.cap ? '<div class="muted">cap ' + dr.cap + '</div>' : ''}`
+      : t.need ? '<span class="muted">ใส่' + esc(t.need) + '</span>' : dr.fixedText ? '<span class="muted">' + esc(dr.fixedText) + '</span>' : '';
+    return `<tr class="${po ? 'po' : ''}"><td><b>${esc(dr.n)}</b><div class="muted">${esc(dr.days || '')} · ${esc(dr.route || '')}${po ? ' · ไม่ตรวจ (ยารับประทาน)' : ''}</div>
+        ${ren ? `<div class="ren ${ren.lvl}">ไต: ${esc(ren.text)} ${ren.pct != null && ren.pct > 0 && t.pct !== ren.pct ? `<button type="button" class="btn ghost xs" data-rpct="${i}" data-v="${ren.pct}">ใช้ ${ren.pct}%</button>` : ''}</div>` : ''}</td>
+      <td>${auc}</td>
+      <td><input class="pctin" data-dpct="${i}" type="text" inputmode="decimal" value="${t.pct}" ${dr.fixedText || po ? 'disabled' : ''}><span class="muted">%</span></td>
+      <td style="text-align:right">${res}</td></tr>`;
+  };
   el.innerHTML = `<div class="regcard"><div class="row" style="align-items:center"><div class="t">${esc(reg.n)}</div><span class="right"></span><button type="button" class="btn ghost xs" id="regClear">ล้างสูตร</button></div>
     <div class="muted">${esc(CANCERS[reg.c] || '')}${reg.s ? ' · ' + esc(reg.s) : ''}${reg.cy ? ' · ' + esc(reg.cy) : ''}</div>
-    <table>${reg.d.map(dr => { const s = calcStd(dr, P); return `<tr><td><b>${esc(dr.n)}</b></td><td>${esc(stdText(dr))}</td><td>${esc(dr.days || '')}</td><td>${esc(dr.route || '')}</td><td style="text-align:right">${s && s.std != null ? '<b>' + fmt(s.std) + '</b> ' + (dr.unit.startsWith('units') ? 'units' : 'mg') : s && s.need ? '<span class="muted">ใส่' + esc(s.need) + '</span>' : ''}</td></tr>`; }).join('')}</table>
+    <div class="row" style="align-items:center;gap:6px;margin:6px 0"><span class="muted">ปรับขนาดทั้งสูตร</span><select id="gPct">${[100, 90, 85, 80, 75, 70, 60, 50].map(x => `<option ${+op.gPct === x ? 'selected' : ''}>${x}</option>`).join('')}</select><span class="muted">% (ไม่รวมยาขนาดคงที่)</span></div>
+    <table class="regt"><tr><th>ยา</th><th>ขนาดตามสูตร</th><th>% ปรับ</th><th style="text-align:right">มาตรฐาน → เป้าหมาย</th></tr>${reg.d.map(row).join('')}</table>
     ${reg.note ? `<div class="muted" style="margin-top:4px">${esc(reg.note)}</div>` : ''}${reg.ref ? `<div class="muted">อ้างอิง: ${esc(reg.ref)}</div>` : ''}</div>`;
-  $('#regClear').onclick = () => { c.v.regimen = ''; c.dirty = true; renderRegList(); renderCheck(); const fb = $('#btnFromReg'); if (fb) fb.disabled = true; };
+  const upd = () => { c.dirty = true; renderCheck(); };
+  $('#regClear').onclick = () => { v.regimen = ''; op.pct = {}; op.auc = {}; c.dirty = true; renderRegList(); renderCheck(); const fb = $('#btnFromReg'); if (fb) fb.disabled = true; };
+  $('#gPct').onchange = e => { op.gPct = +e.target.value; op.pct = {}; upd(); };
+  $$('#regCard [data-auc]').forEach(x => x.onchange = () => { const i = x.dataset.auc, d0 = reg.d[i].dose; if (+x.value === d0) delete op.auc[i]; else op.auc[i] = +x.value; upd(); });
+  $$('#regCard [data-dpct]').forEach(x => x.onchange = () => { const n = num(x.value); if (n == null || n < 0 || n > 150) { toast('% ปรับขนาด 0–150'); x.value = drPct(x.dataset.dpct, v); return; } op.pct[x.dataset.dpct] = n; upd(); });
+  $$('#regCard [data-rpct]').forEach(x => x.onclick = () => { op.pct[x.dataset.rpct] = +x.dataset.v; upd(); });
+}
+/** ตัวเลือกการคำนวณ (สูตร BSA, cap, น้ำหนักที่ใช้คิด CrCl, SCr floor, GFR cap) */
+function optPanelHtml(c) {
+  const op = optOf(c.v), pat = c.pat || {}, needSex = !pat.sex, needAge = ageOf(pat.dob, c.v.date) == null;
+  const chg = op.bsaF !== 'mosteller' || op.bsaCap !== '0' || op.crclWt !== 'actual' || !op.scrFloor || !op.gfrCap;
+  return `<details class="optbox" ${chg || needSex || needAge ? 'open' : ''}><summary>⚙️ ตัวเลือกการคำนวณ${chg ? ' <span class="pill amb">ปรับแล้ว</span>' : ''}</summary><div class="optg">
+    ${needSex ? `<div class="fld">เพศ (ไม่มีในข้อมูลผู้ป่วย)<select data-o="sex"><option value=""></option><option value="M" ${op.sex === 'M' ? 'selected' : ''}>ชาย</option><option value="F" ${op.sex === 'F' ? 'selected' : ''}>หญิง</option></select></div>` : ''}
+    ${needAge ? `<div class="fld">อายุ (ปี) (ไม่มีวันเกิด)<input data-o="age" type="number" value="${esc(op.age)}" style="width:90px"></div>` : ''}
+    <div class="fld">สูตร BSA<select data-o="bsaF"><option value="mosteller">Mosteller</option><option value="dubois" ${op.bsaF === 'dubois' ? 'selected' : ''}>DuBois</option></select></div>
+    <div class="fld">BSA cap<select data-o="bsaCap">${[['0', 'ไม่ cap (ASCO)'], ['2', '2.0 m²'], ['2.2', '2.2 m²']].map(([k, t]) => `<option value="${k}" ${String(op.bsaCap) === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+    <div class="fld">น้ำหนักที่ใช้คำนวณ CrCl<select data-o="crclWt">${[['actual', 'น้ำหนักจริง (Actual BW)'], ['ideal', 'Ideal BW (หรือจริงถ้าน้อยกว่า)'], ['adjusted', 'Adjusted BW (ถ้าเกิน IBW)']].map(([k, t]) => `<option value="${k}" ${op.crclWt === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+    <label class="ck"><input type="checkbox" data-o="scrFloor" ${op.scrFloor ? 'checked' : ''}> ปัด SCr ต่ำสุดเป็น 0.7 mg/dL (NCCN/GOG)</label>
+    <label class="ck"><input type="checkbox" data-o="gfrCap" ${op.gfrCap ? 'checked' : ''}> จำกัด GFR ≤125 ใน Calvert (FDA)</label>
+  </div></details>`;
+}
+function bindOptPanel(c) {
+  const op = optOf(c.v);
+  $$('[data-o]').forEach(el => el.onchange = el.oninput = () => { const k = el.dataset.o; op[k] = el.type === 'checkbox' ? el.checked : el.value; c.dirty = true; renderCheck(); });
 }
 /** สถานะการตรวจขนาดยา: pass / fail / incomplete / missing (กรอกไม่ครบ) */
 function doseState(c) {
@@ -1118,9 +1204,12 @@ const newBottle = over => Object.assign({ bottleNo: 1, productcde: '', mg: '', d
 function renderCheck() {
   const c = DAY.cur, v = c.v, st = doseState(c), P = patientCalc(v, c.pat);
   const pc = $('#pCalc');
-  if (pc) pc.innerHTML = P.ok ? `<div class="chip"><span>BSA (Mosteller)</span><b>${fmt(P.bsa, 2)}</b> m²</div><div class="chip"><span>BMI</span><b>${fmt(P.bmi, 1)}</b></div>` +
-    (P.age != null ? `<div class="chip"><span>อายุ</span><b>${P.age}</b> ปี</div>` : '') +
-    (P.okRenal ? `<div class="chip"><span>CrCl (C-G)</span><b>${fmt(P.crcl)}</b> ml/min</div>` : `<div class="chip"><span>CrCl</span><b>—</b><span>${P.sex ? 'ใส่ SCr' : 'ไม่ทราบเพศ'}</span></div>`)
+  const chip = (k, val, sub) => `<div class="chip"><span>${k}</span><b>${val}</b>${sub ? `<span>${sub}</span>` : ''}</div>`;
+  if (pc) pc.innerHTML = P.ok ? chip('BSA', fmt(P.bsa, 2) + ' m²', (P.op.bsaF === 'dubois' ? 'DuBois' : 'Mosteller') + (P.bsaCapped ? ` (cap จาก ${fmt(P.bsaRaw, 2)})` : '')) + chip('BMI', fmt(P.bmi, 1)) +
+    (P.ibw != null ? chip('IBW', fmt(P.ibw) + ' kg', 'AdjBW ' + fmt(P.adjbw)) : '') +
+    (P.age != null ? chip('อายุ', P.age + ' ปี') : '') +
+    (P.okRenal ? chip('CrCl (C-G)', fmt(P.crcl) + ' ml/min', `SCr ใช้ ${P.scrUsed} · นน. ${fmt(P.crclW)} kg`) + chip('GFR (Calvert)', fmt(P.gfr), P.op.gfrCap && P.crcl > 125 ? 'cap 125' : '')
+      : chip('CrCl', '—', !P.sex ? 'ไม่ทราบเพศ' : P.age == null ? 'ไม่ทราบอายุ' : 'ใส่ SCr'))
     : '<div class="muted" style="grid-column:1/-1">ใส่น้ำหนัก/ส่วนสูง เพื่อคำนวณ BSA</div>';
   renderRegCard();
   const badge = $('#doseBadge'); if (badge) badge.innerHTML = `<span class="dstat ${st.status}">${DOSE_STATUS_TH[st.status]}</span>`;
@@ -1159,6 +1248,7 @@ function bindForm() {
   const set = (id, k, fn) => { const el = $(id); if (el) el.oninput = el.onchange = () => { v[k] = fn ? fn(el.value) : el.value; c.dirty = true; if (['wt', 'ht', 'scr'].includes(k)) renderCheck(); if (k === 'mixTime') renderBottles(); }; };
   set('#vPh', 'phcode'); set('#vEm', 'emcode'); set('#vWard', 'ward'); set('#vNote', 'note');
   set('#vWt', 'wt'); set('#vHt', 'ht'); set('#vScr', 'scr');
+  if (!v.doseIncomplete) bindOptPanel(c);
   const vt = $('#vTime'); vt.onchange = () => { v.mixTime = v.date + ' ' + (vt.value || nowHM()); c.dirty = true; renderBottles(); };
   $('#vDate').onchange = () => { v.date = dateVal('#vDate') || M.today; v.mixTime = v.date + ' ' + ((v.mixTime || '').split(' ')[1] || nowHM()); c.dirty = true; renderForm(); };
   $('#fReset').onclick = resetForm;
@@ -1202,15 +1292,15 @@ function fillFromRegimen() {
   const c = DAY.cur, reg = regOf(c.v.regimen); if (!reg) return;
   const P = patientCalc(c.v, c.pat), had = new Set(c.bottles.map(b => prodKey(M.prodIdx[b.productcde])));
   let added = 0;
-  reg.d.forEach(dr => {
+  reg.d.forEach((dr, i) => {
     if (/^po|oral/i.test(dr.route || '')) return;
     const k = drugKey(dr.n); if (had.has(k)) return;
-    const p = chemoProducts().find(x => prodKey(x) === k), s = calcStd(dr, P);
-    c.bottles.push(newBottle({ productcde: p ? p.productcde : '', mg: s && s.std != null ? Math.round(s.std * 10) / 10 : '', note: dr.n, route: /push/i.test(dr.route) ? 'IV2' : 'IV1' }));
+    const p = chemoProducts().find(x => prodKey(x) === k), s = calcTarget(dr, i, c.v, P);
+    c.bottles.push(newBottle({ productcde: p ? p.productcde : '', mg: s && s.target != null ? Math.round(s.target * 10) / 10 : '', note: dr.n, route: /push/i.test(dr.route) ? 'IV2' : 'IV1' }));
     added++;
   });
   c.dirty = true; renderBottles(); renderCheck();
-  toast(added ? `เติม ${added} ขวดจากสูตร (ขนาดมาตรฐาน) ตรวจสารน้ำ/rate/ขนาดตามคำสั่งแพทย์` : 'มีครบทุกยาแล้ว');
+  toast(added ? `เติม ${added} ขวดจากสูตร (ขนาดเป้าหมายหลังปรับ %) ตรวจสารน้ำ/rate/ขนาดตามคำสั่งแพทย์` : 'มีครบทุกยาแล้ว');
 }
 async function saveCase(andPrint) {
   const c = DAY.cur, v = c.v;
@@ -1233,9 +1323,9 @@ async function saveCase(andPrint) {
     doseReasonNote: st.status === 'pass' ? '' : (v.doseReasonNote || ''),
     doseIssues: st.status === 'fail' ? st.bad.map(x => x.name ? `${x.name}: ${x.title}` : x.t).join(' | ') : '',
     doseDetail: st.status === 'incomplete' ? '' : JSON.stringify({ regimen: reg ? reg.n : '', cancer: reg ? CANCERS[reg.c] : '', bsa: P && P.ok ? +P.bsa.toFixed(2) : null, bmi: P && P.ok ? +P.bmi.toFixed(1) : null,
-      crcl: P && P.okRenal ? Math.round(P.crcl) : null, items: st.r.items.map(it => ({ drug: it.name, lvl: it.lvl, result: it.title, detail: it.msgs.slice(0, 3) })) })
+      crcl: P && P.okRenal ? Math.round(P.crcl) : null, gfr: P && P.okRenal ? Math.round(P.gfr) : null, opt: v.doseOpt || null, items: st.r.items.map(it => ({ drug: it.name, lvl: it.lvl, result: it.title, detail: it.msgs.slice(0, 3) })) })
   });
-  delete payload.doseIncomplete;
+  delete payload.doseIncomplete; delete payload.doseOpt;
   const wasEdit = !!v.id;
   const r = await api('apiSaveVisit', payload, bottles.map(b => { const o = Object.assign({}, b); delete o._of; return o; }), DAY.list.mode, DAY.list.date);
   setList(r);
