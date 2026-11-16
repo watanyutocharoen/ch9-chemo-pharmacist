@@ -312,7 +312,7 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 .optg .ck{display:flex;align-items:center;gap:6px;font-size:13px}
 .regt th{font-size:12px;color:#6b7c86;font-weight:600;text-align:left;padding:4px}
 .regt td{vertical-align:top;padding:5px 4px;border-top:1px solid #eef2f4}
-.regt tr.po td{opacity:.55}
+.regt tr.po td{background:#f6f8f9;color:#7b8a93}
 .regt .pctin{width:52px;padding:4px 6px}
 .regt .aucsel{padding:3px 4px}
 .regt .tgt{color:#1f6f8b;font-size:13px}
@@ -1107,8 +1107,10 @@ function renderRegCard() {
   const v = c.v, reg = regOf(v.regimen), P = patientCalc(v, c.pat), op = optOf(v);
   if (!reg) { el.innerHTML = '<div class="chk amber" style="margin:0">ยังไม่ได้เลือกสูตรยา — เลือกจากรายการทางซ้าย</div>'; return; }
   const row = (dr0, i) => {
+    if (/^po|oral/i.test(dr0.route || '')) return `<tr class="po"><td><b>${esc(dr0.n)}</b><div class="muted">${esc(dr0.days || '')} · ${esc(dr0.route || '')}</div></td>
+      <td>${esc(dr0.fixedText || stdText(dr0))}</td><td colspan="2" class="muted">💊 ยารับประทาน — ไม่ได้เตรียม ไม่นำมาตรวจ</td></tr>`;
     const t = calcTarget(dr0, i, v, P), dr = t.dr, lib = DL[drugKey(dr.n)] || {}, u = dr.unit.startsWith('units') ? 'units' : 'mg';
-    const po = /^po|oral/i.test(dr.route || ''), ren = !po && P.okRenal && typeof lib.renal === 'function' ? lib.renal(P.crcl) : null;
+    const po = false, ren = P.okRenal && typeof lib.renal === 'function' ? lib.renal(P.crcl) : null;
     const auc = dr0.unit === 'AUC' ? `<select class="aucsel" data-auc="${i}">${[1.5, 2, 3, 4, 4.5, 5, 5.5, 6, 7].map(x => `<option value="${x}" ${x == dr.dose ? 'selected' : ''}>AUC ${x}${x == dr0.dose ? ' (ตามสูตร)' : ''}</option>`).join('')}</select>` : esc(stdText(dr));
     const res = t.std != null ? `<div><b>${fmt(t.std)}</b> ${u}</div>${t.pct !== 100 ? `<div class="tgt">${t.pct}% → <b>${fmt(t.target)}</b></div>` : ''}${dr.cap && t.raw > dr.cap ? '<div class="muted">cap ' + dr.cap + '</div>' : ''}`
       : t.need ? '<span class="muted">ใส่' + esc(t.need) + '</span>' : dr.fixedText ? '<span class="muted">' + esc(dr.fixedText) + '</span>' : '';
