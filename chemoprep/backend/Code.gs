@@ -63,13 +63,16 @@ function onOpen() {
 // =====================================================================
 //  helpers
 // =====================================================================
-function ss_() { return SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SSID')); }
+// แคชภายในการเรียก 1 ครั้ง (ลดการอ่าน Sheet ซ้ำ ๆ ให้เร็วขึ้น)
+let SS_ = null; const SHEET_ = {}, HM_ = {}, MEMO_ = {};
+function dirty_(name) { delete MEMO_[name]; }
+function ss_() { return SS_ || (SS_ = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(PropertiesService.getScriptProperties().getProperty('SSID'))); }
 function sheet_(name) {
-  const sh = ss_().getSheetByName(name);
-  if (!sh) throw new Error('ไม่พบแผ่นงาน ' + name + ' — กดเมนู ระบบเคมีบำบัด › ตั้งค่าแผ่นงาน');
+  const sh = SHEET_[name] || (SHEET_[name] = ss_().getSheetByName(name));
+  if (!sh) { delete SHEET_[name]; throw new Error('ไม่พบแผ่นงาน ' + name + ' — กดเมนู ระบบเคมีบำบัด › ตั้งค่าแผ่นงาน'); }
   return sh;
 }
-function hasSheet_(name) { return !!ss_().getSheetByName(name); }
+function hasSheet_(name) { if (SHEET_[name]) return true; const sh = ss_().getSheetByName(name); if (sh) SHEET_[name] = sh; return !!sh; }
 function cell_(v, col) {
   if (v instanceof Date) {
     if (['mixTime','prepTime','preparedAt','updatedAt','time'].indexOf(col) >= 0) return Utilities.formatDate(v, TZ, 'yyyy-MM-dd HH:mm');
@@ -77,9 +80,29 @@ function cell_(v, col) {
   }
   return v;
 }
-function headerMap_(sh) { const h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0]; const m = {}; h.forEach((x, i) => m[x] = i); return m; }
+function headerMap_(sh) { const key = sh.getName(); if (HM_[key]) return HM_[key]; const h = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0]; const m = {}; h.forEach((x, i) => m[x] = i); return HM_[key] = m; }
+function rowObj_(name, hm, r, rowIdx) { const cols = SH[name], o = { _row: rowIdx }; for (let j = 0; j < cols.length; j++) { const k = hm[cols[j]]; o[cols[j]] = k === undefined ? '' : cell_(r[k], cols[j]); } return o; }
+/** อ่านแถวเดียว */
+function readRow_(name, rowIdx) {
+  if (MEMO_[name]) return MEMO_[name].find(x => x._row === rowIdx) || null;
+  const sh = sheet_(name), hm = headerMap_(sh); if (!rowIdx || rowIdx < 2) return null;
+  const r = sh.getRange(rowIdx, 1, 1, sh.getLastColumn()).getValues()[0]; return r[0] === '' ? null : rowObj_(name, hm, r, rowIdx);
+}
+/** อ่านเฉพาะแถวที่ตรงเงื่อนไข: อ่านคอลัมน์ที่ใช้กรองก่อน แล้วอ่านเฉพาะช่วงแถวที่ตรง (เร็วกว่าอ่านทั้งแผ่นมาก) */
+function readWhere_(name, keyCols, pred) {
+  if (MEMO_[name]) return MEMO_[name].filter(pred);
+  if (!hasSheet_(name)) return [];
+  const sh = sheet_(name), hm = headerMap_(sh), last = sh.getLastRow(); if (last < 2) return [];
+  const colVals = keyCols.map(c => hm[c] === undefined ? null : sh.getRange(2, hm[c] + 1, last - 1, 1).getValues());
+  const rows = [];
+  for (let i = 0; i < last - 1; i++) { const o = {}; keyCols.forEach((c, j) => o[c] = colVals[j] ? cell_(colVals[j][i][0], c) : ''); if (pred(o)) rows.push(i + 2); }
+  if (!rows.length) return [];
+  const min = rows[0], max = rows[rows.length - 1], vals = sh.getRange(min, 1, max - min + 1, sh.getLastColumn()).getValues();
+  return rows.map(r => rowObj_(name, hm, vals[r - min], r)).filter(o => o[SH[name][0]] !== '' && pred(o));
+}
 /** อ่านทั้งแผ่น — อ่านตามชื่อหัวคอลัมน์ (ทนต่อการสลับคอลัมน์) */
 function read_(name) {
+  if (MEMO_[name]) return MEMO_[name];
   if (!hasSheet_(name)) return [];
   const sh = sheet_(name), cols = SH[name], last = sh.getLastRow();
   if (last < 2) return [];
@@ -93,16 +116,17 @@ function read_(name) {
     for (let j = 0; j < cols.length; j++) { const k = hm[cols[j]]; o[cols[j]] = k === undefined ? '' : cell_(r[k], cols[j]); }
     out.push(o);
   }
-  return out;
+  return MEMO_[name] = out;
 }
 function toRow_(name, o) {
   const sh = sheet_(name), hm = headerMap_(sh), row = new Array(Object.keys(hm).length).fill('');
   SH[name].forEach(c => { if (hm[c] !== undefined) row[hm[c]] = (o[c] === undefined || o[c] === null) ? '' : o[c]; });
   return row;
 }
-function writeRow_(name, rowIdx, o) { const r = toRow_(name, o); sheet_(name).getRange(rowIdx, 1, 1, r.length).setValues([r]); }
+function writeRow_(name, rowIdx, o) { dirty_(name); const r = toRow_(name, o); sheet_(name).getRange(rowIdx, 1, 1, r.length).setValues([r]); }
 function appendRows_(name, objs) {
   if (!objs.length) return;
+  dirty_(name);
   const sh = sheet_(name), rows = objs.map(o => toRow_(name, o));
   sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
 }
@@ -116,7 +140,12 @@ function findRows_(name, colName, value) {
   for (let i = 0; i < vals.length; i++) if (String(cell_(vals[i][0], colName)) === String(value)) rows.push(i + 2);
   return rows;
 }
-function deleteRows_(name, rows) { const sh = sheet_(name); rows.sort((a, b) => b - a).forEach(r => sh.deleteRow(r)); }
+function deleteRows_(name, rows) {
+  if (!rows.length) return; dirty_(name); const sh = sheet_(name); rows = rows.slice().sort((a, b) => b - a);
+  // ลบเป็นช่วงต่อเนื่อง (เร็วกว่าลบทีละแถว)
+  let end = rows[0], start = rows[0];
+  for (let i = 1; i <= rows.length; i++) { if (i < rows.length && rows[i] === start - 1) { start = rows[i]; continue; } sh.deleteRows(start, end - start + 1); if (i < rows.length) { end = start = rows[i]; } }
+}
 function settings_() { const o = {}; read_('Settings').forEach(r => { o[r.key] = r.value; }); return o; }
 function setSetting_(key, value, note) {
   const rows = findRows_('Settings', 'key', key);
@@ -141,7 +170,7 @@ function log_(u, action, detail) {
 }
 // ---------- ข้อความ log ภาษาไทยที่อ่านง่าย ----------
 function thd_(iso) { if (!iso) return '-'; const p = String(iso).slice(0, 10).split('-').map(Number); return p[2] + '/' + p[1] + '/' + (p[0] + 543); }
-function patName_(hn) { const p = read_('Patients').find(x => String(x.HN) === String(hn)); return p ? ((p.title || '') + (p.name || '') + ' ' + (p.surname || '')).trim() : ''; }
+function patName_(hn) { const p = readWhere_('Patients', ['HN'], x => String(x.HN) === String(hn))[0]; return p ? ((p.title || '') + (p.name || '') + ' ' + (p.surname || '')).trim() : ''; }
 function staffName_(code) { const s = read_('Staff').find(x => x.code === code); return s ? s.name : (code || '-'); }
 const DOSE_TH_ = { pass: 'ผ่าน', fail: 'ไม่ผ่าน', incomplete: 'ข้อมูลไม่ครบ (ไม่ได้ตรวจ)' };
 const REASON_TH_ = { prev: 'ผู้ป่วยเคยได้รับขนาดนี้มาก่อน', confirmed: 'ทวนแพทย์แล้ว แพทย์ยืนยัน', other: 'อื่นๆ' };
@@ -310,18 +339,18 @@ function apiBoot(token) {
 //  mode 'mix'  = เคสที่ "วันผสม" ตรงกับ date
 //  mode 'prep' = เคสที่ "เตรียมเคส" ในวันที่ date (ทุกวันผสม)
 // =====================================================================
-function listCases_(filterFn) {
-  const visits = read_('Visits').filter(filterFn).map(strip_);
+function listCases_(filterFn, keyCols) {
+  const visits = readWhere_('Visits', keyCols || ['date', 'preparedAt'], filterFn).map(strip_);
   const ids = {}; visits.forEach(v => ids[v.id] = 1);
-  const bottles = read_('Bottles').filter(b => ids[b.visitId]).map(strip_);
+  const bottles = visits.length ? readWhere_('Bottles', ['visitId'], b => ids[b.visitId]).map(strip_) : [];
   const hns = {}; visits.forEach(v => hns[v.HN] = 1);
-  const patients = read_('Patients').filter(p => hns[p.HN]).map(strip_);
+  const patients = visits.length ? readWhere_('Patients', ['HN'], p => hns[p.HN]).map(strip_) : [];
   visits.sort((a, b) => (a.date + String(a.vn).padStart(4, '0')).localeCompare(b.date + String(b.vn).padStart(4, '0')));
   return { visits, bottles, patients };
 }
 function apiList(token, mode, date) {
   auth_(token);
-  const r = listCases_(v => mode === 'prep' ? String(v.preparedAt).slice(0, 10) === date : v.date === date);
+  const r = listCases_(v => mode === 'prep' ? String(v.preparedAt).slice(0, 10) === date : v.date === date, [mode === 'prep' ? 'preparedAt' : 'date']);
   r.mode = mode; r.date = date;
   return r;
 }
@@ -332,22 +361,22 @@ function apiSearchPatients(token, q) {
   q = String(q || '').trim().toLowerCase();
   if (q.length < 2) return [];
   const words = q.split(/\s+/);
-  return read_('Patients').filter(p => { const hay = (p.HN + ' ' + p.name + ' ' + p.surname).toLowerCase(); return words.every(w => hay.indexOf(w) >= 0); })
+  return readWhere_('Patients', ['HN', 'name', 'surname'], p => { const hay = (p.HN + ' ' + p.name + ' ' + p.surname).toLowerCase(); return words.every(w => hay.indexOf(w) >= 0); })
     .sort((a, b) => String(b.lastVisit).localeCompare(String(a.lastVisit))).slice(0, 30).map(strip_);
 }
 function apiPatient(token, hn) {
   auth_(token);
-  const p = read_('Patients').find(x => String(x.HN) === String(hn));
-  const visits = read_('Visits').filter(v => String(v.HN) === String(hn) && !+v.cancelled).sort((a, b) => (b.date + b.vn).localeCompare(a.date + a.vn)).slice(0, 10).map(strip_);
+  const p = readWhere_('Patients', ['HN'], x => String(x.HN) === String(hn))[0];
+  const visits = readWhere_('Visits', ['HN', 'cancelled'], v => String(v.HN) === String(hn) && !+v.cancelled).sort((a, b) => (b.date + b.vn).localeCompare(a.date + a.vn)).slice(0, 10).map(strip_);
   const ids = {}; visits.forEach(v => ids[v.id] = 1);
-  return { patient: p ? strip_(p) : null, visits, bottles: read_('Bottles').filter(b => ids[b.visitId]).map(strip_) };
+  return { patient: p ? strip_(p) : null, visits, bottles: visits.length ? readWhere_('Bottles', ['visitId'], b => ids[b.visitId]).map(strip_) : [] };
 }
 function apiSavePatient(token, p) {
   const u = auth_(token);
   return withLock_(() => {
     if (!p.HN) throw new Error('ต้องใส่ HN');
     const rows = findRows_('Patients', 'HN', p.HN);
-    const old = rows.length ? read_('Patients').find(x => x._row === rows[0]) : {};
+    const old = rows.length ? readRow_('Patients', rows[0]) : {};
     const o = Object.assign({}, old, p); delete o._row;
     if (rows.length) writeRow_('Patients', rows[0], o); else appendRows_('Patients', [o]);
     log_(u, rows.length ? 'edit-patient' : 'add-patient', `HN ${o.HN} ${(o.title || '') + (o.name || '') + ' ' + (o.surname || '')}` + (rows.length ? ' · ' + (changesTh_('Patients', old, o) === 'ไม่มีการเปลี่ยนแปลง' ? 'แก้ไขข้อมูล' : changesTh_('Patients', old, o)) : '') + (+o.allergyFlag ? ' · แพ้ยา: ' + (o.allergy || '-') : ''));
@@ -364,7 +393,7 @@ function apiSaveVisit(token, v, bottles, listMode, listDate) {
     let old = null, moved = '';
     if (v.id) {
       const r = findRows_('Visits', 'id', v.id);
-      if (r.length) old = read_('Visits').find(x => x._row === r[0]);
+      if (r.length) old = readRow_('Visits', r[0]);
     }
     // เปลี่ยนวันผสม → ย้ายไปเลข VN ของวันใหม่
     if (old && old.date !== v.date) {
@@ -374,7 +403,7 @@ function apiSaveVisit(token, v, bottles, listMode, listDate) {
       v.id = '';
     }
     if (!v.id) {
-      const sameDay = read_('Visits').filter(x => x.date === v.date);
+      const sameDay = readWhere_('Visits', ['date'], x => x.date === v.date);
       v.vn = sameDay.reduce((m, x) => Math.max(m, Number(x.vn) || 0), 0) + 1;
       v.id = v.date + '-' + v.vn;
     }
@@ -395,14 +424,14 @@ function apiSaveVisit(token, v, bottles, listMode, listDate) {
     if (vr.length) writeRow_('Visits', vr[0], v); else appendRows_('Visits', [v]);
 
     const printedMap = {};
-    read_('Bottles').filter(b => b.visitId === v.id).forEach(b => printedMap[b.productcde + '|' + b.mg + '|' + b.diluent] = b.printed);
+    readWhere_('Bottles', ['visitId'], b => b.visitId === v.id).forEach(b => printedMap[b.productcde + '|' + b.mg + '|' + b.diluent] = b.printed);
     deleteRows_('Bottles', findRows_('Bottles', 'visitId', v.id));
     appendRows_('Bottles', (bottles || []).filter(b => b.productcde).map((b, i) => Object.assign({}, b, {
       id: v.id + '-' + (i + 1), visitId: v.id, date: v.date, printed: b.printed || printedMap[b.productcde + '|' + b.mg + '|' + b.diluent] || 0 })));
 
     const pr = findRows_('Patients', 'HN', v.HN);
     if (pr.length) {
-      const p = read_('Patients').find(x => x._row === pr[0]);
+      const p = readRow_('Patients', pr[0]);
       if (!p.lastVisit || v.date >= p.lastVisit) p.lastVisit = v.date;
       ['wt', 'ht', 'scr'].forEach(k => { if (v[k] !== '' && v[k] != null) p[k] = v[k]; });
       writeRow_('Patients', pr[0], p);
@@ -416,7 +445,7 @@ function apiSaveVisit(token, v, bottles, listMode, listDate) {
 function apiDeleteVisit(token, id, listMode, listDate) {
   const u = auth_(token);
   return withLock_(() => {
-    const v = read_('Visits').find(x => x.id === id);
+    const v = readWhere_('Visits', ['id'], x => x.id === id)[0];
     deleteRows_('Bottles', findRows_('Bottles', 'visitId', id));
     deleteRows_('Visits', findRows_('Visits', 'id', id));
     log_(u, 'delete-case', v ? 'ลบ ' + caseRef_(v) : 'ลบเคส ' + id);
@@ -427,7 +456,7 @@ function apiSetCancelled(token, id, flag, reason) {
   const u = auth_(token);
   return withLock_(() => {
     const r = findRows_('Visits', 'id', id); if (!r.length) throw new Error('ไม่พบเคส');
-    const v = read_('Visits').find(x => x._row === r[0]);
+    const v = readRow_('Visits', r[0]);
     v.cancelled = flag ? 1 : 0;
     if (flag && reason) v.note = (v.note ? v.note + ' | ' : '') + 'ยกเลิก: ' + reason;
     v.updatedAt = now_(); v.updatedBy = u.code;
@@ -441,8 +470,8 @@ function apiMarkPrinted(token, ids, isReprint, visitIds) {
   return withLock_(() => {
     const sh = sheet_('Bottles'), col = headerMap_(sh).printed + 1, want = {};
     ids.forEach(i => want[i] = 1);
-    read_('Bottles').forEach(b => { if (want[b.id]) sh.getRange(b._row, col).setValue((Number(b.printed) || 0) + 1); });
-    log_(u, isReprint ? 'reprint-label' : 'print-label', `${isReprint ? 'พิมพ์ซ้ำ' : 'พิมพ์'}ฉลากขวดยา ${ids.length} ดวง · ` + (visitIds || []).map(id => { const v = read_('Visits').find(x => x.id === id); return v ? caseRef_(v) : id; }).join(' | '));
+    readWhere_('Bottles', ['id'], b => want[b.id]).forEach(b => { if (want[b.id]) sh.getRange(b._row, col).setValue((Number(b.printed) || 0) + 1); }); dirty_('Bottles');
+    log_(u, isReprint ? 'reprint-label' : 'print-label', `${isReprint ? 'พิมพ์ซ้ำ' : 'พิมพ์'}ฉลากขวดยา ${ids.length} ดวง · ` + (visitIds || []).map(id => { const v = readWhere_('Visits', ['id'], x => x.id === id)[0]; return v ? caseRef_(v) : id; }).join(' | '));
     return true;
   });
 }
@@ -461,7 +490,7 @@ function apiAddPhoto(token, visitId, dataUrl) {
   const u = auth_(token);
   return withLock_(() => {
     const r = findRows_('Visits', 'id', visitId); if (!r.length) throw new Error('ไม่พบเคส (บันทึกเคสก่อนถ่ายรูป)');
-    const v = read_('Visits').find(x => x._row === r[0]);
+    const v = readRow_('Visits', r[0]);
     const m = String(dataUrl).match(/^data:(image\/\w+);base64,(.+)$/); if (!m) throw new Error('ไฟล์รูปไม่ถูกต้อง');
     const n = (String(v.photos || '').split(',').filter(String).length) + 1;
     const blob = Utilities.newBlob(Utilities.base64Decode(m[2]), m[1], `${v.date}_VN${v.vn}_${v.HN}_${n}.jpg`);
@@ -474,9 +503,13 @@ function apiAddPhoto(token, visitId, dataUrl) {
 }
 function apiGetPhotos(token, visitId) {
   auth_(token);
-  const v = read_('Visits').find(x => x.id === visitId); if (!v) return [];
+  const v = readWhere_('Visits', ['id'], x => x.id === visitId)[0]; if (!v) return [];
   return String(v.photos || '').split(',').filter(String).map(id => {
-    try { const f = DriveApp.getFileById(id); return { id, name: f.getName(), url: f.getUrl(), data: 'data:' + f.getMimeType() + ';base64,' + Utilities.base64Encode(f.getBlob().getBytes()) }; }
+    try { const f = DriveApp.getFileById(id), mt = f.getMimeType();
+      if (/^image\/(jpeg|png|gif|webp)$/.test(mt)) return { id, name: f.getName(), url: f.getUrl(), data: 'data:' + mt + ';base64,' + Utilities.base64Encode(f.getBlob().getBytes()) };
+      // HEIC ฯลฯ เบราว์เซอร์แสดงไม่ได้ → ใช้ภาพย่อจาก Drive
+      let th = null; try { th = f.getThumbnail(); } catch (e) {}
+      return { id, name: f.getName(), url: f.getUrl(), data: th ? 'data:' + (th.getContentType() || 'image/png') + ';base64,' + Utilities.base64Encode(th.getBytes()) : '' }; }
     catch (e) { return { id, name: '(ไม่พบไฟล์)', data: '' }; }
   });
 }
@@ -484,7 +517,7 @@ function apiDeletePhoto(token, visitId, fileId) {
   const u = auth_(token);
   return withLock_(() => {
     const r = findRows_('Visits', 'id', visitId); if (!r.length) throw new Error('ไม่พบเคส');
-    const v = read_('Visits').find(x => x._row === r[0]);
+    const v = readRow_('Visits', r[0]);
     v.photos = String(v.photos || '').split(',').filter(x => x && x !== fileId).join(',');
     writeRow_('Visits', r[0], v);
     try { DriveApp.getFileById(fileId).setTrashed(true); } catch (e) {}
@@ -496,10 +529,10 @@ function apiDeletePhoto(token, visitId, fileId) {
 // ---------- รายงาน ----------
 function apiReport(token, from, to) {
   const u = auth_(token);
-  const r = listCases_(v => v.date >= from && v.date <= to);
+  const r = listCases_(v => v.date >= from && v.date <= to, ['date']);
   r.eyes = read_('EyeDrops').filter(e => e.date >= from && e.date <= to).map(strip_);
   const hns = {}; r.patients.forEach(p => hns[p.HN] = 1);
-  r.eyes.forEach(e => { if (!hns[e.HN]) { const p = read_('Patients').find(x => String(x.HN) === String(e.HN)); if (p) { r.patients.push(strip_(p)); hns[e.HN] = 1; } } });
+  r.eyes.forEach(e => { if (!hns[e.HN]) { const p = readWhere_('Patients', ['HN'], x => String(x.HN) === String(e.HN))[0]; if (p) { r.patients.push(strip_(p)); hns[e.HN] = 1; } } });
   log_(u, 'view-report', `ดูรายงานวันที่ผสม ${thd_(from)} ถึง ${thd_(to)}`);
   return r;
 }
@@ -588,7 +621,7 @@ function apiEyeDay(token, date) {
   auth_(token);
   const eyes = read_('EyeDrops').filter(e => e.date === date).map(strip_).sort((a, b) => Number(a.seq) - Number(b.seq));
   const hns = {}; eyes.forEach(e => hns[e.HN] = 1);
-  return { date, eyes, patients: read_('Patients').filter(p => hns[p.HN]).map(strip_) };
+  return { date, eyes, patients: readWhere_('Patients', ['HN'], p => hns[p.HN]).map(strip_) };
 }
 function apiSaveEye(token, e) {
   const u = auth_(token);
@@ -623,7 +656,7 @@ function apiMarkEyePrinted(token, ids, isReprint) {
   return withLock_(() => {
     const sh = sheet_('EyeDrops'), col = headerMap_(sh).printed + 1, want = {};
     ids.forEach(i => want[i] = 1);
-    read_('EyeDrops').forEach(e => { if (want[e.id]) sh.getRange(e._row, col).setValue((Number(e.printed) || 0) + 1); });
+    read_('EyeDrops').forEach(e => { if (want[e.id]) sh.getRange(e._row, col).setValue((Number(e.printed) || 0) + 1); }); dirty_('EyeDrops');
     log_(u, isReprint ? 'reprint-eyedrop' : 'print-eyedrop', `${isReprint ? 'พิมพ์ซ้ำ' : 'พิมพ์'}ฉลากยาหยอดตา · ` + ids.map(id => { const e = read_('EyeDrops').find(x => x.id === id); return e ? eyeDesc_(e) : id; }).join(' | '));
     return true;
   });
