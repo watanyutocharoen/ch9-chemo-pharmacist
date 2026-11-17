@@ -1,6 +1,6 @@
 // ===== ฐานข้อมูลสูตรยา =====
 // แก้ไข/เพิ่มสูตรได้ที่ไฟล์นี้ไฟล์เดียว (ดูวิธีใน README.md) แล้วอัปเดต DB_VERSION ทุกครั้ง
-const DB_VERSION = 'v1.5 (14 พ.ย. 2569)';
+const DB_VERSION = 'v1.6 (17 พ.ย. 2569)';
 // unit: mg/m2 | mg/kg | mg | AUC | units/m2 | units | tier
 // opts: cap (mg สูงสุดต่อครั้ง), freq:'BID', nDays (CI ต่อวัน × วัน), roundTo, tiers, note
 function d(n, dose, unit, days, route, o) { return Object.assign({ n, dose, unit, days, route }, o || {}); }
@@ -331,6 +331,7 @@ const R = [
   d('Gemcitabine',1000,'mg/m2','D1, D8','IV 30 นาที'), d('Cisplatin',50,'mg/m2','D1','IV')], note:'ยืนยันวันให้ gemcitabine กับ protocol สถาบัน'},
 { c:'cervix', n:'Topotecan + Cisplatin', kw:'gog 179', s:'Metastatic/Recurrent', cy:'q21 วัน', ref:'TGCS standing order (สมาคมมะเร็งนรีเวชไทย 2568); GOG 179', d:[
   d('Topotecan',0.75,'mg/m2','D1–3','IV 30–60 นาที',{nDays:3}), d('Cisplatin',50,'mg/m2','D1','IV')]},
+{ c:'cervix', n:'Cisplatin + Paclitaxel (cervix)', kw:'paclitaxel 135 cisplatin taxol cddp gog 169', s:'Metastatic/Recurrent (ใบสั่งยามาตรฐาน รพ.)', cy:'q21 วัน', ref:'ใบสั่งยามาตรฐาน รพ.จุฬารัตน์ 9 แอร์พอร์ต (DR 3001/197-01); GOG 169', note:'Premed dexamethasone 20 mg + ondansetron 8 mg; ให้ 20% mannitol 100 ml คู่กับ cisplatin; ระวัง hypersensitivity', d:[d('Paclitaxel',135,'mg/m2','D1','IV 3 ชม. (non-PVC set)'), d('Cisplatin',75,'mg/m2','D1','IV 2 ชม.',{note:'GOG 169 ใช้ 50 mg/m2 · ตรวจตามขนาดที่แพทย์ระบุ'})]},
 { c:'cervix', n:'Carboplatin + Paclitaxel (cervix)', s:'Metastatic', cy:'q21 วัน', ref:'JCOG 0505', d:[d('Paclitaxel',175,'mg/m2','D1','IV'), d('Carboplatin',5,'AUC','D1','IV')]},
 
 // ---------------- OVARY ----------------
