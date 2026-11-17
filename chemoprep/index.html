@@ -437,9 +437,9 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 <input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="fileAtt" accept="image/*" multiple hidden>
 
-<script src="../data.js"></script>
-<script src="../lib.js"></script>
-<script src="config.js"></script>
+<script src="../data.js?v=20261114143037-0713198d8d"></script>
+<script src="../lib.js?v=dd8c592aac"></script>
+<script src="config.js?v=0713198d8d"></script>
 <script>
 // =====================================================================
 //  Backend bridge + session
@@ -1081,6 +1081,7 @@ function renderForm() {
           <div class="fl" id="clsf">${[['', 'ทั้งหมด'], ['chemo', 'Chemo'], ['targeted', 'Targeted'], ['io', 'Immunotherapy'], ['hormone', 'Hormone']].map(([k, t]) => `<button type="button" data-k="${k}" class="${c.pick.cls === k ? 'on' : ''}">${t}</button>`).join('')}</div>
           <select id="regCancer" class="csel"><option value="">— ทุกชนิดมะเร็ง —</option>${Object.entries(CANCERS).map(([k, t]) => `<option value="${k}" ${k === c.pick.cancer ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>
           <div id="regList"></div>
+          <div class="muted" style="font-size:12px;margin-top:4px">ฐานข้อมูลสูตรยา ${typeof DB_VERSION !== 'undefined' ? esc(DB_VERSION) : ''} · ${R.length} สูตร (ชุดเดียวกับแอปเภสัชกรเคมีบำบัด)</div>
         </div>
         <div class="regpanel"><div class="muted" style="margin-bottom:6px;font-weight:600">สูตรที่เลือก · ขนาดมาตรฐานคำนวณจาก BSA/น้ำหนัก/CrCl</div><div id="regCard"></div></div>
       </div>`}`;
@@ -1126,7 +1127,7 @@ function renderRegList() {
     const hay = (P.mode === 'reg' ? reg : P.mode === 'drug' ? drug : P.mode === 'cancer' ? can : reg + ' ' + drug + ' ' + can + ' ' + (g.ref || '')).toLowerCase();
     return terms.every(t => hay.includes(t));
   });
-  $('#regCount').textContent = list.length + ' สูตร';
+  $('#regCount').textContent = list.length + ' สูตร'; 
   const ht = P.mode === 'cancer' ? [] : terms, sel = regOf(c.v.regimen);
   let info = '';
   if (terms.length && P.mode !== 'reg' && P.mode !== 'cancer') {
