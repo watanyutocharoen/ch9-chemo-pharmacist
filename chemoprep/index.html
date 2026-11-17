@@ -467,10 +467,10 @@ function callApi(quiet, fn, args) {
 }
 // ---- โหมดหน้าเว็บบน GitHub Pages: เรียก Apps Script ผ่าน URL (doPost) ----
 const IS_GAS = !!(window.google && google.script && google.script.run);
-function apiUrl() { let u = window.CHEMOPREP_API || ''; try { u = localStorage.getItem('chemoprep_api') || u; } catch (e) {} return u; }
+function apiUrl() { const cfg = window.CHEMOPREP_API || ''; let u = cfg; try { const st = localStorage.getItem('chemoprep_api'); if (st && !(/script\.google/.test(st) && cfg && !/script\.google/.test(cfg))) u = st; } catch (e) {} return u; }
 const SAFE_RETRY = { apiBoot: 1, apiList: 1, apiPatient: 1, apiSearchPatients: 1, apiGetPhotos: 1, apiPing: 1, apiReport: 1, apiLogs: 1, apiEyeDay: 1 };
 async function httpCall(fn, args) {
-  const url = apiUrl(); if (!url) throw new Error('ยังไม่ได้ตั้งค่า URL ของเซิร์ฟเวอร์ (Apps Script)');
+  const url = apiUrl(); if (!url) throw new Error('ยังไม่ได้ตั้งค่า URL ของเซิร์ฟเวอร์');
   // Google ปฏิเสธคำขอชั่วคราวได้ (เช่น มีคนใช้พร้อมกันมาก) → ได้หน้า error แทน JSON และโค้ดยังไม่ได้ทำงาน → ลองใหม่อัตโนมัติ
   for (let attempt = 0; ; attempt++) {
     let r, t;
@@ -478,7 +478,7 @@ async function httpCall(fn, args) {
     catch (e) { if (attempt < 1 && SAFE_RETRY[fn]) { await new Promise(z => setTimeout(z, 1500)); continue; } throw new Error('ติดต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ต แล้วลองอีกครั้ง'); }
     let j = null; try { j = JSON.parse(t); } catch (e) {}
     if (!j) { if (attempt < 2) { console.warn('[api] retry', fn, r && r.status); await new Promise(z => setTimeout(z, 1200 * (attempt + 1))); continue; }
-      throw new Error('เซิร์ฟเวอร์ Google ไม่ว่างชั่วคราว ลองกดใหม่อีกครั้ง'); }
+      throw new Error('เซิร์ฟเวอร์ไม่ว่างชั่วคราว ลองกดใหม่อีกครั้ง'); }
     if (j.ms != null) console.log('[api]', fn, 'server', j.ms + 'ms');
     if (!j.ok) throw new Error(j.error); return j.data;
   }
@@ -487,8 +487,8 @@ async function httpCall(fn, args) {
 function rawCall(fn, ...args) { try { if (window.MOCK_API) { Promise.resolve().then(() => MOCK_API[fn](...args)).catch(() => {}); return; } if (IS_GAS) { google.script.run.withSuccessHandler(() => {}).withFailureHandler(() => {})[fn](...args); return; } httpCall(fn, args).catch(() => {}); } catch (e) {} }
 function serverSetup() {
   const d = $('#dlg'), cur = apiUrl();
-  d.innerHTML = `<h2>ตั้งค่าเซิร์ฟเวอร์</h2><div class="muted">วาง URL ของ Apps Script Web app (ลงท้ายด้วย /exec) — ตั้งครั้งเดียวต่อเครื่อง</div>
-    <div class="fld" style="margin-top:10px">Web app URL<input id="svU" value="${esc(cur)}" placeholder="https://script.google.com/macros/s/.../exec"></div>
+  d.innerHTML = `<h2>ตั้งค่าเซิร์ฟเวอร์</h2><div class="muted">วาง URL ของเซิร์ฟเวอร์ (API) — ตั้งครั้งเดียวต่อเครื่อง</div>
+    <div class="fld" style="margin-top:10px">Web app URL<input id="svU" value="${esc(cur)}" placeholder="https://xxxx.supabase.co/functions/v1/api"></div>
     <div id="svMsg" class="muted" style="min-height:1.4em;margin-top:6px"></div>
     <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn ghost" id="svNo">ปิด</button><button class="btn ghost" id="svTest">ทดสอบ</button><button class="btn" id="svOk">บันทึก</button></div>`;
   d.showModal();
@@ -496,8 +496,8 @@ function serverSetup() {
   $('#svNo').onclick = () => d.close();
   $('#svTest').onclick = async () => { $('#svMsg').textContent = 'กำลังทดสอบ…';
     try { const r = await fetch(val() + (val().includes('?') ? '&' : '?') + 'api=ping'); const j = await r.json(); $('#svMsg').textContent = j.ok ? '✅ เชื่อมต่อได้ · เวลาเซิร์ฟเวอร์ ' + j.time : '❌ ' + (j.error || 'ไม่ผ่าน'); }
-    catch (e) { $('#svMsg').textContent = '❌ เชื่อมต่อไม่ได้ ตรวจ URL และสิทธิ์ Deploy (Anyone)'; } };
-  $('#svOk').onclick = () => { if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(val())) { $('#svMsg').textContent = 'URL ต้องขึ้นต้นด้วย https://script.google.com/'; return; }
+    catch (e) { $('#svMsg').textContent = '❌ เชื่อมต่อไม่ได้ ตรวจ URL'; } };
+  $('#svOk').onclick = () => { if (!/^https:\/\/(script\.google(usercontent)?\.com|[a-z0-9]+\.supabase\.co)\//.test(val())) { $('#svMsg').textContent = 'URL ไม่ถูกต้อง'; return; }
     try { localStorage.setItem('chemoprep_api', val()); } catch (e) {} d.close(); toast('บันทึก URL แล้ว'); };
 }
 const $ = s => document.querySelector(s);
@@ -1478,7 +1478,7 @@ async function photoDialog(v, pat) {
   PHOTO_CASE = v;
   const p = pat || (DAY.list && DAY.list.patIdx[v.HN]) || {}, d = $('#dlg'); d.style.maxWidth = '820px';
   d.innerHTML = `<h2>รูปเคส · VN ${esc(v.vn)} · ${esc((p.title || '') + (p.name || '') + ' ' + (p.surname || ''))}</h2>
-    <div class="muted">ถ่ายรูปเคสก่อนผสม รูปจะเก็บใน Google Drive (โฟลเดอร์ ChemoPrep รูปเคส / เดือน / วันที่ผสม) และใช้ตรวจตอนทำรายงาน</div>
+    <div class="muted">ถ่ายรูปเคสก่อนผสม รูปจะเก็บในระบบ (แยกตามเดือน / วันที่ผสม) และใช้ตรวจตอนทำรายงาน</div>
     <div class="row" style="margin:12px 0"><button class="btn" id="phCam">📷 ถ่ายรูป</button><button class="btn ghost" id="phAtt">📎 แนบรูป</button><span class="muted" id="phMsg"></span></div>
     <div class="photos" id="phList"><span class="muted">กำลังโหลดรูป…</span></div>
     <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="phClose">ปิด</button></div>`;
@@ -1493,7 +1493,7 @@ async function loadPhotos() {
   const list = await apiQ('apiGetPhotos', PHOTO_CASE.id).catch(() => []), el = $('#phList'); if (!el) return;
   el.innerHTML = list.length ? list.map(x => `<figure>${x.data ? `<img src="${x.data}" data-full="${esc(x.id)}" title="${esc(x.name)}">` : `<div class="muted" style="width:150px">${esc(x.name)}</div>`}<button class="btn red xs" data-delph="${esc(x.id)}">ลบ</button></figure>`).join('') : '<span class="muted">ยังไม่มีรูป</span>';
   $$('#phList [data-delph]').forEach(b => b.onclick = async () => {
-    if (!await ask('ลบรูปนี้? (ย้ายไปถังขยะใน Drive)', 'ลบรูป', { danger: true })) return;
+    if (!await ask('ลบรูปนี้? (ลบถาวร)', 'ลบรูป', { danger: true })) return;
     Object.assign(PHOTO_CASE, await api('apiDeletePhoto', PHOTO_CASE.id, b.dataset.delph)); renderList(); loadPhotos();
   });
   $$('#phList img').forEach(img => img.onclick = () => { const w = $('#dlg2'); w.style.maxWidth = '95vw'; w.innerHTML = `<img src="${img.src}" style="max-width:100%;max-height:80vh;display:block;margin:auto"><div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn ghost" onclick="document.getElementById('dlg2').close()">ปิด</button></div>`; w.onclose = () => w.style.maxWidth = ''; w.showModal(); });
@@ -1833,8 +1833,8 @@ async function exportSheet() {
   const { rows, colors } = reportRows();
   const url = await api('apiExportReport', 'รายงานการเตรียมยาเคมีบำบัด ' + rpTitleRange(), rows, colors);
   const d = $('#dlg');
-  d.innerHTML = `<h2>สร้างไฟล์รายงานแล้ว</h2><p>ไฟล์อยู่ใน Google Drive โฟลเดอร์ “ChemoPrep รายงาน” เปิดแล้วดาวน์โหลดเป็น Excel ได้ที่ ไฟล์ › ดาวน์โหลด › Microsoft Excel</p>
-    <p><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></p><div class="row" style="justify-content:flex-end"><button class="btn ghost" id="exClose">ปิด</button></div>`;
+  d.innerHTML = `<h2>สร้างไฟล์รายงานแล้ว</h2><p>ไฟล์ CSV เปิดด้วย Excel ได้เลย (ลิงก์ใช้ได้ 24 ชั่วโมง)</p>
+    <p><a class="btn" href="${esc(url)}" target="_blank" rel="noopener">ดาวน์โหลดไฟล์รายงาน</a></p><div class="row" style="justify-content:flex-end"><button class="btn ghost" id="exClose">ปิด</button></div>`;
   d.showModal(); $('#exClose').onclick = () => d.close();
 }
 function printReport() {
