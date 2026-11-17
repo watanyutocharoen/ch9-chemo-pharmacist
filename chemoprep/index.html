@@ -442,6 +442,7 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 <script src="../lib.js?v=dd8c592aac"></script>
 <script src="config.js?v=6682dcf032"></script>
 <script>
+var SRCH_SEQ = 0;
 // =====================================================================
 //  Backend bridge + session
 // =====================================================================
@@ -1322,9 +1323,9 @@ function bindForm() {
   if (ps) {
     let tm; const drop = $('#pDrop');
     ps.oninput = () => { clearTimeout(tm); const q = ps.value.trim(); if (q.length < 2) { drop.hidden = true; return; }
-      tm = setTimeout(async () => { const list = await api('apiSearchPatients', q);
+      const my = ++SRCH_SEQ; tm = setTimeout(async () => { let list; try { list = await apiQ('apiSearchPatients', q); } catch (e) { return; } if (my !== SRCH_SEQ) return;
         drop.innerHTML = list.length ? list.map((p, i) => `<div data-i="${i}"><b>${esc(p.title + p.name + ' ' + p.surname)}</b> <small>HN ${esc(p.HN)} · เกิด ${thDate(p.dob)} · มาล่าสุด ${thDate(p.lastVisit)}</small></div>`).join('') : '<div class="muted">ไม่พบ กด “+ ผู้ป่วยใหม่”</div>';
-        drop.hidden = false; $$('#pDrop [data-i]').forEach(x => x.onclick = () => pickPatient(list[+x.dataset.i])); }, 250); };
+        drop.hidden = false; $$('#pDrop [data-i]').forEach(x => x.onclick = () => pickPatient(list[+x.dataset.i])); }, 600); };
     ps.onblur = () => setTimeout(() => drop.hidden = true, 250);
   }
   const bn = $('#btnNewPat'); if (bn) bn.onclick = () => editPatient({ HN: ps && /\d/.test(ps.value) ? ps.value.trim() : '', name: ps && !/\d/.test(ps.value) ? ps.value.trim() : '' }, true, pickPatient);
@@ -1669,9 +1670,9 @@ function bindEye() {
   const c = EYE.cur, es = $('#eSearch');
   if (es) { let tm; const drop = $('#eDrop');
     es.oninput = () => { clearTimeout(tm); const q = es.value.trim(); if (q.length < 2) { drop.hidden = true; return; }
-      tm = setTimeout(async () => { const list = await api('apiSearchPatients', q);
+      const my = ++SRCH_SEQ; tm = setTimeout(async () => { let list; try { list = await apiQ('apiSearchPatients', q); } catch (e) { return; } if (my !== SRCH_SEQ) return;
         drop.innerHTML = list.length ? list.map((p, i) => `<div data-i="${i}"><b>${esc(p.title + p.name + ' ' + p.surname)}</b> <small>HN ${esc(p.HN)}</small></div>`).join('') : '<div class="muted">ไม่พบ กด “+ ผู้ป่วยใหม่”</div>';
-        drop.hidden = false; $$('#eDrop [data-i]').forEach(x => x.onclick = () => { const p = list[+x.dataset.i]; c.pat = p; c.HN = p.HN; if (!c.ward) c.ward = p.ward || ''; c.dirty = true; renderEyeEditor(); }); }, 250); };
+        drop.hidden = false; $$('#eDrop [data-i]').forEach(x => x.onclick = () => { const p = list[+x.dataset.i]; c.pat = p; c.HN = p.HN; if (!c.ward) c.ward = p.ward || ''; c.dirty = true; renderEyeEditor(); }); }, 600); };
     es.onblur = () => setTimeout(() => drop.hidden = true, 250); }
   const np = $('#eNewPat'); if (np) np.onclick = () => editPatient({ HN: es && /\d/.test(es.value) ? es.value.trim() : '', name: es && !/\d/.test(es.value) ? es.value.trim() : '' }, true, saved => { c.pat = saved; c.HN = saved.HN; c.ward = c.ward || saved.ward || ''; renderEyeEditor(); });
   const ch = $('#eChange'); if (ch) ch.onclick = () => { c.pat = null; c.HN = ''; renderEyeEditor(); };
