@@ -680,12 +680,21 @@ function effDr(dr, i, v) { const a = num(optOf(v).auc[i]); return dr.unit === 'A
 // ปรับทั้งสูตร: ไม่รวมยาขนาดคงที่ (flat dose เช่น immunotherapy) — ปรับรายตัวได้ถ้าต้องการ
 const drPct = (i, v) => { const o = optOf(v), x = num(o.pct[i]); if (x != null) return x;
   const dr = (regOf(v.regimen) || { d: [] }).d[i]; if (dr && (dr.fixedText || dr.unit === 'mg' || dr.unit === 'units')) return 100; return num(o.gPct) || 100; };
+/** ยาหยดต่อเนื่องหลายวันที่ขนาดในสูตรเป็น "ขนาดรวมทั้งช่วง" (เช่น 5-FU 2400 mg/m² CI 46 ชม. D1–2) → คืนจำนวนวันที่แบ่งเตรียม
+ *  (ถ้ามี nDays แปลว่าขนาดในสูตรเป็นต่อวันอยู่แล้ว → 0) */
+function splitDays(dr) {
+  if (!dr || dr.nDays || !/CI/i.test(dr.route || '')) return 0;
+  const m = /D(\d+)\s*[–-]\s*(\d+)/.exec(dr.days || ''); if (!m) return 0;
+  if (/ชม\.?\s*\/\s*วัน|\/วัน/.test(dr.days || '')) return 0;
+  const n = +m[2] - +m[1] + 1; return n > 1 ? n : 0;
+}
 /** ขนาดมาตรฐาน + ขนาดเป้าหมายหลังปรับ % (cap ตามสูตร) */
 function calcTarget(dr0, i, v, P) {
   const dr = effDr(dr0, i, v), s = calcStd(dr, P), pct = drPct(i, v);
   if (!s || s.std == null) return Object.assign({ dr, pct }, s || {});
   let t = s.raw * pct / 100; if (dr.cap && t > dr.cap) t = dr.cap;
-  return Object.assign({ dr, pct, target: t }, s);
+  const sd = splitDays(dr);
+  return Object.assign({ dr, pct, target: t, split: sd, perDay: sd ? t / sd : t }, s);
 }
 function calcStd(dr, P) {
   if (dr.fixedText) return null;
@@ -757,15 +766,21 @@ function doseCheck(v, bottles, pat) {
         const valid = stds.filter(s => s.c && s.c.std != null), tot = valid.reduce((a, s) => a + s.c.std, 0), tgt = valid.reduce((a, s) => a + s.c.target, 0);
         const adj = valid.some(s => s.c.pct !== 100);
         if (tot > 0) {
-          const ratio = g.mg / tot * 100, base = adj ? g.mg / tgt * 100 : ratio;
+          const ratio = g.mg / tot * 100; let base = adj ? g.mg / tgt * 100 : ratio;
+          // แบ่งเตรียมรายวัน: เทียบกับขนาดต่อวันของส่วนที่หยดต่อเนื่อง (ส่วนอื่นยังใช้ขนาดเต็ม)
+          const hasSplit = valid.some(s => s.c.split), tgtDay = valid.reduce((a, s) => a + s.c.perDay, 0), baseDay = hasSplit ? g.mg / tgtDay * 100 : null;
+          const useDay = hasSplit && (base < 90 || base > 105) && baseDay >= 90 && baseDay <= 105;
+          if (useDay) base = baseDay;
           let lvl = base > 110 ? 'red' : base > 105 ? 'amber' : base >= 90 ? 'green' : base >= 70 ? 'blue' : 'amber';
-          it.title = { red: 'สูงกว่ามาตรฐาน ตรวจสอบกับแพทย์', amber: base > 100 ? 'สูงกว่ามาตรฐานเล็กน้อย' : 'ต่ำกว่ามาตรฐานมาก ตรวจสอบ', green: adj ? 'ตรงกับขนาดที่ปรับไว้' : 'อยู่ในช่วงมาตรฐาน', blue: 'ลดขนาด ตรวจว่าแพทย์ตั้งใจลด dose' }[lvl];
+          it.title = { red: 'สูงกว่ามาตรฐาน ตรวจสอบกับแพทย์', amber: base > 100 ? 'สูงกว่ามาตรฐานเล็กน้อย' : 'ต่ำกว่ามาตรฐานมาก ตรวจสอบ', green: useDay ? 'ตรงกับขนาดที่แบ่งเตรียมต่อวัน' : adj ? 'ตรงกับขนาดที่ปรับไว้' : 'อยู่ในช่วงมาตรฐาน', blue: 'ลดขนาด ตรวจว่าแพทย์ตั้งใจลด dose' }[lvl];
           it.msgs.push(`สั่ง ${fmt(g.mg)} ${g.unit} = ${fmt(ratio)}% ของมาตรฐาน ${fmt(tot)} ${g.unit}`);
           if (adj) it.msgs.push(`เทียบกับขนาดที่ปรับไว้ (${[...new Set(valid.map(s => s.c.pct + '%'))].join(', ')}) ${fmt(tgt)} ${g.unit} = ${fmt(base)}%`);
           valid.forEach(s => it.msgs.push(`${s.dr.n}: ${stdText(s.dr)}${s.dr.aucFrom ? ' (สูตรเดิม AUC ' + s.dr.aucFrom + ')' : ''} ${s.dr.days ? '(' + s.dr.days + ')' : ''} → ${fmt(s.c.std)}${s.c.pct !== 100 ? ' × ' + s.c.pct + '% = ' + fmt(s.c.target) : ''}${s.dr.cap && s.c.raw > s.dr.cap ? ' [cap ' + s.dr.cap + ']' : ''}`));
           const mk = comps.find(dr => dr.unit === 'mg/kg'); if (mk && P.ok) it.msgs.push(`เท่ากับ ${fmt(g.mg / P.wt)} mg/kg`);
           if (comps.length > 1) it.msgs.push('สูตรนี้มียาตัวนี้หลายส่วน (เช่น bolus + infusion) เทียบจากผลรวมทุกขวดในเคสนี้');
-          if (comps.some(dr => dr.nDays || /CI|ต่อเนื่อง/i.test(dr.route + dr.days)) && ratio < 90) it.msgs.push('ยาหยดต่อเนื่องหลายวัน ถ้าแบ่งผสมหลายวัน ให้รวมขนาดของทุกวันก่อนเทียบ');
+          if (hasSplit) { valid.filter(s => s.c.split).forEach(s => it.msgs.push(`${s.dr.n}: ขนาดในสูตรเป็นขนาดรวมตลอด ${s.dr.days} → ถ้าแบ่งเตรียม ${s.c.split} วัน = วันละ ${fmt(s.c.perDay)} ${g.unit}`));
+            it.msgs.push(`ถ้าเตรียมวันนี้เฉพาะส่วนของวันแรก ขนาดที่ควรได้ = ${fmt(tgtDay)} ${g.unit} → สั่ง ${fmt(baseDay)}%${useDay ? ' ✓' : ''}`); }
+          if (comps.some(dr => dr.nDays) && !hasSplit) it.msgs.push('ขนาดในสูตรเป็นขนาดต่อวัน (เตรียมวันละครั้ง)');
           const auc = comps.find(dr => dr.unit === 'AUC');
           if (auc && P.okRenal) { const impl = g.mg / (P.gfr + 25); it.msgs.push(`เท่ากับ AUC ≈ ${fmt(impl)} (GFR ${fmt(P.gfr)}${P.op.gfrCap && P.crcl > 125 ? ', cap 125' : ''})`);
             if (Math.abs(impl - auc.dose) >= 0.4 && impl <= 7.2) it.msgs.push(`💡 ถ้าแพทย์ตั้งใจใช้ AUC ${Math.round(impl * 2) / 2} ให้เปลี่ยน “AUC เป้าหมาย” ในการ์ดสูตร แล้วตรวจใหม่`); if (g.mg > auc.dose * 150 * 1.001) { lvl = 'red'; it.msgs.push(`⚠ เกินขนาดสูงสุดที่ AUC ${auc.dose} (${auc.dose * 150} mg)`); } }
@@ -1149,7 +1164,7 @@ function renderRegCard() {
     const t = calcTarget(dr0, i, v, P), dr = t.dr, lib = DL[drugKey(dr.n)] || {}, u = dr.unit.startsWith('units') ? 'units' : 'mg';
     const po = false, ren = P.okRenal && typeof lib.renal === 'function' ? lib.renal(P.crcl) : null;
     const auc = dr0.unit === 'AUC' ? `<select class="aucsel" data-auc="${i}">${[1.5, 2, 3, 4, 4.5, 5, 5.5, 6, 7].map(x => `<option value="${x}" ${x == dr.dose ? 'selected' : ''}>AUC ${x}${x == dr0.dose ? ' (ตามสูตร)' : ''}</option>`).join('')}</select>` : esc(stdText(dr));
-    const res = t.std != null ? `<div><b>${fmt(t.std)}</b> ${u}</div>${t.pct !== 100 ? `<div class="tgt">${t.pct}% → <b>${fmt(t.target)}</b></div>` : ''}${dr.cap && t.raw > dr.cap ? '<div class="muted">cap ' + dr.cap + '</div>' : ''}`
+    const res = t.std != null ? `<div><b>${fmt(t.std)}</b> ${u}${t.split ? ' <span class="muted">(รวม)</span>' : dr.nDays ? ' <span class="muted">/วัน</span>' : ''}</div>${t.pct !== 100 ? `<div class="tgt">${t.pct}% → <b>${fmt(t.target)}</b></div>` : ''}${t.split ? `<div class="tgt">แบ่ง ${t.split} วัน → วันละ <b>${fmt(t.perDay)}</b></div>` : ''}${dr.cap && t.raw > dr.cap ? '<div class="muted">cap ' + dr.cap + '</div>' : ''}`
       : t.need ? '<span class="muted">ใส่' + esc(t.need) + '</span>' : dr.fixedText ? '<span class="muted">' + esc(dr.fixedText) + '</span>' : '';
     return `<tr class="${po ? 'po' : ''}"><td><b>${esc(dr.n)}</b><div class="muted">${esc(dr.days || '')} · ${esc(dr.route || '')}${po ? ' · ไม่ตรวจ (ยารับประทาน)' : ''}</div>
         ${ren ? `<div class="ren ${ren.lvl}">ไต: ${esc(ren.text)} ${ren.pct != null && ren.pct > 0 && t.pct !== ren.pct ? `<button type="button" class="btn ghost xs" data-rpct="${i}" data-v="${ren.pct}">ใช้ ${ren.pct}%</button>` : ''}</div>` : ''}</td>
@@ -1341,7 +1356,7 @@ function fillFromRegimen() {
     if (/^po|oral/i.test(dr.route || '')) return;
     const k = drugKey(dr.n); if (had.has(k)) return;
     const p = chemoProducts().find(x => prodKey(x) === k), s = calcTarget(dr, i, c.v, P);
-    c.bottles.push(newBottle({ productcde: p ? p.productcde : '', mg: s && s.target != null ? Math.round(s.target * 10) / 10 : '', note: dr.n, route: /push/i.test(dr.route) ? 'IV2' : 'IV1' }));
+    c.bottles.push(newBottle({ productcde: p ? p.productcde : '', mg: s && s.target != null ? Math.round((s.split ? s.perDay : s.target) * 10) / 10 : '', note: dr.n, route: /push/i.test(dr.route) ? 'IV2' : 'IV1' }));
     added++;
   });
   c.dirty = true; renderBottles(); renderCheck();
