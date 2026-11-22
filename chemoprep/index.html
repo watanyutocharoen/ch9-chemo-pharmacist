@@ -713,12 +713,13 @@ function calcStd(dr, P) {
     case 'mg/kg': if (!P.ok) return { need: 'น้ำหนัก' }; full = dr.dose * P.wt; break;
     case 'mg': case 'units': full = dr.dose; break;
     case 'AUC': if (!P.okRenal) return { need: 'อายุ/เพศ/SCr' }; full = dr.dose * (P.gfr + 25); break;
+    case 'bsatier': { if (!P.ok) return { need: 'น้ำหนัก/ส่วนสูง' }; const t = dr.bsaTiers.find(t => t.lt == null || P.bsa < t.lt); full = t.dose; break; }
     case 'tier': { if (!P.ok) return { need: 'น้ำหนัก' }; const t = dr.tiers.find(t => t.lt == null || P.wt < t.lt); full = t.dose; break; }
     default: return null;
   }
   return { std: dr.cap ? Math.min(full, dr.cap) : full, raw: full };
 }
-const stdText = dr => `${dr.dose} ${dr.unit === 'AUC' ? 'AUC' : dr.unit.replace('2', '²')}`;
+const stdText = dr => (dr.unit === 'tier' || dr.unit === 'bsatier') ? (dr.tierText || '') : `${dr.dose} ${dr.unit === 'AUC' ? 'AUC' : dr.unit.replace('2', '²')}`;
 const BRAND_KEY = (() => { const m = []; Object.entries(BRAND).forEach(([k, v]) => v.split(/\s+/).forEach(b => { if (b.length >= 4) m.push([b.toLowerCase(), k]); })); return m; })();
 function prodKey(p) {
   if (!p) return '';
@@ -786,22 +787,24 @@ function doseCheck(v, bottles, pat) {
           if (adj) it.msgs.push(`เทียบกับขนาดที่ปรับไว้ (${[...new Set(valid.map(s => s.c.pct + '%'))].join(', ')}) ${fmt(tgt)} ${g.unit} = ${fmt(base)}%`);
           valid.forEach(s => it.msgs.push(`${s.dr.n}: ${stdText(s.dr)}${s.dr.aucFrom ? ' (สูตรเดิม AUC ' + s.dr.aucFrom + ')' : ''} ${s.dr.days ? '(' + s.dr.days + ')' : ''} → ${fmt(s.c.std)}${s.c.pct !== 100 ? ' × ' + s.c.pct + '% = ' + fmt(s.c.target) : ''}${s.dr.cap && s.c.raw > s.dr.cap ? ' [cap ' + s.dr.cap + ']' : ''}`));
           // เทียบขวดต่อขวด (เตรียมทีละครั้ง): แต่ละขวดเทียบกับขนาดต่อครั้งของยาในสูตร (และขนาดต่อวันถ้าแบ่งเตรียม)
-          if (g.n > 1) {
+          if (g.n > 1 || valid.length > 1) {
             const tg = []; valid.forEach(x => { tg.push({ t: x.c.target, n: x.dr.n }); if (x.c.split) tg.push({ t: x.c.perDay, n: x.dr.n + ' (ต่อวัน)' }); });
             const lvlOf = r => r > 110 ? 'red' : r > 105 ? 'amber' : r >= 90 ? 'green' : r >= 70 ? 'blue' : 'amber', rk = { red: 4, amber: 3, blue: 2, green: 1, gray: 0 };
             const per = g.bots.map((bt, bi) => { bt.i = bi + 1; let best = null; tg.forEach(x => { if (x.t > 0) { const r = bt.mg / x.t * 100; if (!best || Math.abs(r - 100) < Math.abs(best.r - 100)) best = { r, x }; } }); return best && Object.assign({}, bt, best, { lvl: lvlOf(best.r) }); }).filter(Boolean);
             if (per.length) {
               const worstB = per.reduce((w, q) => rk[q.lvl] > rk[w] ? q.lvl : w, 'gray');
+              if (valid.length > 1) it.msgs.shift();  // ยอดรวมหลายส่วนของสูตร (เช่น loading + maintenance) ไม่ใช่ขนาดที่ให้ในครั้งเดียว
               it.msgs.push('— เทียบขวดต่อขวด (ขนาดต่อครั้ง) —');
               per.forEach(q => it.msgs.push(`ขวด ${q.no || q.i}: ${fmt(q.mg)} ${g.unit} = ${fmt(q.r)}% ของ ${q.x.n} (${fmt(q.x.t)} ${g.unit}) ${{ green: '✓', red: '⚠ สูงกว่ามาตรฐาน', amber: '⚠ ตรวจสอบ', blue: 'ลดขนาด' }[q.lvl]}`));
-              it.msgs.push(`— เทียบรวมทุกขวด: ${fmt(g.mg)} ${g.unit} = ${fmt(ratio)}% ของ ${fmt(tot)} ${g.unit} —`);
-              if (worstB === 'green' && lvl !== 'green') { lvl = 'green'; it.title = 'ทุกขวดตรงกับขนาดต่อครั้ง (เตรียมทีละครั้ง)'; }
+              if (valid.length === 1) it.msgs.push(`— เทียบรวมทุกขวด: ${fmt(g.mg)} ${g.unit} = ${fmt(ratio)}% ของ ${fmt(tot)} ${g.unit} —`);
+              if (valid.length > 1) { lvl = worstB; it.title = { red: 'มีขวดที่สูงกว่ามาตรฐาน ตรวจสอบกับแพทย์', amber: 'มีขวดที่ต่างจากมาตรฐาน ตรวจสอบ', green: 'ทุกขวดตรงกับขนาดต่อครั้ง (เตรียมทีละครั้ง)', blue: 'ลดขนาด ตรวจว่าแพทย์ตั้งใจลด dose', gray: '' }[worstB]; }
+              else if (worstB === 'green' && lvl !== 'green') { lvl = 'green'; it.title = 'ทุกขวดตรงกับขนาดต่อครั้ง (เตรียมทีละครั้ง)'; }
               else if (worstB !== 'green' && lvl === 'green') it.title = 'รวมทุกขวดตรงมาตรฐาน (แบ่งเตรียม ' + g.n + ' ขวด)';
               else if (worstB === 'red' && lvl !== 'red') { lvl = 'red'; it.title = 'มีขวดที่สูงกว่ามาตรฐาน ตรวจสอบกับแพทย์'; }
             }
           }
           const mk = comps.find(dr => dr.unit === 'mg/kg'); if (mk && P.ok) it.msgs.push(`เท่ากับ ${fmt(g.mg / P.wt)} mg/kg`);
-          if (comps.length > 1) it.msgs.push('สูตรนี้มียาตัวนี้หลายส่วน (เช่น bolus + infusion) เทียบจากผลรวมทุกขวดในเคสนี้');
+          if (comps.length > 1) it.msgs.push('สูตรนี้มียาตัวนี้หลายส่วน (เช่น loading/maintenance, bolus/infusion) → เทียบแต่ละขวดกับขนาดแต่ละส่วนของสูตร (เตรียมทีละครั้ง)');
           if (hasSplit) { valid.filter(s => s.c.split).forEach(s => it.msgs.push(`${s.dr.n}: ขนาดในสูตรเป็นขนาดรวมตลอด ${s.dr.days} → ถ้าแบ่งเตรียม ${s.c.split} วัน = วันละ ${fmt(s.c.perDay)} ${g.unit}`));
             it.msgs.push(`ถ้าเตรียมวันนี้เฉพาะส่วนของวันแรก ขนาดที่ควรได้ = ${fmt(tgtDay)} ${g.unit} → สั่ง ${fmt(baseDay)}%${useDay ? ' ✓' : ''}`); }
           if (comps.some(dr => dr.nDays) && !hasSplit) it.msgs.push('ขนาดในสูตรเป็นขนาดต่อวัน (เตรียมวันละครั้ง)');
