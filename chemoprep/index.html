@@ -1173,6 +1173,13 @@ function renderRegList() {
   if (terms.length) { const sc = g => { const n = (g.n + ' ' + (g.kw || '')).toLowerCase(); return terms.filter(t => n.includes(t)).length; }; list.sort((a, b) => sc(b) - sc(a)); }
   $('#regCount').textContent = list.length + ' สูตร'; 
   const ht = P.mode === 'cancer' ? [] : terms, sel = regOf(c.v.regimen);
+  const fsig = [P.mode, P.q, P.cls, P.cancer].join('|');
+  if (P.collapsed && P.cSig !== fsig) P.collapsed = false;   // เปลี่ยนคำค้น/ตัวกรอง → แสดงรายการทั้งหมดอีกครั้ง
+  if (P.collapsed && sel) {
+    el.innerHTML = `<button type="button" class="ri on" data-k="${esc(sel.key)}"><div class="rn">${esc(sel.n)}</div><div class="rd">${esc(drugNamesOf(sel))}</div><div class="rs">${esc(CANCERS[sel.c])} · ${esc(sel.s || '')}</div><div class="rt">${sel.cls.map(x => `<span class="b b-${x}">${CLS_LABEL[x]}</span>`).join('')}</div></button><button type="button" class="btn ghost xs" id="regChange" style="align-self:flex-start">เปลี่ยนสูตร (แสดงทั้งหมด)</button>`;
+    $('#regChange').onclick = () => { P.collapsed = false; renderRegList(); };
+    return;
+  }
   let info = '';
   if (terms.length && P.mode !== 'reg' && P.mode !== 'cancer') {
     const keys = [...new Set(R.flatMap(g => g.d.map(x => drugKey(x.n))))].filter(k => terms.every(t => (k + ' ' + (BRAND[k] || '')).toLowerCase().includes(t)));
@@ -1181,7 +1188,7 @@ function renderRegList() {
   el.innerHTML = info + (list.length ? list.map(g => `<button type="button" class="ri ${sel && sel.key === g.key ? 'on' : ''}" data-k="${esc(g.key)}">
     <div class="rn">${hl(g.n, P.mode === 'drug' ? [] : ht)}</div><div class="rd">${hl(drugNamesOf(g), P.mode === 'reg' ? [] : ht)}</div><div class="rs">${esc(CANCERS[g.c])} · ${esc(g.s || '')}</div>
     <div class="rt">${g.cls.map(x => `<span class="b b-${x}">${CLS_LABEL[x]}</span>`).join('')}</div></button>`).join('') : '<div class="muted" style="padding:8px">ไม่พบสูตร ลองคำค้นอื่นหรือเปลี่ยนโหมดค้นหา</div>');
-  $$('#regList [data-k]').forEach(b => b.onclick = () => { if (c.v.regimen !== b.dataset.k) { const o = optOf(c.v); o.pct = {}; o.auc = {}; } c.v.regimen = b.dataset.k; c.v.doseReason = ''; c.dirty = true; $$('#regList .ri').forEach(x => x.classList.toggle('on', x === b)); renderCheck(); const fb = $('#btnFromReg'); if (fb) fb.disabled = false; });
+  $$('#regList [data-k]').forEach(b => b.onclick = () => { if (c.v.regimen !== b.dataset.k) { const o = optOf(c.v); o.pct = {}; o.auc = {}; } c.v.regimen = b.dataset.k; c.v.doseReason = ''; c.dirty = true; P.collapsed = true; P.cSig = fsig; renderRegList(); renderCheck(); const fb = $('#btnFromReg'); if (fb) fb.disabled = false; });
 }
 function renderRegCard() {
   const c = DAY.cur, el = $('#regCard'); if (!el) return;
