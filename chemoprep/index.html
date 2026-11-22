@@ -440,9 +440,9 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 <input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="fileAtt" accept="image/*" multiple hidden>
 
-<script src="../data.js?v=20261117174207-6682dcf032"></script>
-<script src="../lib.js?v=dd8c592aac"></script>
-<script src="config.js?v=6682dcf032"></script>
+<script src="../data.js?v=20261117174207-0f50dea432"></script>
+<script src="../lib.js?v=f03a49f914"></script>
+<script src="config.js?v=0f50dea432"></script>
 <script>
 var SRCH_SEQ = 0;
 // =====================================================================
@@ -762,7 +762,7 @@ function doseCheck(v, bottles, pat) {
   const reg = regOf(v.regimen), groups = {};
   bottles.forEach(b => { const p = M.prodIdx[b.productcde]; if (!p) return; const k = prodKey(p);
     (groups[k] = groups[k] || { key: k, name: p.generic || p.productname, mg: 0, n: 0, unit: (p.unit || 'mg').toLowerCase() });
-    groups[k].mg += num(b.mg) || 0; groups[k].n++; });
+    groups[k].mg += num(b.mg) || 0; groups[k].n++; (groups[k].bots = groups[k].bots || []).push({ mg: num(b.mg) || 0, no: b.bottleNo }); });
   const regComps = {};
   if (reg) reg.d.forEach((dr, i) => { if (/^po|oral/i.test(dr.route || '')) return; const k = drugKey(dr.n); (regComps[k] = regComps[k] || []).push(Object.assign(effDr(dr, i, v), { _i: i })); });
   Object.values(groups).forEach(g => {
@@ -785,6 +785,21 @@ function doseCheck(v, bottles, pat) {
           it.msgs.push(`สั่ง ${fmt(g.mg)} ${g.unit} = ${fmt(ratio)}% ของมาตรฐาน ${fmt(tot)} ${g.unit}`);
           if (adj) it.msgs.push(`เทียบกับขนาดที่ปรับไว้ (${[...new Set(valid.map(s => s.c.pct + '%'))].join(', ')}) ${fmt(tgt)} ${g.unit} = ${fmt(base)}%`);
           valid.forEach(s => it.msgs.push(`${s.dr.n}: ${stdText(s.dr)}${s.dr.aucFrom ? ' (สูตรเดิม AUC ' + s.dr.aucFrom + ')' : ''} ${s.dr.days ? '(' + s.dr.days + ')' : ''} → ${fmt(s.c.std)}${s.c.pct !== 100 ? ' × ' + s.c.pct + '% = ' + fmt(s.c.target) : ''}${s.dr.cap && s.c.raw > s.dr.cap ? ' [cap ' + s.dr.cap + ']' : ''}`));
+          // เทียบขวดต่อขวด (เตรียมทีละครั้ง): แต่ละขวดเทียบกับขนาดต่อครั้งของยาในสูตร (และขนาดต่อวันถ้าแบ่งเตรียม)
+          if (g.n > 1) {
+            const tg = []; valid.forEach(x => { tg.push({ t: x.c.target, n: x.dr.n }); if (x.c.split) tg.push({ t: x.c.perDay, n: x.dr.n + ' (ต่อวัน)' }); });
+            const lvlOf = r => r > 110 ? 'red' : r > 105 ? 'amber' : r >= 90 ? 'green' : r >= 70 ? 'blue' : 'amber', rk = { red: 4, amber: 3, blue: 2, green: 1, gray: 0 };
+            const per = g.bots.map((bt, bi) => { bt.i = bi + 1; let best = null; tg.forEach(x => { if (x.t > 0) { const r = bt.mg / x.t * 100; if (!best || Math.abs(r - 100) < Math.abs(best.r - 100)) best = { r, x }; } }); return best && Object.assign({}, bt, best, { lvl: lvlOf(best.r) }); }).filter(Boolean);
+            if (per.length) {
+              const worstB = per.reduce((w, q) => rk[q.lvl] > rk[w] ? q.lvl : w, 'gray');
+              it.msgs.push('— เทียบขวดต่อขวด (ขนาดต่อครั้ง) —');
+              per.forEach(q => it.msgs.push(`ขวด ${q.no || q.i}: ${fmt(q.mg)} ${g.unit} = ${fmt(q.r)}% ของ ${q.x.n} (${fmt(q.x.t)} ${g.unit}) ${{ green: '✓', red: '⚠ สูงกว่ามาตรฐาน', amber: '⚠ ตรวจสอบ', blue: 'ลดขนาด' }[q.lvl]}`));
+              it.msgs.push(`— เทียบรวมทุกขวด: ${fmt(g.mg)} ${g.unit} = ${fmt(ratio)}% ของ ${fmt(tot)} ${g.unit} —`);
+              if (worstB === 'green' && lvl !== 'green') { lvl = 'green'; it.title = 'ทุกขวดตรงกับขนาดต่อครั้ง (เตรียมทีละครั้ง)'; }
+              else if (worstB !== 'green' && lvl === 'green') it.title = 'รวมทุกขวดตรงมาตรฐาน (แบ่งเตรียม ' + g.n + ' ขวด)';
+              else if (worstB === 'red' && lvl !== 'red') { lvl = 'red'; it.title = 'มีขวดที่สูงกว่ามาตรฐาน ตรวจสอบกับแพทย์'; }
+            }
+          }
           const mk = comps.find(dr => dr.unit === 'mg/kg'); if (mk && P.ok) it.msgs.push(`เท่ากับ ${fmt(g.mg / P.wt)} mg/kg`);
           if (comps.length > 1) it.msgs.push('สูตรนี้มียาตัวนี้หลายส่วน (เช่น bolus + infusion) เทียบจากผลรวมทุกขวดในเคสนี้');
           if (hasSplit) { valid.filter(s => s.c.split).forEach(s => it.msgs.push(`${s.dr.n}: ขนาดในสูตรเป็นขนาดรวมตลอด ${s.dr.days} → ถ้าแบ่งเตรียม ${s.c.split} วัน = วันละ ${fmt(s.c.perDay)} ${g.unit}`));
