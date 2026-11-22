@@ -74,6 +74,9 @@ function calc(dr, P, pct) {
       full = dr.dose * (P.gfr + 25);
       o.lines.push(`Calvert: AUC ${dr.dose} × (GFR ${fmt(P.gfr)}${S.p.gfrCap && P.crcl > 125 ? ' [cap 125]' : ''} + 25) = ${fmt(full)} mg`);
       o.lines.push(`(ขนาดสูงสุดที่ AUC ${dr.dose} = ${dr.dose} × 150 = ${fmt(dr.dose * 150)} mg)`); break;
+    case 'bsatier': {
+      if (!P.ok) { o.need = 'กรอกน้ำหนัก/ส่วนสูง'; return o; }
+      const t = dr.bsaTiers.find(t => t.lt == null || P.bsa < t.lt); full = t.dose; o.lines.push(`ตามช่วง BSA: ${dr.tierText} → BSA ${P.bsa.toFixed(2)} m² = ${full} mg/วัน (ครั้งละ ${full / 2} mg เช้า-เย็น)`); break; }
     case 'tier': {
       if (!P.ok) { o.need = 'กรอกน้ำหนัก'; return o; }
       const t = dr.tiers.find(t => t.lt == null || P.wt < t.lt); full = t.dose; o.lines.push(`ตามช่วงน้ำหนัก: ${dr.tierText} → น้ำหนัก ${P.wt} kg = ${full} mg`); break; }
@@ -194,7 +197,7 @@ function renderMain() {
     const st = S.rows[i] || (S.rows[i] = { pct:S.gPct, ord:'' });
     const dr = effDrug(dr0, st);
     const c = calc(dr, P, st.pct), lib = DL[drugKey(dr.n)] || {};
-    const unitTxt = dr.fixedText ? '' : dr.unit === 'AUC' ? `AUC ${dr.dose}` : dr.unit === 'tier' ? dr.tierText : `${dr.dose} ${dr.unit.replace('m2','m²')}${dr.nDays ? '/วัน' : ''}`;
+    const unitTxt = dr.fixedText ? '' : dr.unit === 'AUC' ? `AUC ${dr.dose}` : (dr.unit === 'tier' || dr.unit === 'bsatier') ? dr.tierText : `${dr.dose} ${dr.unit.replace('m2','m²')}${dr.nDays ? '/วัน' : ''}`;
     const ren = lib.renal && P.okRenal ? lib.renal(P.crcl) : null;
     const v = verify(dr, c, P, num(st.ord), st.pct);
     const per = dr.freq === 'BID' ? ' /มื้อ' : dr.nDays ? ' /วัน' : '';
@@ -243,7 +246,7 @@ function summaryText() {
   allDrugs().forEach((dr0, i) => {
     const st = S.rows[i], dr = effDrug(dr0, st), c = calc(dr, P, st.pct), v = verify(dr, c, P, num(st.ord), st.pct);
     const per = dr.freq === 'BID' ? '/มื้อ' : dr.nDays ? '/วัน' : '';
-    L.push(`• ${dr.n} [${dr.fixedText || (dr.unit === 'AUC' ? 'AUC ' + dr.dose : dr.dose + ' ' + dr.unit)}] ${dr.days}: ควรได้ ${c.text || fmt(c.fin) + ' ' + c.unitOut + per}${st.pct !== 100 ? ` (${st.pct}%)` : ''}`
+    L.push(`• ${dr.n} [${dr.fixedText || (dr.unit === 'AUC' ? 'AUC ' + dr.dose : (dr.unit === 'tier' || dr.unit === 'bsatier') ? dr.tierText : dr.dose + ' ' + dr.unit)}] ${dr.days}: ควรได้ ${c.text || fmt(c.fin) + ' ' + c.unitOut + per}${st.pct !== 100 ? ` (${st.pct}%)` : ''}`
       + (v ? ` | แพทย์สั่ง ${st.ord} → ${fmt(v.ratio)}% ${v.lvl === 'green' ? 'OK' : 'ตรวจสอบ'}` : ''));
   });
   L.push('', `อ้างอิง: ${g.ref} | คำนวณโดย: เภสัชกรเคมีบำบัด รพ.จุฬารัตน์ 9 แอร์พอร์ต — ${new Date().toLocaleString('th-TH')}`);

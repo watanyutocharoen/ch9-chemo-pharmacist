@@ -1,7 +1,7 @@
 // ===== ฐานข้อมูลสูตรยา =====
 // แก้ไข/เพิ่มสูตรได้ที่ไฟล์นี้ไฟล์เดียว (ดูวิธีใน README.md) แล้วอัปเดต DB_VERSION ทุกครั้ง
-const DB_VERSION = 'v1.6 (17 พ.ย. 2569)';
-// unit: mg/m2 | mg/kg | mg | AUC | units/m2 | units | tier
+const DB_VERSION = 'v1.7 (22 พ.ย. 2569)';
+// unit: mg/m2 | mg/kg | mg | AUC | units/m2 | units | tier (ตามน้ำหนัก) | bsatier (ตาม BSA)
 // opts: cap (mg สูงสุดต่อครั้ง), freq:'BID', nDays (CI ต่อวัน × วัน), roundTo, tiers, note
 function d(n, dose, unit, days, route, o) { return Object.assign({ n, dose, unit, days, route }, o || {}); }
 
@@ -64,6 +64,14 @@ const R = [
 { c:'breast', n:'Docetaxel + Trastuzumab + Pertuzumab (THP)', s:'HER2+ Metastatic', cy:'q21 วัน', ref:'CLEOPATRA', d:[
   d('Docetaxel',75,'mg/m2','D1','IV'), d('Trastuzumab (loading C1)',8,'mg/kg','D1 รอบแรก','IV'), d('Trastuzumab (maintenance)',6,'mg/kg','D1','IV'),
   d('Pertuzumab (loading C1)',840,'mg','D1 รอบแรก','IV'), d('Pertuzumab (maintenance)',420,'mg','D1','IV')]},
+{ c:'breast', n:'S-1 (TS-1) + Trastuzumab IV (14 วัน q21)', kw:'ts-1 ts1 s-1 tegafur gimeracil oteracil trastuzumab herceptin gbccsg', s:'HER2+ Metastatic (เฟส II, ญี่ปุ่น)', cy:'q21 วัน (S-1 D1–14 พัก 7 วัน)', ref:'GBCCSG-01 (Anticancer Res 2018; n=10)', d:[
+  d('S-1 (TS-1)',0,'bsatier','D1–14 (ขนาดต่อวัน แบ่งเช้า-เย็น)','PO',{bsaTiers:[{lt:1.25,dose:80},{lt:1.5,dose:100},{dose:120}],tierText:'BSA <1.25 m² = 80 mg/วัน; 1.25–<1.5 = 100 mg/วัน; ≥1.5 = 120 mg/วัน (แบ่ง 2 ครั้ง)'}),
+  d('Trastuzumab (loading C1)',8,'mg/kg','D1 รอบแรก','IV'), d('Trastuzumab (maintenance)',6,'mg/kg','D1 รอบถัดไป','IV')],
+  note:'ข้อมูลจากการศึกษาเฟส II กลุ่มเดียว (10 ราย) ตรวจ LVEF ก่อนเริ่มและทุก 3 เดือน; S-1 ห้ามใช้ร่วมกับ fluoropyrimidine ตัวอื่น'},
+{ c:'breast', n:'S-1 (TS-1) + Trastuzumab IV weekly (28 วัน q42)', kw:'ts-1 ts1 s-1 tegafur gimeracil oteracil trastuzumab herceptin takashima', s:'HER2+ Metastatic (เฟส II, ญี่ปุ่น)', cy:'q42 วัน (S-1 D1–28 พัก 14 วัน)', ref:'Takashima 2014 (Anticancer Res; n=28); phase I 2011', d:[
+  d('S-1 (TS-1)',80,'mg/m2','D1–28 (ขนาดต่อวัน แบ่งเช้า-เย็น)','PO',{nDays:28,roundTo:20}),
+  d('Trastuzumab (loading)',4,'mg/kg','สัปดาห์แรก','IV'), d('Trastuzumab (weekly)',2,'mg/kg','ทุกสัปดาห์','IV')],
+  note:'S-1 ขนาด "ต่อวัน" (80 mg/m²/วัน) แบ่งกินเช้า-เย็นหลังอาหาร ปัดตามแคปซูล 20/25 mg; ข้อมูลจากเฟส II กลุ่มเดียว (28 ราย)'},
 { c:'breast', n:'Trastuzumab SC', s:'HER2+', cy:'q21 วัน (ครบ 1 ปีใน adjuvant)', ref:'HannaH; label', d:[
   d('Trastuzumab SC',600,'mg','D1','SC 2–5 นาที')], note:'ขนาดคงที่ ไม่ต้องให้ loading dose'},
 { c:'breast', n:'Pertuzumab/Trastuzumab SC (Phesgo)', s:'HER2+', cy:'q21 วัน', ref:'FeDeriCa; label', d:[

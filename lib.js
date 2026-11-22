@@ -3,7 +3,7 @@
 const KEYMAP = [
   [/protein-bound|nab/i,'nab-paclitaxel'], [/liposomal/i,'pld'], [/emtansine/i,'t-dm1'], [/deruxtecan/i,'t-dxd'],
   [/phesgo/i,'phesgo'], [/trifluridine/i,'trifluridine'], [/arsenic/i,'arsenic'], [/atra|tretinoin/i,'atra'],
-  [/leucovorin|folin/i,'leucovorin'], [/asparaginase/i,'l-asparaginase'], [/mercaptopurine|6-mp/i,'mercaptopurine'], [/tegafur/i,'tegafur-uracil'], [/actinomycin|dactinomycin/i,'actinomycin'], [/fluorouracil|5-?fu/i,'fluorouracil'], [/high-dose/i,'cytarabine-hd']
+  [/leucovorin|folin/i,'leucovorin'], [/asparaginase/i,'l-asparaginase'], [/mercaptopurine|6-mp/i,'mercaptopurine'], [/\bs-1\b|ts-1/i,'s-1'], [/tegafur/i,'tegafur-uracil'], [/actinomycin|dactinomycin/i,'actinomycin'], [/fluorouracil|5-?fu/i,'fluorouracil'], [/high-dose/i,'cytarabine-hd']
 ];
 function drugKey(name) {
   for (const [re, k] of KEYMAP) if (re.test(name)) return k;
@@ -77,6 +77,7 @@ const DL = {
   avelumab: { cls:'io' }, dostarlimab: { cls:'io' },
   tamoxifen: { cls:'hormone' }, letrozole: { cls:'hormone' }, anastrozole: { cls:'hormone' }, exemestane: { cls:'hormone' }, fulvestrant: { cls:'hormone' },
   abiraterone: { cls:'hormone' }, enzalutamide: { cls:'hormone' }, apalutamide: { cls:'hormone' }, darolutamide: { cls:'hormone' },
+  's-1': { cls:'chemo', note:'⚠ DPD deficiency; ขนาดเป็นต่อวัน แบ่ง 2 ครั้งหลังอาหาร (แคปซูล 20/25 mg); ห้ามใช้ร่วมกับ fluoropyrimidine ตัวอื่น; ตรวจการทำงานของไตก่อนเริ่ม' },
   'tegafur-uracil': { cls:'chemo', note:'⚠ DPD deficiency; ขนาดคิดตาม tegafur ต่อวัน แบ่ง 3 มื้อ' },
   megestrol: { cls:'hormone', note:'ระวัง VTE, น้ำหนักเพิ่ม' },
   mitomycin: { cls:'chemo', life:'สะสมเกิน ~50 mg/m² เสี่ยง HUS และไขกระดูกกดนาน', note:'Vesicant', maxSingle:20 },
@@ -98,7 +99,7 @@ const CLS_LABEL = { chemo:'Chemo', targeted:'Targeted', io:'Immunotherapy', horm
 
 // ชื่อการค้า (ใช้ค้นหา) — อาจมียาสามัญ/ชื่อการค้าอื่นในประเทศไทยเพิ่มเติม
 const BRAND = {
-  capecitabine:'Xeloda', trastuzumab:'Herceptin Herzuma Kanjinti Ontruzant', 't-dm1':'Kadcyla', 't-dxd':'Enhertu', pertuzumab:'Perjeta', phesgo:'Phesgo',
+  's-1':'TS-1', capecitabine:'Xeloda', trastuzumab:'Herceptin Herzuma Kanjinti Ontruzant', 't-dm1':'Kadcyla', 't-dxd':'Enhertu', pertuzumab:'Perjeta', phesgo:'Phesgo',
   bevacizumab:'Avastin Mvasi', cetuximab:'Erbitux', panitumumab:'Vectibix', rituximab:'MabThera Rituxan Truxima', pembrolizumab:'Keytruda', nivolumab:'Opdivo',
   atezolizumab:'Tecentriq', durvalumab:'Imfinzi', tremelimumab:'Imjudo', avelumab:'Bavencio', dostarlimab:'Jemperli', docetaxel:'Taxotere', paclitaxel:'Taxol Anzatax',
   'nab-paclitaxel':'Abraxane', gemcitabine:'Gemzar', pemetrexed:'Alimta', oxaliplatin:'Eloxatin', irinotecan:'Campto', vinorelbine:'Navelbine', eribulin:'Halaven',
