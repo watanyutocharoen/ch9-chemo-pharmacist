@@ -284,7 +284,7 @@ mark{background:#ffe9a8;color:inherit;border-radius:3px;padding:0 1px}
 .mlbl .mt{font-weight:700;font-size:1.12em;border-bottom:1px solid #000;padding-bottom:.1em}
 .mlbl .mb{flex:1;overflow:hidden;font-size:1.12em;line-height:1.3}
 .mlbl .mf{display:flex;justify-content:space-between;border-top:1px solid #000;padding-top:.1em;font-size:.95em}
-.rot{width:var(--lh);height:var(--lw);overflow:hidden;page-break-after:always;break-after:page}
+.rot{width:var(--ph,var(--lh));height:var(--lw);overflow:hidden;page-break-after:always;break-after:page}
 .rot:last-child{page-break-after:auto;break-after:auto}
 .rot > div{transform:rotate(90deg) translateY(calc(-1 * var(--lh)));transform-origin:top left;page-break-after:auto!important;break-after:auto!important}
 .lblwrap{display:flex;gap:10px;flex-wrap:wrap}
@@ -838,8 +838,22 @@ function doseCheck(v, bottles, pat) {
 // =====================================================================
 //  Labels
 // =====================================================================
-function labelDims() { const s = M.settings; const w = num(s.labelWidthMm) || 86, h = num(s.labelHeightMm) || 50; return { w, h, fs: Math.min(h / 50, w / 86) * 8.6, rot: +s.labelRotate === 1 }; }
-function labelVars() { const L = labelDims(); return `--lw:${L.w}mm;--lh:${L.h}mm;--fs:${L.fs.toFixed(2)}pt`; }
+// ขนาดสติกเกอร์ที่เลือกได้ (จำค่าไว้ในเครื่อง) · bm = เว้นขอบล่างของแผ่น (มม.)
+const LABEL_SIZES = { orig: { t: 'ขนาดเดิม (ตามตั้งค่า)' }, s80x60: { t: '8 × 6 ซม. (เว้นล่าง 0.5 ซม.)', w: 80, h: 60, bm: 5 }, s80x70: { t: '8 × 7 ซม. (เว้นล่าง 0.5 ซม.)', w: 80, h: 70, bm: 5 } };
+function labelSizeKey() { let k = 'orig'; try { k = localStorage.getItem('chemoprep_labelsize') || 'orig'; } catch (e) {} return LABEL_SIZES[k] ? k : 'orig'; }
+function labelDims() {
+  const s = M.settings, k = labelSizeKey(), z = LABEL_SIZES[k];
+  const pw = z.w || num(s.labelWidthMm) || 86, ph = z.h || num(s.labelHeightMm) || 50, bm = z.bm || 0, h = ph - bm;
+  return { w: pw, h, pw, ph, bm, fs: Math.min(h / 50, pw / 86) * 8.6, rot: +s.labelRotate === 1 };
+}
+function labelVars() { const L = labelDims(); return `--lw:${L.w}mm;--lh:${L.h}mm;--ph:${L.ph}mm;--fs:${L.fs.toFixed(2)}pt`; }
+function labelSizeSel() { const k = labelSizeKey(); return `<label class="muted lsz" style="display:inline-flex;gap:6px;align-items:center">ขนาดสติ๊กเกอร์ <select class="lszsel">${Object.entries(LABEL_SIZES).map(([id, z]) => `<option value="${id}" ${id === k ? 'selected' : ''}>${esc(z.t)}</option>`).join('')}</select></label>`; }
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.classList || !t.classList.contains('lszsel')) return;
+  try { localStorage.setItem('chemoprep_labelsize', t.value); } catch (x) {}
+  document.querySelectorAll('.lszsel').forEach(x => x.value = t.value);
+  document.querySelectorAll('.lblwrap').forEach(x => x.setAttribute('style', labelVars()));
+});
 const ptName = p => esc(((p.title || '') + ' ' + (p.name || '')).trim());
 /** สติกเกอร์หัว (ติดหน้ากล่อง) */
 function headLabelHtml(v, pat) {
@@ -873,7 +887,7 @@ function printPages(pages) {
   if (!pages.length) return toast('ไม่มีฉลากให้พิมพ์');
   const L = labelDims(), area = $('#printArea');
   area.style.cssText = labelVars();
-  area.innerHTML = `<style>@page{size:${L.rot ? L.h : L.w}mm ${L.rot ? L.w : L.h}mm;margin:0}</style>` + (L.rot ? pages.map(x => '<div class="rot">' + x + '</div>').join('') : pages.join(''));
+  area.innerHTML = `<style>@page{size:${L.rot ? L.ph : L.pw}mm ${L.rot ? L.pw : L.ph}mm;margin:0}</style>` + (L.rot ? pages.map(x => '<div class="rot">' + x + '</div>').join('') : pages.join(''));
   setTimeout(() => window.print(), 150);
 }
 function casePages(c, sel) { // sel: {head:bool, ids:Set|null}
@@ -1145,6 +1159,7 @@ function renderForm() {
     ${sec(5, 'ผลตรวจสอบ', '', '<div id="checkOut"></div>')}
     <div class="factions">
       <div class="fld" style="flex:1;min-width:220px">หมายเหตุ<input id="vNote" value="${esc(v.note)}"></div>
+      ${labelSizeSel()}
       <button class="btn ghost" id="btnPreview">ดูฉลาก</button>
       <button class="btn" id="btnSave">${v.id ? 'บันทึกการแก้ไข' : 'บันทึก'}</button>
       <button class="btn" id="btnSavePrint">บันทึก + พิมพ์ฉลาก</button>
@@ -1474,7 +1489,7 @@ function previewCase(c) {
   const d = $('#dlg'); d.style.maxWidth = '960px';
   d.innerHTML = `<h2>ตัวอย่างฉลาก (${c.bottles.length + 1} ดวง: หัว 1 + ขวดยา ${c.bottles.length})</h2>
     <div class="lblwrap" style="${labelVars()}"><div>${headLabelHtml(c.v, c.pat)}</div>${c.bottles.map(b => `<div>${labelHtml(c.v, b, c.pat)}</div>`).join('')}</div>
-    <p class="muted">ขนาดฉลาก ${M.settings.labelWidthMm}×${M.settings.labelHeightMm} มม. · ตอนพิมพ์เลือกขนาดกระดาษตามฉลาก ระยะขอบ “ไม่มี” สเกล 100%</p>
+    <div class="row">${labelSizeSel()}</div><p class="muted">ตอนพิมพ์เลือกขนาดกระดาษตามฉลาก ระยะขอบ “ไม่มี” สเกล 100%</p>
     <div class="row" style="justify-content:flex-end"><button class="btn ghost" id="pvClose">ปิด</button></div>`;
   d.showModal(); $('#pvClose').onclick = () => d.close(); d.onclose = () => d.style.maxWidth = '';
 }
@@ -1482,7 +1497,7 @@ function reprintDialog(c) {
   if (!c.bottles.length) return toast('เคสนี้ไม่มีขวดยา');
   const d = $('#dlg'); d.style.maxWidth = '960px';
   d.innerHTML = `<h2>พิมพ์ฉลากซ้ำ · VN ${esc(c.v.vn)} · ${esc((c.pat.title || '') + (c.pat.name || '') + ' ' + (c.pat.surname || ''))}</h2>
-    <div class="row" style="margin-bottom:8px"><button class="btn ghost xs" id="rpAll">เลือกทั้งหมด</button><button class="btn ghost xs" id="rpNone">ไม่เลือก</button><span class="muted">ติ๊กเฉพาะดวงที่ต้องการพิมพ์ซ้ำ</span></div>
+    <div class="row" style="margin-bottom:8px"><button class="btn ghost xs" id="rpAll">เลือกทั้งหมด</button><button class="btn ghost xs" id="rpNone">ไม่เลือก</button><span class="muted">ติ๊กเฉพาะดวงที่ต้องการพิมพ์ซ้ำ</span><span class="right"></span>${labelSizeSel()}</div>
     <div class="lblwrap" style="${labelVars()}">
       <label style="display:flex;flex-direction:column;gap:4px"><span><input type="checkbox" data-rp="head" checked> สติกเกอร์หัว (หน้ากล่อง)</span><div>${headLabelHtml(c.v, c.pat)}</div></label>
       ${c.bottles.map(b => { const p = M.prodIdx[b.productcde] || {}; return `<label style="display:flex;flex-direction:column;gap:4px"><span><input type="checkbox" data-rp="${esc(b.id)}" checked> ขวดที่ ${esc(b.bottleNo)} · ${esc(p.generic || b.productcde)} ${fmt(num(b.mg))}${+b.printed ? ` <span class="pill">พิมพ์แล้ว ${b.printed}</span>` : ''}</span><div>${labelHtml(c.v, b, c.pat)}</div></label>`; }).join('')}
@@ -1622,7 +1637,7 @@ function eyeReprint(id) {
   const e = eyeCase(id), d = $('#dlg'); d.style.maxWidth = '900px';
   d.innerHTML = `<h2>พิมพ์ฉลากยาหยอดตาซ้ำ #${esc(e.seq)}</h2>
     <div class="row" style="margin-bottom:10px"><label class="muted"><input type="checkbox" id="erL" checked> ฉลากผู้ป่วย</label><label class="muted"><input type="checkbox" id="erM" checked> สติกเกอร์วิธีผสม</label>
-      <div class="fld">จำนวนชุด<input type="number" id="erN" min="1" value="${esc(e.qty || 1)}" style="width:80px"></div></div>
+      ${labelSizeSel()}<div class="fld">จำนวนชุด<input type="number" id="erN" min="1" value="${esc(e.qty || 1)}" style="width:80px"></div></div>
     <div class="lblwrap" style="${labelVars()}"><div>${eyeLabelHtml(e, e.pat)}</div><div>${eyeMethodHtml(e, e.pat)}</div></div>
     <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn ghost" id="erNo">ปิด</button><button class="btn" id="erGo">พิมพ์</button></div>`;
   d.showModal(); d.onclose = () => d.style.maxWidth = '';
@@ -1646,7 +1661,7 @@ function renderEyeEditor() {
       <div class="fld">หอผู้ป่วย<select id="eWard">${wardOpts(c.ward)}</select></div>
       <div class="fld" style="flex:1;min-width:200px">หมายเหตุ<input id="eNote" value="${esc(c.note || '')}"></div></div>`)}
     ${sec(5, 'ตัวอย่างสติกเกอร์', '', '<div id="ePrev" class="lblwrap"></div>')}
-    <div class="factions"><div class="note-key">*** อุปกรณ์ที่ใช้ในการผสม คีย์ “EYEMIX” · ผสม 1 ขวด คีย์ 1 ครั้ง ***</div><span class="right"></span>
+    <div class="factions"><div class="note-key">*** อุปกรณ์ที่ใช้ในการผสม คีย์ “EYEMIX” · ผสม 1 ขวด คีย์ 1 ครั้ง ***</div><span class="right"></span>${labelSizeSel()}
       <button class="btn" id="eSave">${c.id ? 'บันทึกการแก้ไข' : 'บันทึก'}</button><button class="btn" id="ePrint">บันทึก + พิมพ์ฉลาก</button></div>`;
   renderEyeLines(); renderEyePrev(); bindEye();
 }
@@ -2203,7 +2218,7 @@ async function startApp(boot) {
     $('#lsMode').onchange = () => loadList(); $('#lsDate').onchange = () => loadList();
     $('#btnRefresh').onclick = () => loadList();
     $('#btnPrintAll').onclick = async () => { const L = DAY.list.visits.filter(v => !+v.cancelled); if (!L.length) return toast('ไม่มีเคส');
-      if (!await ask(`พิมพ์ฉลากทั้งหมด ${L.length} เคส (สติกเกอร์หัว + ขวดยา) ที่แสดงในรายการ?`, 'พิมพ์')) return; await printCases(L.map(caseOf), false); loadList(); };
+      if (!await ask(`พิมพ์ฉลากทั้งหมด ${L.length} เคส (สติกเกอร์หัว + ขวดยา) ที่แสดงในรายการ?\nขนาดสติ๊กเกอร์: ${LABEL_SIZES[labelSizeKey()].t} (เปลี่ยนได้ที่ “ดูฉลาก/พิมพ์ซ้ำ”)`, 'พิมพ์')) return; await printCases(L.map(caseOf), false); loadList(); };
     $('#eyeDate').onchange = () => { EYE.cur = null; $('#eyeEditor').innerHTML = '<div class="empty">เลือกรายการทางซ้าย หรือกด “+ ผสมยาหยอดตา”</div>'; loadEyeDay(dateVal('#eyeDate') || M.today); };
     $('#btnEyeNew').onclick = newEye;
     $('#btnChgPw').onclick = () => changePassword(false);
